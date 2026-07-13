@@ -1,0 +1,368 @@
+// Datenmodell für die Fallverwaltungs-App einer sozialpädagogischen Praxis
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Benutzer & Auth ----------
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String
+  passwordHash      String
+  role              Role     @default(EMPLOYEE)
+  active            Boolean  @default(true) // Deaktivieren statt Löschen (Datenschutz)
+
+  totpSecret        String? // aktiver, bestätigter TOTP-Secret
+  totpSecretPending String? // Secret während des Ersteinrichtungsvorgangs
+  totpEnabled       Boolean  @default(false)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  assignedCases     Case[]            @relation("AssignedEmployee")
+  substituteCases   Case[]            @relation("SubstituteEmployee")
+  caseStatusChanges CaseStatusHistory[]
+  serviceEntries    ServiceEntry[]
+  timeEntries       TimeEntry[]
+  absences          Absence[]
+  appointments      Appointment[]     @relation("AppointmentOrganizer")
+  uploadedDocuments Document[]
+  knowledgeItems    KnowledgeItem[]
+  accessLogs        AccessLog[]
+
+  sentMessages      Message[]
+  messageRecipients MessageRecipient[]
+
+  @@index([role])
+}
+
+// ---------- Stammdaten ----------
+
+model HelpType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  cases       Case[]
+}
+
+model Client {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  birthDate    DateTime?
+  address      String?
+  contactInfo  String?
+  archived     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cases        Case[]
+
+  @@index([lastName, firstName])
+}
+
+// ---------- Fall / Hilfe ----------
+
+enum CaseStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model Case {
+  id                   String     @id @default(cuid())
+  caseNumber           String     @unique // Aktenzeichen/Fallnummer
+  authority            String     // zuständiges Jugendamt/Auftraggeber
+
+  client               Client     @relation(fields: [clientId], references: [id])
+  clientId             String
+
+  helpType             HelpType   @relation(fields: [helpTypeId], references: [id])
+  helpTypeId            String
+
+  assignedEmployee     User       @relation("AssignedEmployee", fields: [assignedEmployeeId], references: [id])
+  assignedEmployeeId   String
+
+  substituteEmployee   User?      @relation("SubstituteEmployee", fields: [substituteEmployeeId], references: [id])
+  substituteEmployeeId String?
+
+  hoursContingent      Decimal    @db.Decimal(7, 2)
+
+  status               CaseStatus @default(ACTIVE)
+  startDate            DateTime   @default(now())
+  endDate              DateTime?
+
+  helpPlanMeetingDate     DateTime? // Hilfeplangespräch
+  extensionDeadline       DateTime? // Verlängerungsantrag Frist
+  reminderLeadDays        Int       @default(14) // Vorlaufzeit für Fristen-Erinnerungen
+
+  archived             Boolean    @default(false)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  statusHistory        CaseStatusHistory[]
+  serviceEntries       ServiceEntry[]
+  timeEntries          TimeEntry[]
+  appointments         Appointment[]
+  documents            Document[]
+  messages             Message[]
+
+  @@index([assignedEmployeeId])
+  @@index([substituteEmployeeId])
+  @@index([status])
+  @@index([helpTypeId])
+}
+
+model CaseStatusHistory {
+  id          String     @id @default(cuid())
+  case        Case       @relation(fields: [caseId], references: [id])
+  caseId      String
+  oldStatus   CaseStatus?
+  newStatus   CaseStatus
+  reason      String?
+  changedBy   User       @relation(fields: [changedById], references: [id])
+  changedById String
+  changedAt   DateTime   @default(now())
+
+  @@index([caseId])
+}
+
+// ---------- Leistungsdokumentation (abrechenbar) ----------
+
+model ServiceEntry {
+  id            String   @id @default(cuid())
+  case          Case     @relation(fields: [caseId], references: [id])
+  caseId        String
+  employee      User     @relation(fields: [employeeId], references: [id])
+  employeeId    String
+
+  date          DateTime @db.Date
+  startTime     DateTime // Uhrzeit (Datum-Anteil irrelevant)
+  endTime       DateTime
+  durationMinutes Int
+
+  description   String
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([caseId])
+  @@index([employeeId])
+  @@index([date])
+}
+
+// ---------- Interne Zeiterfassung ----------
+
+enum TimeEntrySource {
+  TIMER
+  MANUAL
+}
+
+enum GeneralActivity {
+  VERWALTUNG
+  FAHRZEITEN
+  SONSTIGES
+}
+
+model TimeEntry {
+  id              String           @id @default(cuid())
+  employee        User             @relation(fields: [employeeId], references: [id])
+  employeeId      String
+
+  case            Case?            @relation(fields: [caseId], references: [id])
+  caseId          String?
+  generalActivity GeneralActivity?
+
+  date            DateTime         @db.Date
+  startTime       DateTime?
+  endTime         DateTime?
+  durationMinutes Int
+  note            String?
+  source          TimeEntrySource  @default(MANUAL)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([employeeId])
+  @@index([caseId])
+  @@index([date])
+}
+
+// ---------- Urlaub / Abwesenheit ----------
+
+enum AbsenceType {
+  URLAUB
+  KRANK
+  SONSTIGES
+}
+
+model Absence {
+  id         String      @id @default(cuid())
+  employee   User        @relation(fields: [employeeId], references: [id])
+  employeeId String
+  type       AbsenceType
+  startDate  DateTime    @db.Date
+  endDate    DateTime    @db.Date
+  note       String?
+  createdAt  DateTime    @default(now())
+
+  @@index([employeeId])
+}
+
+// ---------- Terminkalender ----------
+
+model Appointment {
+  id                   String   @id @default(cuid())
+  title                String
+  organizer            User     @relation("AppointmentOrganizer", fields: [organizerId], references: [id])
+  organizerId          String
+  case                 Case?    @relation(fields: [caseId], references: [id])
+  caseId               String?
+  startsAt             DateTime
+  endsAt               DateTime
+  location             String?
+  note                 String?
+  reminderMinutesBefore Int?    @default(60)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([organizerId])
+  @@index([caseId])
+  @@index([startsAt])
+}
+
+// ---------- Dokumentenablage pro Fall ----------
+
+model Document {
+  id           String   @id @default(cuid())
+  case         Case     @relation(fields: [caseId], references: [id])
+  caseId       String
+  fileName     String
+  fileKey      String   // Schlüssel im S3-kompatiblen Speicher
+  mimeType     String
+  sizeBytes    Int
+  category     String?
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+
+  @@index([caseId])
+}
+
+// ---------- Fachbox (Wissensplattform) ----------
+
+enum KnowledgeItemType {
+  DOCUMENT
+  IMAGE
+  LINK
+}
+
+model KnowledgeItem {
+  id          String            @id @default(cuid())
+  title       String
+  type        KnowledgeItemType
+  description String?
+  fileKey     String?           // bei DOCUMENT/IMAGE
+  mimeType    String?
+  sizeBytes   Int?
+  url         String?           // bei LINK
+  folder      String?           // Ordnerstruktur (z.B. "Hilfeart/Thema")
+  tags        String[]          @default([])
+
+  createdBy   User              @relation(fields: [createdById], references: [id])
+  createdById String
+  archived    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([folder])
+}
+
+// ---------- Team-Kommunikation ----------
+
+model Message {
+  id          String              @id @default(cuid())
+  sender      User                @relation(fields: [senderId], references: [id])
+  senderId    String
+  subject     String
+  body        String
+  isBroadcast Boolean             @default(false)
+  case        Case?               @relation(fields: [caseId], references: [id])
+  caseId      String?
+  createdAt   DateTime            @default(now())
+
+  recipients  MessageRecipient[]
+
+  @@index([senderId])
+  @@index([caseId])
+}
+
+model MessageRecipient {
+  id        String    @id @default(cuid())
+  message   Message   @relation(fields: [messageId], references: [id])
+  messageId String
+  recipient User      @relation(fields: [recipientId], references: [id])
+  recipientId String
+  readAt    DateTime?
+
+  @@unique([messageId, recipientId])
+  @@index([recipientId, readAt])
+}
+
+// ---------- Datenschutz: Zugriffsprotokoll ----------
+
+enum AccessAction {
+  VIEW
+  CREATE
+  UPDATE
+  ARCHIVE
+  EXPORT
+  LOGIN
+  LOGIN_FAILED
+}
+
+model AccessLog {
+  id         String       @id @default(cuid())
+  user       User?        @relation(fields: [userId], references: [id])
+  userId     String?
+  action     AccessAction
+  entityType String       // z.B. "Case", "Document", "ServiceEntry"
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  timestamp  DateTime     @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}
+
+// ---------- Praxis-Einstellungen (Singleton) ----------
+
+model Settings {
+  id                          String  @id @default("singleton")
+  practiceName                String  @default("Sozialpädagogische Praxis")
+  logoUrl                     String?
+  colorPrimary                String  @default("#1E3A5F")
+  colorAccentLight             String  @default("#EAF1F8")
+  colorTextDark                String  @default("#1A1A1A")
+  contingentWarningThreshold  Int     @default(10) // Prozent
+  sessionIdleTimeoutMinutes   Int     @default(20)
+  updatedAt                   DateTime @updatedAt
+}
