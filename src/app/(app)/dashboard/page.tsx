@@ -26,8 +26,9 @@ export default async function DashboardPage({
     prisma.helpType.findMany({ orderBy: { name: "asc" } }),
   ]);
 
+  const showArchived = params.archived === "1";
   const where: Prisma.CaseWhereInput = {
-    archived: false,
+    archived: showArchived,
     ...caseVisibilityWhere(user),
   };
 
@@ -62,16 +63,21 @@ export default async function DashboardPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-[var(--color-text)]">
-            {user.role === "ADMIN" && !params.employeeId ? "Alle Fälle" : "Fälle"}
+            {showArchived ? "Archivierte Fälle" : user.role === "ADMIN" && !params.employeeId ? "Alle Fälle" : "Fälle"}
           </h1>
           <p className="mt-1 text-sm text-black/60">{cases.length} Fälle gefunden.</p>
         </div>
-        <Link
-          href="/cases/new"
-          className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-        >
-          + Neue Hilfe anlegen
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={showArchived ? "/dashboard" : "/dashboard?archived=1"} className="text-sm text-black/50 hover:underline">
+            {showArchived ? "← Zu aktiven Fällen" : "Archivierte Fälle anzeigen"}
+          </Link>
+          <Link
+            href="/cases/new"
+            className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            + Neue Hilfe anlegen
+          </Link>
+        </div>
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 bg-white p-4">

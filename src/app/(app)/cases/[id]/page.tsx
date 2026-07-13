@@ -5,6 +5,7 @@ import { getRemainingHours } from "@/lib/case-helpers";
 import { logAccess } from "@/lib/access-log";
 import { CaseTabs } from "./case-tabs";
 import { StatusForm } from "./status-form";
+import { ArchiveCaseButton } from "./archive-button";
 import { differenceInCalendarDays, format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -125,6 +126,16 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           ))}
         </ul>
       </div>
+
+      {user.role === "ADMIN" && (
+        <div className="rounded-lg border border-black/10 bg-white p-5">
+          <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fall archivieren</h2>
+          <p className="mb-3 text-sm text-black/60">
+            Archivierte Fälle werden aus den aktiven Übersichten ausgeblendet, aber aus Aufbewahrungspflichten nicht gelöscht.
+          </p>
+          <ArchiveCaseButton caseId={caseRecord.id} />
+        </div>
+      )}
     </div>
   );
 }
