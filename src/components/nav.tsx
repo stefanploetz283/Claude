@@ -13,6 +13,7 @@ const EMPLOYEE_ITEMS: NavItem[] = [
   { href: "/absences", label: "Urlaub/Abwesenheit" },
   { href: "/knowledge-base", label: "Fachbox" },
   { href: "/messages", label: "Nachrichten" },
+  { href: "/reports", label: "Sammel-Export" },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [

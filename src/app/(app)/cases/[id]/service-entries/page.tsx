@@ -24,6 +24,10 @@ export default async function ServiceEntriesPage({ params }: { params: Promise<{
   const { contingent, usedHours, remainingHours, remainingPercent } = await getRemainingHours(id, caseRecord.hoursContingent);
   const monthly = await getMonthlyHours(id);
 
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const today = now.toISOString().slice(0, 10);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -113,6 +117,23 @@ export default async function ServiceEntriesPage({ params }: { params: Promise<{
               ))}
               {monthly.length === 0 && <li className="text-black/40">Keine Daten.</li>}
             </ul>
+          </div>
+
+          <div className="rounded-lg border border-black/10 bg-white p-5">
+            <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">PDF-Export für Jugendamt</h2>
+            <form action={`/api/cases/${id}/export/pdf`} method="get" target="_blank" className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-black/60">Von</span>
+                <input name="from" type="date" defaultValue={firstOfMonth} className="rounded-md border border-black/15 px-3 py-1.5 text-sm" />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs font-medium text-black/60">Bis</span>
+                <input name="to" type="date" defaultValue={today} className="rounded-md border border-black/15 px-3 py-1.5 text-sm" />
+              </label>
+              <button type="submit" className="rounded-md bg-[var(--color-primary)] px-4 py-1.5 text-sm font-medium text-white hover:opacity-90">
+                Als PDF exportieren
+              </button>
+            </form>
           </div>
         </div>
       </div>
