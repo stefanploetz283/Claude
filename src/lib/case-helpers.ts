@@ -17,6 +17,24 @@ export async function getRemainingHours(caseId: string, hoursContingent: Decimal
   };
 }
 
+export async function getMonthlyHours(caseId: string) {
+  const entries = await prisma.serviceEntry.findMany({
+    where: { caseId },
+    select: { date: true, durationMinutes: true },
+    orderBy: { date: "asc" },
+  });
+
+  const map = new Map<string, number>();
+  for (const entry of entries) {
+    const key = `${entry.date.getUTCFullYear()}-${String(entry.date.getUTCMonth() + 1).padStart(2, "0")}`;
+    map.set(key, (map.get(key) ?? 0) + entry.durationMinutes / 60);
+  }
+
+  return Array.from(map.entries())
+    .map(([month, hours]) => ({ month, hours }))
+    .sort((a, b) => (a.month < b.month ? 1 : -1));
+}
+
 export async function getRemainingHoursBulk(caseIds: string[]) {
   const grouped = await prisma.serviceEntry.groupBy({
     by: ["caseId"],
