@@ -21,3 +21,11 @@ export function caseVisibilityWhere(user: Session["user"]) {
     OR: [{ assignedEmployeeId: user.id }, { substituteEmployeeId: user.id }],
   };
 }
+
+export function canAccessCase(
+  user: Session["user"],
+  caseRecord: { assignedEmployeeId: string; substituteEmployeeId: string | null }
+) {
+  if (user.role === "ADMIN") return true;
+  return caseRecord.assignedEmployeeId === user.id || caseRecord.substituteEmployeeId === user.id;
+}
