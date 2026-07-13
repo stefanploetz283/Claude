@@ -21,6 +21,7 @@ const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin/employees", label: "Mitarbeiter" },
   { href: "/admin/help-types", label: "Angebotskatalog" },
   { href: "/admin/access-log", label: "Zugriffsprotokoll" },
+  { href: "/admin/settings", label: "Einstellungen" },
 ];
 
 export function Nav({

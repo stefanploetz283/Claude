@@ -23,7 +23,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         } as React.CSSProperties
       }
     >
-      <Nav role={user.role} unreadCount={unreadCount} logoUrl={settings.logoUrl} practiceName={settings.practiceName} />
+      <Nav
+        role={user.role}
+        unreadCount={unreadCount}
+        logoUrl={settings.logoUrl ? "/api/settings/logo" : null}
+        practiceName={settings.practiceName}
+      />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">{children}</main>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />
     </div>
