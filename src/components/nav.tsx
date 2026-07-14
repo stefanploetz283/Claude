@@ -13,6 +13,7 @@ const EMPLOYEE_ITEMS: NavItem[] = [
   { href: "/absences", label: "Urlaub/Abwesenheit" },
   { href: "/knowledge-base", label: "Fachbox" },
   { href: "/messages", label: "Nachrichten" },
+  { href: "/reports", label: "Sammel-Export" },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
@@ -20,6 +21,7 @@ const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin/employees", label: "Mitarbeiter" },
   { href: "/admin/help-types", label: "Angebotskatalog" },
   { href: "/admin/access-log", label: "Zugriffsprotokoll" },
+  { href: "/admin/settings", label: "Einstellungen" },
 ];
 
 export function Nav({

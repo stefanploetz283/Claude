@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { readPendingAuthCookie } from "@/lib/pending-auth";
 import { totpQrCodeDataUrl } from "@/lib/totp";
+import { getSettings } from "@/lib/settings";
 import { VerifyForm } from "./verify-form";
 
 export default async function VerifyPage() {
@@ -10,14 +11,25 @@ export default async function VerifyPage() {
 
   const user = await prisma.user.findUnique({ where: { email: pending.email } });
   if (!user) redirect("/login");
+  const settings = await getSettings();
 
   let qrCode: string | null = null;
   if (!user.totpEnabled && user.totpSecretPending) {
-    qrCode = await totpQrCodeDataUrl(user.email, user.totpSecretPending, "Fallverwaltung");
+    qrCode = await totpQrCodeDataUrl(user.email, user.totpSecretPending, settings.practiceName);
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4">
+    <div
+      className="flex min-h-screen items-center justify-center px-4"
+      style={
+        {
+          "--color-primary": settings.colorPrimary,
+          "--color-bg": settings.colorAccentLight,
+          "--color-text": settings.colorTextDark,
+          background: "var(--color-bg)",
+        } as React.CSSProperties
+      }
+    >
       <div className="w-full max-w-sm rounded-xl border border-black/10 bg-white p-8 shadow-sm">
         <h1 className="mb-1 text-lg font-semibold text-[var(--color-text)]">
           {qrCode ? "Zwei-Faktor-Authentifizierung einrichten" : "Zwei-Faktor-Code eingeben"}

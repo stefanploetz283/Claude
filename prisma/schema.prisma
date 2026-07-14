@@ -364,5 +364,6 @@ model Settings {
   colorTextDark                String  @default("#1A1A1A")
   contingentWarningThreshold  Int     @default(10) // Prozent
   sessionIdleTimeoutMinutes   Int     @default(20)
+  employeesCanContributeKnowledge Boolean @default(false)
   updatedAt                   DateTime @updatedAt
 }
