@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import { createAppointment } from "./actions";
 
-const inputCls = "rounded-md border border-black/15 px-3 py-1.5 text-sm";
+const inputCls =
+  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function AppointmentForm({
   cases,
@@ -15,13 +16,16 @@ export function AppointmentForm({
   const [state, formAction, pending] = useActionState(createAppointment, undefined);
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 bg-white p-4">
-      <label className="flex flex-1 min-w-[12rem] flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Titel</span>
+    <form
+      action={formAction}
+      className="flex flex-wrap items-end gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]"
+    >
+      <label className="flex flex-1 min-w-[12rem] flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Titel</span>
         <input name="title" required className={inputCls} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Fall/Klient (optional)</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Fall/Klient (optional)</span>
         <select name="caseId" className={inputCls}>
           <option value="">Kein Bezug</option>
           {cases.map((c) => (
@@ -31,38 +35,38 @@ export function AppointmentForm({
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Datum</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Datum</span>
         <input name="date" type="date" required defaultValue={defaultDate} className={inputCls} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Von</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Von</span>
         <input name="startTime" type="time" required className={inputCls} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Bis</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Bis</span>
         <input name="endTime" type="time" required className={inputCls} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Ort (optional)</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Ort (optional)</span>
         <input name="location" className={inputCls} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Erinnerung (Min. vorher)</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Erinnerung (Min. vorher)</span>
         <input name="reminderMinutesBefore" type="number" min="0" defaultValue={60} className={`${inputCls} w-24`} />
       </label>
-      <label className="flex flex-1 min-w-[12rem] flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Notiz (optional)</span>
+      <label className="flex flex-1 min-w-[12rem] flex-col gap-1.5">
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Notiz (optional)</span>
         <input name="note" className={inputCls} />
       </label>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-[var(--color-primary)] px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
       >
-        {pending ? "Speichern…" : "Termin anlegen"}
+        {pending ? "Speichern…" : "+ Termin anlegen"}
       </button>
-      {state?.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
+      {state?.error && <p className="w-full text-sm text-[var(--color-coral)]">{state.error}</p>}
     </form>
   );
 }

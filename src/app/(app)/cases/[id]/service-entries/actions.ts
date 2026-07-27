@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, canAccessCase } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 
-export type ActionState = { error?: string } | undefined;
+export type ActionState = { error?: string; success?: boolean } | undefined;
 
 function combineDateTime(dateStr: string, timeStr: string) {
   return new Date(`${dateStr}T${timeStr}:00`);
@@ -26,6 +26,7 @@ export async function createServiceEntry(_prev: ActionState, formData: FormData)
   const startTimeStr = String(formData.get("startTime") ?? "");
   const endTimeStr = String(formData.get("endTime") ?? "");
   const description = String(formData.get("description") ?? "").trim();
+  const activityProfileId = String(formData.get("activityProfileId") ?? "").trim() || null;
 
   if (!date || !startTimeStr || !endTimeStr || !description) {
     return { error: "Bitte alle Felder ausfüllen." };
@@ -42,12 +43,13 @@ export async function createServiceEntry(_prev: ActionState, formData: FormData)
   const user = await assertCaseAccess(caseId);
 
   await prisma.serviceEntry.create({
-    data: { caseId, employeeId: user.id, date: new Date(date), startTime, endTime, durationMinutes, description },
+    data: { caseId, employeeId: user.id, date: new Date(date), startTime, endTime, durationMinutes, description, activityProfileId },
   });
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "ServiceEntry", entityId: caseId });
   revalidatePath(`/cases/${caseId}/service-entries`);
   revalidatePath(`/cases/${caseId}`);
+  return { success: true };
 }
 
 export async function updateServiceEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -57,6 +59,7 @@ export async function updateServiceEntry(_prev: ActionState, formData: FormData)
   const startTimeStr = String(formData.get("startTime") ?? "");
   const endTimeStr = String(formData.get("endTime") ?? "");
   const description = String(formData.get("description") ?? "").trim();
+  const activityProfileId = String(formData.get("activityProfileId") ?? "").trim() || null;
 
   if (!date || !startTimeStr || !endTimeStr || !description) {
     return { error: "Bitte alle Felder ausfüllen." };
@@ -74,7 +77,7 @@ export async function updateServiceEntry(_prev: ActionState, formData: FormData)
 
   await prisma.serviceEntry.update({
     where: { id },
-    data: { date: new Date(date), startTime, endTime, durationMinutes, description },
+    data: { date: new Date(date), startTime, endTime, durationMinutes, description, activityProfileId },
   });
 
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "ServiceEntry", entityId: id });
@@ -88,4 +91,24 @@ export async function deleteServiceEntry(id: string, caseId: string) {
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "ServiceEntry", entityId: id, details: "Gelöscht" });
   revalidatePath(`/cases/${caseId}/service-entries`);
   revalidatePath(`/cases/${caseId}`);
+}
+
+export async function saveProcessNote(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const caseId = String(formData.get("caseId") ?? "");
+  const year = Number(formData.get("year") ?? 0);
+  const month = Number(formData.get("month") ?? 0);
+  const text = String(formData.get("text") ?? "").trim();
+
+  if (!year || !month) return { error: "Ungültiger Zeitraum." };
+
+  const user = await assertCaseAccess(caseId);
+
+  await prisma.monthlyProcessNote.upsert({
+    where: { caseId_year_month: { caseId, year, month } },
+    update: { text },
+    create: { caseId, year, month, text },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "MonthlyProcessNote", entityId: caseId, details: `${month}/${year}` });
+  revalidatePath(`/cases/${caseId}/service-entries`);
 }

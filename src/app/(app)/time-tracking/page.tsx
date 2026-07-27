@@ -33,7 +33,7 @@ export default async function TimeTrackingPage({
     user.role === "ADMIN" ? prisma.user.findMany({ where: { active: true }, orderBy: { name: "asc" } }) : Promise.resolve([]),
     prisma.case.findMany({
       where: { archived: false, OR: [{ assignedEmployeeId: viewedEmployeeId }, { substituteEmployeeId: viewedEmployeeId }] },
-      include: { client: true },
+      include: { client: true, helpType: true },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.timeEntry.findMany({
@@ -44,7 +44,7 @@ export default async function TimeTrackingPage({
     isSelf ? getRunningTimeEntry(user.id) : Promise.resolve(null),
   ]);
 
-  const caseOptions = viewedCases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.caseNumber})` }));
+  const caseOptions = viewedCases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.helpType.name})` }));
 
   const rows: TimeEntryRow[] = entries
     .filter((e) => e.endTime !== null || e.source === "MANUAL")
@@ -61,6 +61,11 @@ export default async function TimeTrackingPage({
   const byLabel = new Map<string, number>();
   for (const r of rows) byLabel.set(r.label, (byLabel.get(r.label) ?? 0) + r.durationHours);
 
+  const daysInPeriod = Math.round((to.getTime() - from.getTime()) / 86400000);
+  const weeksInPeriod = daysInPeriod / 7;
+  const avgPerWeek = weeksInPeriod > 0 ? totalHours / weeksInPeriod : 0;
+  const avgPerEntry = rows.length > 0 ? totalHours / rows.length : 0;
+
   const runningInfo = running
     ? {
         startTime: running.startTime!.toISOString(),
@@ -75,15 +80,19 @@ export default async function TimeTrackingPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text)]">Zeiterfassung</h1>
-          <p className="mt-1 text-sm text-black/60">Interne Arbeitszeit, getrennt von der Leistungsdokumentation fürs Jugendamt.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Zeiterfassung</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">Deine interne Arbeitszeit (für dich/die Praxisleitung, nicht fürs Jugendamt).</p>
         </div>
         {user.role === "ADMIN" && (
           <form method="get" className="flex items-center gap-2 text-sm">
-            <span className="text-black/60">Mitarbeiter:</span>
-            <select name="employeeId" defaultValue={viewedEmployeeId} className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+            <span className="text-[var(--color-text-muted)]">Mitarbeiter:</span>
+            <select
+              name="employeeId"
+              defaultValue={viewedEmployeeId}
+              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+            >
               <option value={user.id}>Ich ({user.name})</option>
               {employees
                 .filter((e) => e.id !== user.id)
@@ -93,40 +102,63 @@ export default async function TimeTrackingPage({
                   </option>
                 ))}
             </select>
-            <button type="submit" className="rounded-md border border-black/15 px-3 py-1.5 hover:bg-black/5">
+            <button
+              type="submit"
+              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+            >
               Anzeigen
             </button>
           </form>
         )}
       </div>
 
+      <p className="rounded-[var(--radius-control)] bg-[#fdf3dc] px-4 py-2.5 text-sm text-[#8a5a12]">
+        Für den <strong>Leistungsnachweis ans Jugendamt</strong> trägst du Einträge stattdessen im jeweiligen Fall unter „Leistungsdokumentation" ein.
+      </p>
+
       {isSelf && <TimerWidget cases={caseOptions} running={runningInfo} />}
       {isSelf && <ManualEntryForm cases={caseOptions} />}
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile value={`${totalHours.toFixed(1)}`} label="Std. diesen Monat" />
+        <StatTile value={`${rows.length}`} label="Einträge diesen Monat" />
+        <StatTile value={avgPerEntry.toFixed(2)} label="Ø Std. pro Eintrag" />
+        <StatTile value={avgPerWeek.toFixed(1)} label="Ø Std. pro Woche" />
+      </div>
+
       <div className="flex items-center justify-between">
         <MonthNav year={year} month={month} employeeId={user.role === "ADMIN" ? viewedEmployeeId : undefined} />
-        <p className="text-sm text-black/60">
+        <p className="text-sm text-[var(--color-text-muted)]">
           Gesamt: <span className="font-semibold text-[var(--color-text)]">{totalHours.toFixed(2)} Std.</span>
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="overflow-x-auto rounded-lg border border-black/10 bg-white lg:col-span-2">
+        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)] lg:col-span-2">
           <EntriesList entries={rows} canDelete={isSelf || user.role === "ADMIN"} />
         </div>
-        <div className="rounded-lg border border-black/10 bg-white p-5">
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Aufteilung</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {Array.from(byLabel.entries()).map(([label, hours]) => (
-              <li key={label} className="flex justify-between border-b border-black/5 py-1 last:border-0">
-                <span className="text-black/60">{label}</span>
-                <span>{hours.toFixed(2)} Std.</span>
+              <li key={label} className="flex justify-between border-b border-[var(--color-border)] py-1.5 last:border-0">
+                <span className="text-[var(--color-text-muted)]">{label}</span>
+                <span className="font-medium text-[var(--color-text)]">{hours.toFixed(2)} Std.</span>
               </li>
             ))}
-            {byLabel.size === 0 && <li className="text-black/40">Keine Daten.</li>}
+            {byLabel.size === 0 && <li className="text-[var(--color-text-muted)]">Keine Daten.</li>}
           </ul>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatTile({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className="text-[28px] leading-none font-bold text-[var(--color-text)]">{value}</div>
+      <div className="mt-1.5 text-sm font-semibold text-[var(--color-text)]">{label}</div>
     </div>
   );
 }
@@ -140,13 +172,19 @@ function MonthNav({ year, month, employeeId }: { year: number; month: number; em
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href={`/time-tracking?year=${prevYear}&month=${prevMonth}${empParam}`} className="rounded-md border border-black/15 px-2 py-1 hover:bg-black/5">
+      <Link
+        href={`/time-tracking?year=${prevYear}&month=${prevMonth}${empParam}`}
+        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+      >
         ← Vormonat
       </Link>
-      <span className="font-medium">
+      <span className="font-semibold text-[var(--color-text)]">
         {String(month).padStart(2, "0")}/{year}
       </span>
-      <Link href={`/time-tracking?year=${nextYear}&month=${nextMonth}${empParam}`} className="rounded-md border border-black/15 px-2 py-1 hover:bg-black/5">
+      <Link
+        href={`/time-tracking?year=${nextYear}&month=${nextMonth}${empParam}`}
+        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+      >
         Folgemonat →
       </Link>
     </div>

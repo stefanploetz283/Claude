@@ -7,7 +7,7 @@ export default async function NewMessagePage() {
 
   const [employees, cases] = await Promise.all([
     prisma.user.findMany({ where: { active: true, id: { not: user.id } }, orderBy: { name: "asc" } }),
-    prisma.case.findMany({ where: { archived: false, ...caseVisibilityWhere(user) }, include: { client: true }, orderBy: { updatedAt: "desc" } }),
+    prisma.case.findMany({ where: { archived: false, ...caseVisibilityWhere(user) }, include: { client: true, helpType: true }, orderBy: { updatedAt: "desc" } }),
   ]);
 
   return (
@@ -17,7 +17,7 @@ export default async function NewMessagePage() {
       </div>
       <ComposeForm
         employees={employees.map((e) => ({ id: e.id, name: e.name }))}
-        cases={cases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.caseNumber})` }))}
+        cases={cases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.helpType.name})` }))}
       />
     </div>
   );

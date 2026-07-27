@@ -16,7 +16,7 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const user = await requireUser();
 
-  const caseRecord = await prisma.case.findUnique({ where: { id }, include: { client: true } });
+  const caseRecord = await prisma.case.findUnique({ where: { id }, include: { client: true, helpType: true } });
   if (!caseRecord) notFound();
   if (!canAccessCase(user, caseRecord)) notFound();
 
@@ -41,7 +41,7 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
         <h1 className="text-xl font-semibold text-[var(--color-text)]">
           {caseRecord.client.lastName}, {caseRecord.client.firstName}
         </h1>
-        <p className="mt-1 text-sm text-black/60">{caseRecord.caseNumber}</p>
+        <p className="mt-1 text-sm text-black/60">{caseRecord.helpType.name}</p>
       </div>
 
       <CaseTabs caseId={id} />

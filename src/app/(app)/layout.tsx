@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import { Nav } from "@/components/nav";
+import { AppBody } from "@/components/app-body";
 import { IdleTimer } from "@/components/idle-timer";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -28,8 +29,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         unreadCount={unreadCount}
         logoUrl={settings.logoUrl ? "/api/settings/logo" : null}
         practiceName={settings.practiceName}
+        userName={user.name ?? user.email ?? "?"}
       />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">{children}</main>
+      <AppBody role={user.role}>{children}</AppBody>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />
     </div>
   );

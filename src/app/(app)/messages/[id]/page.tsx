@@ -12,7 +12,7 @@ export default async function MessageDetailPage({ params }: { params: Promise<{ 
     where: { id },
     include: {
       sender: true,
-      case: { include: { client: true } },
+      case: { include: { client: true, helpType: true } },
       recipients: { include: { recipient: true } },
     },
   });
@@ -28,7 +28,7 @@ export default async function MessageDetailPage({ params }: { params: Promise<{ 
 
   const [employees, cases] = await Promise.all([
     prisma.user.findMany({ where: { active: true, id: { not: user.id } }, orderBy: { name: "asc" } }),
-    prisma.case.findMany({ where: { archived: false, ...caseVisibilityWhere(user) }, include: { client: true }, orderBy: { updatedAt: "desc" } }),
+    prisma.case.findMany({ where: { archived: false, ...caseVisibilityWhere(user) }, include: { client: true, helpType: true }, orderBy: { updatedAt: "desc" } }),
   ]);
 
   return (
@@ -42,7 +42,7 @@ export default async function MessageDetailPage({ params }: { params: Promise<{ 
             </h1>
             <p className="mt-1 text-sm text-black/50">
               Von {message.sender.name} · {format(message.createdAt, "dd.MM.yyyy HH:mm")}
-              {message.case && ` · Fall: ${message.case.client.lastName}, ${message.case.client.firstName} (${message.case.caseNumber})`}
+              {message.case && ` · Fall: ${message.case.client.lastName}, ${message.case.client.firstName} (${message.case.helpType.name})`}
             </p>
             <p className="mt-1 text-xs text-black/40">
               An: {message.recipients.map((r) => r.recipient.name).join(", ")}
@@ -57,7 +57,7 @@ export default async function MessageDetailPage({ params }: { params: Promise<{ 
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Antworten</h2>
           <ComposeForm
             employees={employees.map((e) => ({ id: e.id, name: e.name }))}
-            cases={cases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.caseNumber})` }))}
+            cases={cases.map((c) => ({ id: c.id, label: `${c.client.lastName}, ${c.client.firstName} (${c.helpType.name})` }))}
             defaultRecipientId={message.senderId}
             defaultSubject={message.subject.startsWith("Re: ") ? message.subject : `Re: ${message.subject}`}
             defaultCaseId={message.caseId ?? undefined}

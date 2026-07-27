@@ -1,5 +1,6 @@
 import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import { toDateInputValue } from "@/lib/date";
 import { SelectAllCheckbox } from "./select-all";
 
 export default async function ReportsPage() {
@@ -12,8 +13,8 @@ export default async function ReportsPage() {
   });
 
   const now = new Date();
-  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const today = now.toISOString().slice(0, 10);
+  const firstOfMonth = toDateInputValue(new Date(now.getFullYear(), now.getMonth(), 1));
+  const today = toDateInputValue(now);
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,7 +34,7 @@ export default async function ReportsPage() {
               {cases.map((c) => (
                 <label key={c.id} className="flex items-center gap-2">
                   <input type="checkbox" name="caseIds" value={c.id} className="case-checkbox" />
-                  {c.client.lastName}, {c.client.firstName} ({c.caseNumber}) – {c.helpType.name}
+                  {c.client.lastName}, {c.client.firstName} – {c.helpType.name}
                 </label>
               ))}
               {cases.length === 0 && <p className="text-black/40">Keine Fälle vorhanden.</p>}

@@ -14,9 +14,21 @@ export async function requireAdmin(): Promise<Session["user"]> {
   return user;
 }
 
-/** Prisma-Where-Klausel: Mitarbeiter sehen nur eigene/vertretene Fälle, Admin sieht alle. */
+/** Admin oder Verwaltung - für Rechnungsstellung, Stundensatz, Fallanfragen. Fachkraft hat hier keinen Zugriff. */
+export async function requireAdminOrVerwaltung(): Promise<Session["user"]> {
+  const user = await requireUser();
+  if (user.role !== "ADMIN" && user.role !== "VERWALTUNG") redirect("/dashboard");
+  return user;
+}
+
+/**
+ * Prisma-Where-Klausel für fachliche Falldokumentation: Mitarbeiter sehen nur eigene/vertretene Fälle,
+ * Admin sieht alle. Verwaltung sieht hier bewusst NICHTS - sie sieht Fälle nur über den separaten,
+ * auf Abrechnungsdaten reduzierten Rechnungsbereich (kein Zugriff auf Bemerkungstexte/Dokumentation).
+ */
 export function caseVisibilityWhere(user: Session["user"]) {
   if (user.role === "ADMIN") return {};
+  if (user.role === "VERWALTUNG") return { id: { in: [] as string[] } };
   return {
     OR: [{ assignedEmployeeId: user.id }, { substituteEmployeeId: user.id }],
   };
@@ -27,5 +39,6 @@ export function canAccessCase(
   caseRecord: { assignedEmployeeId: string; substituteEmployeeId: string | null }
 ) {
   if (user.role === "ADMIN") return true;
+  if (user.role === "VERWALTUNG") return false;
   return caseRecord.assignedEmployeeId === user.id || caseRecord.substituteEmployeeId === user.id;
 }

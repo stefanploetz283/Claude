@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Rechnung</title>
+<style>
+
+  :root{
+    --deep-petrol:#173F28;
+    --sage-green:#4F8157;
+    --sand-gold:#E9B33B;
+    --anthracite:#2B2B2E;
+    --light-grey:#E5E5E5;
+    --off-white:#FBFAF7;
+    --white:#FFFFFF;
+  }
+
+  body{
+    background:var(--off-white);
+    font-family:'Inter', Arial, sans-serif;
+    color:var(--anthracite);
+    margin:0;
+  }
+
+  .page{
+    background:var(--off-white);
+    max-width:800px;
+    margin:0 auto;
+    padding:48px;
+  }
+
+  /* Header */
+  .doc-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:24px;
+  }
+  .doc-header .logo-text{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--deep-petrol);
+    line-height:1.4;
+  }
+
+  .doc-header .logo-img{
+    height:48px;
+    width:auto;
+  }
+  .doc-title{
+    font-family:'Spectral', Georgia, serif;
+    font-weight:700;
+    font-size:32px;
+    color:var(--anthracite);
+    margin:0 0 8px 0;
+  }
+  .doc-hairline{
+    border:none;
+    border-top:2px solid var(--deep-petrol);
+    margin:0 0 12px 0;
+  }
+  .doc-meta{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--anthracite);
+    margin-bottom:32px;
+  }
+  .doc-meta span{ margin-right:24px; }
+
+  /* Client & Assignment Data Block */
+  .data-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    margin-bottom:32px;
+  }
+  .data-block{
+    border:1px solid var(--light-grey);
+    padding:16px 24px;
+  }
+  .data-block .field-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--sage-green);
+    margin-bottom:4px;
+  }
+  .data-block .field-value{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:16px;
+    font-weight:600;
+    color:var(--anthracite);
+  }
+
+  /* Rechnungsnummer & Datum Zeile */
+  .rechnungs-meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    margin-bottom:32px;
+  }
+  .rechnungs-meta .info-block{
+    border:1px solid var(--light-grey);
+    padding:16px 24px;
+  }
+  .rechnungs-meta .field-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--sage-green);
+    margin-bottom:4px;
+  }
+  .rechnungs-meta .field-value{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:16px;
+    font-weight:600;
+    color:var(--anthracite);
+  }
+
+  /* Leistungstabelle */
+  table.leistungs-tabelle{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:8px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+  }
+  table.leistungs-tabelle thead tr{
+    background:var(--deep-petrol);
+  }
+  table.leistungs-tabelle thead th{
+    color:var(--white);
+    text-align:left;
+    padding:12px 16px;
+    font-weight:600;
+  }
+  table.leistungs-tabelle thead th.zahl{ text-align:right; }
+  table.leistungs-tabelle tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid var(--light-grey);
+    color:var(--anthracite);
+  }
+  table.leistungs-tabelle tbody td.zahl{ text-align:right; }
+
+  /* Summenblock */
+  .summen-block{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:16px;
+    margin-bottom:48px;
+  }
+  .summen-tabelle{
+    width:320px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+  }
+  .summen-tabelle .zeile{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+  }
+  .summen-tabelle .zeile.gesamt{
+    border-top:2px solid var(--deep-petrol);
+    margin-top:8px;
+    padding-top:12px;
+    font-weight:700;
+    font-size:18px;
+    color:var(--deep-petrol);
+  }
+
+  /* Hinweisbox */
+  .hinweisbox{
+    background:var(--light-grey);
+    border-left:4px solid var(--sand-gold);
+    padding:20px 24px;
+    margin-bottom:32px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+    color:var(--anthracite);
+  }
+
+  /* Signaturbereich */
+  .signatur-bereich{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    margin-top:48px;
+    padding-top:24px;
+  }
+  .signatur-linie{
+    border:none;
+    border-top:1px solid var(--anthracite);
+    margin-bottom:8px;
+  }
+  .signatur-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:13px;
+    color:#888;
+  }
+
+  /* Footer */
+  .doc-footer{
+    border-top:1px solid var(--deep-petrol);
+    padding-top:12px;
+    margin-top:64px;
+    display:flex;
+    justify-content:space-between;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:11px;
+    color:#8A8A8A;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <img class="logo-img" src="logo.svg" alt="Praxis für Systemische Entwicklung">
+  </div>
+  <h1 class="doc-title" data-field="dokument_titel">Rechnung</h1>
+  <hr class="doc-hairline">
+  <div class="doc-meta">
+    <span><strong>RECHNUNGSNUMMER:</strong> <span data-field="rechnungsnummer">2026-07-001</span></span>
+    <span><strong>RECHNUNGSDATUM:</strong> <span data-field="rechnungsdatum">23.07.2026</span></span>
+  </div>
+
+  <!-- Empfänger / Fall -->
+  <div class="data-grid">
+    <div class="data-block">
+      <div class="field-label">Kostenträger / Jugendamt</div>
+      <div class="field-value" data-field="kostentraeger">ASD Mitte, Frau Schmidt</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Fall / Klient</div>
+      <div class="field-value" data-field="fallname">Max Mustermann</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Adresse Kostenträger</div>
+      <div class="field-value" data-field="kostentraeger_adresse">Musterweg 12, 12345 Musterstadt</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Leistungszeitraum</div>
+      <div class="field-value" data-field="leistungszeitraum">01.07.–31.07.2026</div>
+    </div>
+  </div>
+
+  <!-- Leistungstabelle -->
+  <table class="leistungs-tabelle">
+    <thead>
+      <tr>
+        <th>Leistung</th>
+        <th class="zahl">Stunden</th>
+        <th class="zahl">Stundensatz</th>
+        <th class="zahl">Betrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-field="row1_leistung">Systemische Beratung</td>
+        <td class="zahl" data-field="row1_stunden">12,0</td>
+        <td class="zahl" data-field="row1_satz">45,00 €</td>
+        <td class="zahl" data-field="row1_betrag">540,00 €</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Summenblock -->
+  <div class="summen-block">
+    <div class="summen-tabelle">
+      <div class="zeile">
+        <span>Zwischensumme</span>
+        <span data-field="zwischensumme">540,00 €</span>
+      </div>
+      <div class="zeile gesamt">
+        <span>Endbetrag</span>
+        <span data-field="endbetrag">540,00 €</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hinweisbox -->
+  <div class="hinweisbox" data-field="hinweis_text">
+    Hinweis: Gegenüber dem Jugendamt besteht keine Beleg-Nachweispflicht (fester Stundensatz). Bitte Betrag innerhalb von 14 Tagen auf das angegebene Konto überweisen.
+  </div>
+
+  <!-- Signaturbereich -->
+  <div class="signatur-bereich">
+    <div>
+      <hr class="signatur-linie">
+      <div class="signatur-label">Fachkraft / Ausstellung</div>
+    </div>
+    <div>
+      <hr class="signatur-linie">
+      <div class="signatur-label">Datum</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <span>Praxis für Systemische Entwicklung · Bernsteinstraße 1, 93152 Nittendorf · Mobil: 0151 588 25 324</span>
+    <span data-field="seitenzahl">Seite 1 von 1</span>
+  </div>
+
+</div>
+
+</body>
+</html>

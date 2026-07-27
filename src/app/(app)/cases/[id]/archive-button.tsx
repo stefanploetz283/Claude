@@ -14,7 +14,7 @@ export function ArchiveCaseButton({ caseId }: { caseId: string }) {
           startTransition(() => archiveCase(caseId));
         }
       }}
-      className="rounded-md border border-[var(--color-danger)] px-4 py-1.5 text-sm font-medium text-[var(--color-danger)] hover:bg-[var(--color-danger)] hover:text-white disabled:opacity-50"
+      className="rounded-[var(--radius-control)] border border-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-[var(--color-coral)] transition hover:bg-[var(--color-coral)] hover:text-white disabled:opacity-50"
     >
       {pending ? "Wird archiviert…" : "Fall archivieren"}
     </button>

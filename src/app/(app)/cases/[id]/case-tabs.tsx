@@ -13,15 +13,17 @@ export function CaseTabs({ caseId }: { caseId: string }) {
   ];
 
   return (
-    <div className="flex gap-1 border-b border-black/10">
+    <div className="flex gap-1 border-b border-[var(--color-border)]">
       {tabs.map((t) => {
         const active = pathname === t.href;
         return (
           <Link
             key={t.href}
             href={t.href}
-            className={`px-3 py-2 text-sm ${
-              active ? "border-b-2 border-[var(--color-primary)] font-medium text-[var(--color-primary)]" : "text-black/60 hover:text-black"
+            className={`px-4 py-2.5 text-[13.5px] transition ${
+              active
+                ? "border-b-2 border-[var(--color-primary)] font-semibold text-[var(--color-primary)]"
+                : "font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             }`}
           >
             {t.label}

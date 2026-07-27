@@ -8,6 +8,7 @@ const ACTION_LABELS: Record<AccessAction, string> = {
   CREATE: "Erstellt",
   UPDATE: "Geändert",
   ARCHIVE: "Archiviert",
+  DELETE: "Gelöscht",
   EXPORT: "Exportiert",
   LOGIN: "Login",
   LOGIN_FAILED: "Login fehlgeschlagen",

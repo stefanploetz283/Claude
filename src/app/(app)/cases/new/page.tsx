@@ -1,14 +1,16 @@
 import { requireUser } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 import { NewCaseForm } from "./new-case-form";
 
 export default async function NewCasePage() {
   const user = await requireUser();
 
-  const [clients, employees, helpTypes] = await Promise.all([
+  const [clients, employees, helpTypes, settings] = await Promise.all([
     prisma.client.findMany({ where: { archived: false }, orderBy: { lastName: "asc" } }),
     prisma.user.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
     prisma.helpType.findMany({ where: { archived: false }, orderBy: { name: "asc" } }),
+    getSettings(),
   ]);
 
   return (
@@ -26,8 +28,15 @@ export default async function NewCasePage() {
           birthDate: c.birthDate ? c.birthDate.toISOString().slice(0, 10) : null,
         }))}
         employees={employees.map((e) => ({ id: e.id, name: e.name }))}
-        helpTypes={helpTypes.map((h) => ({ id: h.id, name: h.name }))}
+        helpTypes={helpTypes.map((h) => ({
+          id: h.id,
+          name: h.name,
+          defaultDurationWeeks: h.defaultDurationWeeks,
+          defaultTotalHoursMin: h.defaultTotalHoursMin?.toNumber() ?? null,
+          defaultTotalHoursMax: h.defaultTotalHoursMax?.toNumber() ?? null,
+        }))}
         defaultEmployeeId={user.id}
+        defaultPhaseOutWeeks={settings.defaultPhaseOutWeeks}
       />
     </div>
   );

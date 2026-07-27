@@ -37,6 +37,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# lokale Entwicklungsartefakte
+.s3rver-data/
+*.exe
+launcher/launcher.log
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

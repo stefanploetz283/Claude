@@ -17,10 +17,9 @@ export default async function LoginPage() {
       }
     >
       <div className="w-full max-w-sm rounded-xl border border-black/10 bg-white p-8 shadow-sm">
-        <div className="mb-6 flex flex-col items-center gap-2">
+        <div className="mb-6 flex flex-col items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={settings.logoUrl ? "/api/settings/logo" : "/logo.svg"} alt={settings.practiceName} className="h-14 w-14 rounded" />
-          <h1 className="text-lg font-semibold text-[var(--color-text)]">{settings.practiceName}</h1>
+          <img src={settings.logoUrl ? "/api/settings/logo" : "/logo.svg"} alt={settings.practiceName} className="h-24 w-auto object-contain" />
           <p className="text-sm text-black/60">Bitte melden Sie sich an</p>
         </div>
 

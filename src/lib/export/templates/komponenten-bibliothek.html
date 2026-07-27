@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Praxis App – Komponenten-Bibliothek</title>
+<style>
+
+  /* ============================================================
+     KOMPONENTEN-BIBLIOTHEK · Praxis für Systemische Entwicklung
+     Feste CSS-Werte – NICHT schätzen, NICHT interpretieren.
+     Jede Komponente ist ein fertiger Baustein zum Kopieren.
+     Claude Code: bitte Werte 1:1 übernehmen, nur Inhalte
+     über data-field-Attribute befüllen.
+     ============================================================ */
+
+  :root{
+    --deep-petrol:#173F28;
+    --sage-green:#4F8157;
+    --sand-gold:#E9B33B;
+    --anthracite:#2B2B2E;
+    --light-grey:#E5E5E5;
+    --off-white:#FBFAF7;
+    --white:#FFFFFF;
+  }
+
+  body{
+    background:#EDEBE5;
+    font-family:'Inter', Arial, sans-serif;
+    color:var(--anthracite);
+    margin:0;
+    padding:40px;
+  }
+
+  .page{
+    background:var(--off-white);
+    max-width:800px;
+    margin:0 auto 64px auto;
+    padding:48px;
+    border:1px solid var(--light-grey);
+  }
+
+  .label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#888;
+    margin-bottom:8px;
+  }
+
+  h2.komponente{
+    font-family:'Spectral', Georgia, serif;
+    font-size:20px;
+    color:var(--deep-petrol);
+    border-bottom:1px solid var(--light-grey);
+    padding-bottom:8px;
+    margin:48px 0 16px 0;
+  }
+
+  /* ============================================================
+     1. HEADER & FOOTER
+     ============================================================ */
+
+  .doc-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:24px;
+  }
+
+  .doc-header .logo-text{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--deep-petrol);
+    line-height:1.4;
+  }
+
+  .doc-header .logo-img{
+    height:48px;
+    width:auto;
+  }
+
+  .doc-title{
+    font-family:'Spectral', Georgia, serif;
+    font-weight:700;
+    font-size:32px;
+    color:var(--anthracite);
+    margin:0 0 8px 0;
+  }
+
+  .doc-hairline{
+    border:none;
+    border-top:2px solid var(--deep-petrol);
+    margin:0 0 12px 0;
+  }
+
+  .doc-meta{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--anthracite);
+    margin-bottom:32px;
+  }
+  .doc-meta span{ margin-right:24px; }
+
+  .doc-footer{
+    border-top:1px solid var(--deep-petrol);
+    padding-top:12px;
+    margin-top:64px;
+    display:flex;
+    justify-content:space-between;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:11px;
+    color:#8A8A8A;
+  }
+
+  /* ============================================================
+     2. CLIENT & ASSIGNMENT DATA BLOCK (2x2 Raster)
+     ============================================================ */
+
+  .data-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    margin-bottom:32px;
+  }
+
+  .data-block{
+    border:1px solid var(--light-grey);
+    padding:16px 24px;
+  }
+
+  .data-block .field-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--sage-green);
+    margin-bottom:4px;
+  }
+
+  .data-block .field-value{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:16px;
+    font-weight:600;
+    color:var(--anthracite);
+  }
+
+  /* ============================================================
+     3. INFORMATION BLOCK (einzeln)
+     ============================================================ */
+
+  .info-block{
+    border:1px solid var(--light-grey);
+    padding:16px 24px;
+    display:inline-block;
+    min-width:240px;
+  }
+  .info-block .field-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--sage-green);
+    margin-bottom:4px;
+  }
+  .info-block .field-value{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:18px;
+    font-weight:600;
+    color:var(--anthracite);
+  }
+
+  /* ============================================================
+     4. STANDARD-DOKUMENTATIONSTABELLE
+     ============================================================ */
+
+  table.doku-tabelle{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:32px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+  }
+  table.doku-tabelle thead tr{
+    background:var(--deep-petrol);
+  }
+  table.doku-tabelle thead th{
+    color:var(--white);
+    text-align:left;
+    padding:12px 16px;
+    font-weight:600;
+  }
+  table.doku-tabelle tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid var(--light-grey);
+    color:var(--anthracite);
+  }
+
+  /* ============================================================
+     5. FORMULARFELDER
+     ============================================================ */
+
+  .form-field{ margin-bottom:20px; }
+  .form-field label{
+    display:block;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:#888;
+    margin-bottom:6px;
+  }
+  .form-field input[type="text"],
+  .form-field input[type="date"],
+  .form-field select,
+  .form-field textarea{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid var(--anthracite);
+    padding:12px 16px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:15px;
+    color:var(--anthracite);
+    background:var(--white);
+  }
+  .form-field textarea{ min-height:100px; resize:vertical; }
+
+  .checkbox-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:15px;
+  }
+
+  /* ============================================================
+     6. SIGNATURBEREICH
+     ============================================================ */
+
+  .signatur-bereich{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    margin-top:64px;
+    padding-top:24px;
+  }
+  .signatur-linie{
+    border:none;
+    border-top:1px solid var(--anthracite);
+    margin-bottom:8px;
+  }
+  .signatur-label{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:13px;
+    color:#888;
+  }
+
+  /* ============================================================
+     7. HINWEISBOX (optional)
+     ============================================================ */
+
+  .hinweisbox{
+    background:var(--light-grey);
+    border-left:4px solid var(--sand-gold);
+    padding:20px 24px;
+    margin-bottom:32px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:15px;
+    color:var(--anthracite);
+  }
+
+  /* ============================================================
+     8. STATUS-LABEL (optional)
+     ============================================================ */
+
+  .status-label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--sage-green);
+    border-bottom:2px solid var(--sage-green);
+    padding-bottom:2px;
+  }
+  .status-label .dot{
+    width:10px;
+    height:10px;
+    background:var(--sage-green);
+  }
+
+  /* ============================================================
+     9. SEITENNUMMERIERUNG
+     ============================================================ */
+
+  .seitenzahl{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:11px;
+    color:#8A8A8A;
+  }
+
+  /* ============================================================
+     10a. LEISTUNGSTABELLE MIT BETRÄGEN (für Rechnungen)
+     ============================================================ */
+
+  table.leistungs-tabelle{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:8px;
+    font-family:'Inter', Arial, sans-serif;
+    font-size:14px;
+  }
+  table.leistungs-tabelle thead tr{ background:var(--deep-petrol); }
+  table.leistungs-tabelle thead th{
+    color:var(--white);
+    text-align:left;
+    padding:12px 16px;
+    font-weight:600;
+  }
+  table.leistungs-tabelle thead th.zahl{ text-align:right; }
+  table.leistungs-tabelle tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid var(--light-grey);
+    color:var(--anthracite);
+  }
+  table.leistungs-tabelle tbody td.zahl{ text-align:right; }
+
+  .summen-block{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:16px;
+    margin-bottom:48px;
+  }
+  .summen-tabelle{ width:320px; font-family:'Inter', Arial, sans-serif; font-size:14px; }
+  .summen-tabelle .zeile{ display:flex; justify-content:space-between; padding:8px 0; }
+  .summen-tabelle .zeile.gesamt{
+    border-top:2px solid var(--deep-petrol);
+    margin-top:8px;
+    padding-top:12px;
+    font-weight:700;
+    font-size:18px;
+    color:var(--deep-petrol);
+  }
+
+  /* ============================================================
+     10. FACHLICHE ZUSAMMENFASSUNG (Textabschnitt)
+     ============================================================ */
+
+  .fachliche-zusammenfassung h3{
+    font-family:'Spectral', Georgia, serif;
+    color:var(--deep-petrol);
+    font-size:20px;
+    margin-bottom:12px;
+  }
+  .fachliche-zusammenfassung p{
+    font-family:'Inter', Arial, sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    color:var(--anthracite);
+    margin-bottom:16px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <p class="label">Baustein 1 — Header, Titel, Meta-Zeile</p>
+  <div class="doc-header">
+    <img class="logo-img" src="logo.svg" alt="Praxis für Systemische Entwicklung">
+  </div>
+  <h1 class="doc-title" data-field="dokument_titel">Leistungsnachweis</h1>
+  <hr class="doc-hairline">
+  <div class="doc-meta">
+    <span><strong>MONAT:</strong> <span data-field="monat">Juli 2026</span></span>
+    <span><strong>BERICHTSZEITRAUM:</strong> <span data-field="zeitraum">01.07.–31.07.2026</span></span>
+  </div>
+
+  <h2 class="komponente">Baustein 2 — Client &amp; Assignment Data Block</h2>
+  <div class="data-grid">
+    <div class="data-block">
+      <div class="field-label">Klient</div>
+      <div class="field-value" data-field="klient_name">Max Mustermann</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Jugendamt</div>
+      <div class="field-value" data-field="jugendamt">ASD Mitte, Frau Schmidt</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Adresse</div>
+      <div class="field-value" data-field="klient_adresse">Musterweg 12, 12345 Musterstadt</div>
+    </div>
+    <div class="data-block">
+      <div class="field-label">Fachkraft</div>
+      <div class="field-value" data-field="fachkraft">Heike Klein, Systemische Therapeutin</div>
+    </div>
+  </div>
+
+  <h2 class="komponente">Baustein 3 — Information Block (einzeln)</h2>
+  <div class="info-block">
+    <div class="field-label">Klient</div>
+    <div class="field-value" data-field="klient_vorname">Max Mustermann</div>
+  </div>
+
+  <h2 class="komponente">Baustein 4 — Standard-Dokumentationstabelle</h2>
+  <table class="doku-tabelle">
+    <thead>
+      <tr><th>Datum</th><th>Uhrzeit</th><th>Stunden</th><th>Inhalt</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-field="row1_datum">05.11.2024</td>
+        <td data-field="row1_uhrzeit">09:00–10:00</td>
+        <td data-field="row1_dauer">1.0</td>
+        <td data-field="row1_inhalt">Einzelberatung, Erstgespräch</td>
+      </tr>
+      <tr>
+        <td data-field="row2_datum">07.11.2024</td>
+        <td data-field="row2_uhrzeit">14:00–15:30</td>
+        <td data-field="row2_dauer">1.5</td>
+        <td data-field="row2_inhalt">Workshop Systemgestaltung</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="komponente">Baustein 5 — Formularfelder</h2>
+  <div class="form-field">
+    <label>Vollständiger Name</label>
+    <input type="text" data-field="form_name" placeholder="Name eingeben">
+  </div>
+  <div class="form-field">
+    <label>Art der Hilfe</label>
+    <select data-field="form_art_der_hilfe">
+      <option>Bitte wählen</option>
+      <option>Einzelberatung</option>
+      <option>Systemische Therapie</option>
+    </select>
+  </div>
+  <div class="checkbox-field">
+    <input type="checkbox" data-field="form_bestaetigung">
+    <span>Angaben sind vollständig und korrekt</span>
+  </div>
+  <div class="form-field" style="margin-top:20px;">
+    <label>Datum</label>
+    <input type="date" data-field="form_datum">
+  </div>
+  <div class="form-field">
+    <label>Bemerkung</label>
+    <textarea data-field="form_bemerkung" placeholder="Freitext..."></textarea>
+  </div>
+
+  <h2 class="komponente">Baustein 5a — Leistungstabelle mit Beträgen &amp; Summenblock (Rechnungen)</h2>
+  <table class="leistungs-tabelle">
+    <thead>
+      <tr>
+        <th>Leistung</th>
+        <th class="zahl">Stunden</th>
+        <th class="zahl">Stundensatz</th>
+        <th class="zahl">Betrag</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-field="row1_leistung">Systemische Beratung</td>
+        <td class="zahl" data-field="row1_stunden">12,0</td>
+        <td class="zahl" data-field="row1_satz">45,00 €</td>
+        <td class="zahl" data-field="row1_betrag">540,00 €</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="summen-block">
+    <div class="summen-tabelle">
+      <div class="zeile">
+        <span>Zwischensumme</span>
+        <span data-field="zwischensumme">540,00 €</span>
+      </div>
+      <div class="zeile gesamt">
+        <span>Endbetrag</span>
+        <span data-field="endbetrag">540,00 €</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="komponente">Baustein 6 — Fachliche Zusammenfassung</h2>
+  <div class="fachliche-zusammenfassung">
+    <h3>Fachliche Zusammenfassung</h3>
+    <p data-field="zusammenfassung_text">Hier steht der zusammenfassende Fließtext zur fachlichen Einschätzung des Monats bzw. der Maßnahme.</p>
+  </div>
+
+  <h2 class="komponente">Baustein 7 — Hinweisbox (optional)</h2>
+  <div class="hinweisbox" data-field="hinweis_text">
+    Hinweis: Dieses Dokument enthält vertrauliche Informationen.
+  </div>
+
+  <h2 class="komponente">Baustein 8 — Status-Label (optional)</h2>
+  <div class="status-label">
+    <span class="dot"></span>
+    <span data-field="status_text">Status: Abgeschlossen</span>
+  </div>
+
+  <h2 class="komponente">Baustein 9 — Signaturbereich</h2>
+  <div class="signatur-bereich">
+    <div>
+      <hr class="signatur-linie">
+      <div class="signatur-label">Fachkraft</div>
+    </div>
+    <div>
+      <hr class="signatur-linie">
+      <div class="signatur-label">Datum</div>
+    </div>
+  </div>
+
+  <h2 class="komponente">Baustein 10 — Footer mit Seitenzahl</h2>
+  <div class="doc-footer">
+    <span>Praxis für Systemische Entwicklung · Bernsteinstraße 1, 93152 Nittendorf · Mobil: 0151 588 25 324</span>
+    <span class="seitenzahl" data-field="seitenzahl">Seite 1 von 1</span>
+  </div>
+
+</div>
+
+</body>
+</html>

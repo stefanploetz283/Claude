@@ -11,10 +11,10 @@ export async function buildBulkExcel(params: {
 
   const summary = workbook.addWorksheet("Übersicht");
   summary.columns = [
-    { header: "Aktenzeichen", key: "caseNumber", width: 18 },
     { header: "Klient", key: "clientName", width: 24 },
     { header: "Hilfeart", key: "helpTypeName", width: 24 },
-    { header: "Jugendamt/Auftraggeber", key: "authority", width: 28 },
+    { header: "ASD", key: "authority", width: 28 },
+    { header: "Fachkraft", key: "employeeName", width: 22 },
     { header: "Zeitraum", key: "period", width: 20 },
     { header: "Gesamtstunden", key: "totalHours", width: 16 },
     { header: "Einträge", key: "count", width: 10 },
@@ -24,10 +24,10 @@ export async function buildBulkExcel(params: {
   for (const section of params.sections) {
     const totalMinutes = section.entries.reduce((sum, e) => sum + e.durationMinutes, 0);
     summary.addRow({
-      caseNumber: section.caseInfo.caseNumber,
-      clientName: section.caseInfo.clientName,
+      clientName: `${section.caseInfo.clientLastName}, ${section.caseInfo.clientFirstName}`,
       helpTypeName: section.caseInfo.helpTypeName,
       authority: section.caseInfo.authority,
+      employeeName: section.caseInfo.assignedEmployeeName,
       period: params.periodLabel,
       totalHours: Number((totalMinutes / 60).toFixed(2)),
       count: section.entries.length,
@@ -36,7 +36,6 @@ export async function buildBulkExcel(params: {
 
   const details = workbook.addWorksheet("Einzeleinträge");
   details.columns = [
-    { header: "Aktenzeichen", key: "caseNumber", width: 18 },
     { header: "Klient", key: "clientName", width: 24 },
     { header: "Datum", key: "date", width: 14 },
     { header: "Von", key: "start", width: 10 },
@@ -50,8 +49,7 @@ export async function buildBulkExcel(params: {
   for (const section of params.sections) {
     for (const entry of section.entries) {
       details.addRow({
-        caseNumber: section.caseInfo.caseNumber,
-        clientName: section.caseInfo.clientName,
+        clientName: `${section.caseInfo.clientLastName}, ${section.caseInfo.clientFirstName}`,
         date: format(entry.date, "dd.MM.yyyy"),
         start: format(entry.startTime, "HH:mm"),
         end: format(entry.endTime, "HH:mm"),

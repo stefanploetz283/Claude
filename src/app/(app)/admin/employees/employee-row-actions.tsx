@@ -8,9 +8,9 @@ export function EmployeeRowActions({ id, active }: { id: string; active: boolean
   const [tempPassword, setTempPassword] = useState<string | null>(null);
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="flex flex-wrap items-center gap-3 text-sm">
       {tempPassword && (
-        <span className="rounded bg-amber-100 px-2 py-1 font-mono text-amber-800">
+        <span className="rounded-[var(--radius-control)] bg-[#fdf3dc] px-2 py-1 font-mono text-[#8a5a12]">
           Neues Passwort: {tempPassword}
         </span>
       )}
@@ -22,14 +22,14 @@ export function EmployeeRowActions({ id, active }: { id: string; active: boolean
             setTempPassword(result.tempPassword);
           })
         }
-        className="text-[var(--color-primary)] hover:underline disabled:opacity-50"
+        className="font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
       >
         Passwort zurücksetzen
       </button>
       <button
         disabled={pending}
         onClick={() => startTransition(() => setEmployeeActive(id, !active))}
-        className="text-[var(--color-primary)] hover:underline disabled:opacity-50"
+        className="font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
       >
         {active ? "Deaktivieren" : "Reaktivieren"}
       </button>

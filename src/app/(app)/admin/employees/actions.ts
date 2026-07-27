@@ -9,12 +9,15 @@ import { logAccess } from "@/lib/access-log";
 
 export type ActionState = { error?: string; success?: string; tempPassword?: string } | undefined;
 
+// Neue Fachkräfte werden standardmäßig nur für diese Hilfeart freigegeben (Kapazitätsplanung).
+const DEFAULT_ALLOWED_HELP_TYPE_NAME = "PROS Schule";
+
 export async function createEmployee(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").toLowerCase().trim();
-  const role = String(formData.get("role") ?? "EMPLOYEE") as "ADMIN" | "EMPLOYEE";
+  const role = String(formData.get("role") ?? "EMPLOYEE") as "ADMIN" | "EMPLOYEE" | "VERWALTUNG";
 
   if (!name || !email) {
     return { error: "Bitte Name und E-Mail angeben." };
@@ -28,14 +31,48 @@ export async function createEmployee(_prev: ActionState, formData: FormData): Pr
   const tempPassword = generateTempPassword();
   const passwordHash = await hashPassword(tempPassword);
 
+  // Neue Fachkräfte werden zunächst nur für "PROS Schule" freigegeben (Kapazitätsplanung) - weitere
+  // Hilfearten gibt der Admin danach manuell frei (Kapazität/Hilfearten-Bearbeitung unten auf der Seite).
+  const defaultHelpType =
+    role === "EMPLOYEE" ? await prisma.helpType.findUnique({ where: { name: DEFAULT_ALLOWED_HELP_TYPE_NAME } }) : null;
+
   const user = await prisma.user.create({
-    data: { name, email, role, passwordHash },
+    data: {
+      name,
+      email,
+      role,
+      passwordHash,
+      ...(defaultHelpType ? { allowedHelpTypes: { connect: { id: defaultHelpType.id } } } : {}),
+    },
   });
 
   await logAccess({ userId: admin.id, action: "CREATE", entityType: "User", entityId: user.id });
   revalidatePath("/admin/employees");
 
   return { success: `Mitarbeiter ${name} wurde angelegt.`, tempPassword };
+}
+
+export async function updateEmployeeCapacity(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const weeklyStr = String(formData.get("weeklyContractHours") ?? "").trim();
+  const allowedHelpTypeIds = formData.getAll("allowedHelpTypeIds").map(String);
+
+  const weeklyContractHours = weeklyStr ? Number(weeklyStr) : null;
+  if (weeklyStr && (!Number.isFinite(weeklyContractHours) || weeklyContractHours! < 0)) {
+    return { error: "Bitte gültige Vertragsstunden angeben." };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      weeklyContractHours,
+      allowedHelpTypes: { set: allowedHelpTypeIds.map((id) => ({ id })) },
+    },
+  });
+  await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: userId, details: "Kapazität/Hilfearten geändert" });
+  revalidatePath("/admin/employees");
+  return { success: "Gespeichert." };
 }
 
 export async function setEmployeeActive(userId: string, active: boolean) {

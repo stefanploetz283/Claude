@@ -39,14 +39,14 @@ export function TimerWidget({
 
   if (running) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-black/10 bg-white p-5">
+      <div className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
         <div>
-          <p className="text-xs font-medium text-black/50">Läuft seit {new Date(running.startTime).toLocaleTimeString("de-DE")}</p>
-          <p className="text-2xl font-semibold tabular-nums text-[var(--color-text)]">{elapsed}</p>
-          <p className="text-sm text-black/60">{running.caseLabel ?? ACTIVITY_LABELS[running.generalActivity ?? ""] ?? "–"}</p>
+          <p className="text-xs font-medium text-[var(--color-text-muted)]">Läuft seit {new Date(running.startTime).toLocaleTimeString("de-DE")}</p>
+          <p className="text-2xl font-bold tabular-nums text-[var(--color-primary)]">{elapsed}</p>
+          <p className="text-sm text-[var(--color-text-muted)]">{running.caseLabel ?? ACTIVITY_LABELS[running.generalActivity ?? ""] ?? "–"}</p>
         </div>
         <form action={() => stopTimer()}>
-          <button type="submit" className="rounded-md bg-[var(--color-danger)] px-5 py-2 text-sm font-medium text-white hover:opacity-90">
+          <button type="submit" className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:brightness-95">
             Stopp
           </button>
         </form>
@@ -55,9 +55,9 @@ export function TimerWidget({
   }
 
   return (
-    <form action={startAction} className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 bg-white p-5">
+    <form action={startAction} className="flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
       <div className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-black/60">Zuordnung</span>
+        <span className="text-xs font-medium text-[var(--color-text-muted)]">Zuordnung</span>
         <div className="flex gap-3 text-sm">
           <label className="flex items-center gap-1">
             <input type="radio" name="assignmentType" value="general" checked={assignmentType === "general"} onChange={() => setAssignmentType("general")} />
@@ -71,13 +71,13 @@ export function TimerWidget({
       </div>
 
       {assignmentType === "general" ? (
-        <select name="generalActivity" className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+        <select name="generalActivity" className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
           <option value="VERWALTUNG">Verwaltung</option>
           <option value="FAHRZEITEN">Fahrzeiten</option>
           <option value="SONSTIGES">Sonstiges</option>
         </select>
       ) : (
-        <select name="caseId" className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
+        <select name="caseId" className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
           {cases.map((c) => (
             <option key={c.id} value={c.id}>
               {c.label}
@@ -89,11 +89,11 @@ export function TimerWidget({
       <button
         type="submit"
         disabled={startPending}
-        className="rounded-md bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
       >
         {startPending ? "Start…" : "Start"}
       </button>
-      {startState?.error && <p className="w-full text-sm text-red-600">{startState.error}</p>}
+      {startState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{startState.error}</p>}
     </form>
   );
 }

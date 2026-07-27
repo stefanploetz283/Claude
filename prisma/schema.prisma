@@ -14,6 +14,7 @@ datasource db {
 enum Role {
   ADMIN
   EMPLOYEE
+  VERWALTUNG // Büro/Abrechnung (nicht zu verwechseln mit ActivityType.VERWALTUNG bei der Zeiterfassung)
 }
 
 model User {
@@ -41,9 +42,14 @@ model User {
   uploadedDocuments Document[]
   knowledgeItems    KnowledgeItem[]
   accessLogs        AccessLog[]
+  issuedInvoices    Invoice[]
+  createdWaitlistEntries WaitlistEntry[]
 
   sentMessages      Message[]
   messageRecipients MessageRecipient[]
+
+  weeklyContractHours Decimal?   @db.Decimal(5, 2) // Vertragsstunden/Woche, für Kapazitätsplanung
+  allowedHelpTypes    HelpType[] @relation("EmployeeAllowedHelpTypes") // welche Hilfearten diese Fachkraft bearbeiten darf
 
   @@index([role])
 }
@@ -57,7 +63,32 @@ model HelpType {
   archived    Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  cases       Case[]
+  // Referenzwerte für Fallanlage und Kapazitätsplanung (Stunden-Budget-Modell)
+  defaultDurationWeeks  Int?
+  defaultTotalHoursMin  Decimal? @db.Decimal(6, 2)
+  defaultTotalHoursMax  Decimal? @db.Decimal(6, 2)
+
+  cases            Case[]
+  activityProfiles HelpTypeActivityProfile[]
+  allowedForEmployees User[] @relation("EmployeeAllowedHelpTypes")
+  waitlistEntries  WaitlistEntry[]
+}
+
+// Wochenprofil einer Hilfeart: einzelne Tätigkeitskategorien mit Wochenstunden-Referenzwert.
+// Die Summe der hoursPerWeek-Werte ist die für die Kapazitätsplanung maßgebliche Wochenrate eines Falls.
+model HelpTypeActivityProfile {
+  id           String   @id @default(cuid())
+  helpType     HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId   String
+  activityLabel String  // z.B. "Einzelzeit Kind", "Telefonische Netzwerkarbeit"
+  hoursPerWeek Decimal? @db.Decimal(5, 2) // nullable, solange kein verlässlicher Wert bekannt (z.B. Netzwerkarbeit)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  serviceEntries ServiceEntry[]
+
+  @@index([helpTypeId])
 }
 
 model Client {
@@ -102,10 +133,14 @@ model Case {
   substituteEmployeeId String?
 
   hoursContingent      Decimal    @db.Decimal(7, 2)
+  contingentPeriodMonths Int?     // Zeitraum in Monaten, in dem das Kontingent aufgebraucht werden muss
 
   status               CaseStatus @default(ACTIVE)
   startDate            DateTime   @default(now())
   endDate              DateTime?
+
+  expectedEndDate      DateTime?  // voraussichtliches Enddatum für Kapazitätsplanung (separat vom Stundenkontingent-Zeitraum)
+  phaseOutWeeks        Int?       // optionale Auslaufphase: Wochenrate fällt in diesen letzten X Wochen linear auf 0
 
   helpPlanMeetingDate     DateTime? // Hilfeplangespräch
   extensionDeadline       DateTime? // Verlängerungsantrag Frist
@@ -121,11 +156,83 @@ model Case {
   appointments         Appointment[]
   documents            Document[]
   messages             Message[]
+  processNotes         MonthlyProcessNote[]
+  invoices             Invoice[]
+  waitlistOrigin       WaitlistEntry?
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
   @@index([status])
   @@index([helpTypeId])
+}
+
+// Rechnung ans Jugendamt/Kostenträger - fortlaufende, lückenlose Nummerierung pro Jahr (steuerrechtliche Anforderung)
+model Invoice {
+  id           String   @id @default(cuid())
+  case         Case     @relation(fields: [caseId], references: [id])
+  caseId       String
+
+  number       String   @unique // z.B. "2026-07-001"
+  year         Int
+  sequence     Int // fortlaufender Zähler innerhalb des Jahres
+
+  periodFrom   DateTime
+  periodTo     DateTime
+  hours        Decimal  @db.Decimal(7, 2)
+  hourlyRate   Decimal  @db.Decimal(7, 2)
+  totalAmount  Decimal  @db.Decimal(10, 2)
+
+  issuedBy     User     @relation(fields: [issuedById], references: [id])
+  issuedById   String
+  issuedAt     DateTime @default(now())
+
+  @@unique([caseId, periodFrom, periodTo])
+  @@unique([year, sequence])
+  @@index([caseId])
+}
+
+enum WaitlistStatus {
+  WAITING
+  CONVERTED // in einen festen Fall umgewandelt
+  CANCELLED // Anfrage zurückgezogen o.ä.
+}
+
+// Warteliste für Kapazitätsplanung: Anfragen, die noch keinem freien Platz zugeordnet werden konnten.
+model WaitlistEntry {
+  id          String   @id @default(cuid())
+  clientName  String // Name/Fall-Kennung der Anfrage
+  authority   String? // anfragendes Jugendamt, optional
+
+  helpType    HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId  String
+
+  requestedAt DateTime @default(now()) // Eingangsdatum - Basis für Wartezeit-Sortierung
+  urgencyNote String?
+
+  status        WaitlistStatus @default(WAITING)
+  matchedCase   Case?          @relation(fields: [matchedCaseId], references: [id])
+  matchedCaseId String?        @unique
+
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([helpTypeId])
+}
+
+model MonthlyProcessNote {
+  id        String   @id @default(cuid())
+  case      Case     @relation(fields: [caseId], references: [id])
+  caseId    String
+  year      Int
+  month     Int // 1-12
+  text      String
+  updatedAt DateTime @updatedAt
+
+  @@unique([caseId, year, month])
+  @@index([caseId])
 }
 
 model CaseStatusHistory {
@@ -157,6 +264,11 @@ model ServiceEntry {
   durationMinutes Int
 
   description   String
+
+  // Optionale Zuordnung zu einer Wochenprofil-Kategorie der Hilfeart (z.B. "Telefonische Netzwerkarbeit"),
+  // um über die Zeit echte Durchschnittswerte je Kategorie ableiten zu können. Nicht verpflichtend.
+  activityProfile   HelpTypeActivityProfile? @relation(fields: [activityProfileId], references: [id])
+  activityProfileId String?
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -332,6 +444,7 @@ enum AccessAction {
   CREATE
   UPDATE
   ARCHIVE
+  DELETE
   EXPORT
   LOGIN
   LOGIN_FAILED
@@ -357,11 +470,21 @@ model AccessLog {
 
 model Settings {
   id                          String  @id @default("singleton")
-  practiceName                String  @default("Sozialpädagogische Praxis")
+  practiceName                String  @default("Praxis für Systemische Entwicklung")
+  practiceAddress             String?
+  practicePhone                String?
+  practiceEmail                String?
   logoUrl                     String?
-  colorPrimary                String  @default("#1E3A5F")
-  colorAccentLight             String  @default("#EAF1F8")
-  colorTextDark                String  @default("#1A1A1A")
+  colorPrimary                String  @default("#1F5A36")
+  colorAccentLight             String  @default("#F8F7F3")
+  colorTextDark                String  @default("#24342C")
+  hourlyRate                  Decimal? @db.Decimal(7, 2) // Stundensatz für Rechnungen (Praxis-weit einheitlich)
+
+  // Kapazitätsplanung (Stunden-Budget-Modell)
+  billableCapacityFactor      Decimal @default(0.75) @db.Decimal(4, 2) // Anteil der Vertragsstunden, der abrechenbar eingeplant wird
+  defaultPhaseOutWeeks        Int     @default(5) // Vorbefüllung für Case.phaseOutWeeks
+  targetParallelCasesAtFullTime Int   @default(5) // Richtwert, keine harte Grenze
+
   contingentWarningThreshold  Int     @default(10) // Prozent
   sessionIdleTimeoutMinutes   Int     @default(20)
   employeesCanContributeKnowledge Boolean @default(false)
