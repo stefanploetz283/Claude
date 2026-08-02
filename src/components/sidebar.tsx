@@ -119,13 +119,6 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
           </svg>
         </QuickLink>
       </div>
-
-      <div className="relative mt-5 flex items-center gap-2 pl-1.5 text-[11.5px] font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 22c-6-2-9-6-9-12V5l9-3 9 3v5c0 6-3 10-9 12Z" />
-        </svg>
-        Systemisch · Pädagogisch · Beratend
-      </div>
     </aside>
   );
 }

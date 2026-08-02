@@ -151,7 +151,7 @@ export default async function DashboardPage({
 
       <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[var(--color-primary-soft)] text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+          <thead className="bg-[var(--color-sage)] text-xs font-semibold uppercase tracking-wide text-white">
             <tr>
               <th className="px-5 py-3">Klient</th>
               <th className="px-5 py-3">Hilfeart</th>
