@@ -54,7 +54,7 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
 
   return (
     <aside className="relative hidden min-h-[600px] overflow-hidden rounded-[32px] bg-[var(--color-primary)] p-[22px] lg:block">
-      <svg viewBox="0 0 288 560" preserveAspectRatio="xMidYMin slice" className="pointer-events-none absolute top-0 left-0 h-full w-full" aria-hidden="true">
+      <svg viewBox="0 0 288 560" preserveAspectRatio="xMidYMin slice" className="pointer-events-none absolute top-0 left-0 h-[560px] w-full" aria-hidden="true">
         <g style={{ isolation: "isolate" }}>
           <circle cx="70" cy="150" r="150" fill="var(--color-sage)" style={{ mixBlendMode: "multiply" }} />
           <circle cx="200" cy="300" r="140" fill="var(--color-gold)" style={{ mixBlendMode: "multiply" }} />
