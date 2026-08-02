@@ -51,6 +51,12 @@
     "typescript": "^5"
   },
   "allowScripts": {
-    "puppeteer@25.3.0": true
+    "puppeteer@25.3.0": true,
+    "esbuild@0.28.1": true,
+    "prisma@6.19.3": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true,
+    "@prisma/engines@6.19.3": true,
+    "@prisma/client@6.19.3": true
   }
 }
