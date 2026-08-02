@@ -9,41 +9,41 @@ function toBase64(fontPackage: string, filename: string): string {
 let cachedCss: string | null = null;
 
 /**
- * Selbstgehostete Inter/Spectral-Schriftschnitte als Base64-@font-face-Block, damit PDF-Dokumente
- * unabhängig von Internetzugriff und Systemschriften exakt wie im Design-Briefing spezifiziert rendern.
+ * Selbstgehostete Outfit-Schriftschnitte als Base64-@font-face-Block, damit PDF-Dokumente
+ * unabhängig von Internetzugriff und Systemschriften exakt wie im Corporate Design rendern.
  */
 export function getEmbeddedFontsCss(): string {
   if (cachedCss) return cachedCss;
 
-  const interRegular = toBase64("inter", "inter-latin-400-normal.woff2");
-  const interSemiBold = toBase64("inter", "inter-latin-600-normal.woff2");
-  const spectralSemiBold = toBase64("spectral", "spectral-latin-600-normal.woff2");
-  const spectralBold = toBase64("spectral", "spectral-latin-700-normal.woff2");
+  const regular = toBase64("outfit", "outfit-latin-400-normal.woff2");
+  const medium = toBase64("outfit", "outfit-latin-500-normal.woff2");
+  const semiBold = toBase64("outfit", "outfit-latin-600-normal.woff2");
+  const bold = toBase64("outfit", "outfit-latin-700-normal.woff2");
 
   cachedCss = `
     @font-face {
-      font-family: 'Inter';
+      font-family: 'Outfit';
       font-weight: 400;
       font-style: normal;
-      src: url(data:font/woff2;base64,${interRegular}) format('woff2');
+      src: url(data:font/woff2;base64,${regular}) format('woff2');
     }
     @font-face {
-      font-family: 'Inter';
+      font-family: 'Outfit';
+      font-weight: 500;
+      font-style: normal;
+      src: url(data:font/woff2;base64,${medium}) format('woff2');
+    }
+    @font-face {
+      font-family: 'Outfit';
       font-weight: 600;
       font-style: normal;
-      src: url(data:font/woff2;base64,${interSemiBold}) format('woff2');
+      src: url(data:font/woff2;base64,${semiBold}) format('woff2');
     }
     @font-face {
-      font-family: 'Spectral';
-      font-weight: 600;
-      font-style: normal;
-      src: url(data:font/woff2;base64,${spectralSemiBold}) format('woff2');
-    }
-    @font-face {
-      font-family: 'Spectral';
+      font-family: 'Outfit';
       font-weight: 700;
       font-style: normal;
-      src: url(data:font/woff2;base64,${spectralBold}) format('woff2');
+      src: url(data:font/woff2;base64,${bold}) format('woff2');
     }
   `;
   return cachedCss;

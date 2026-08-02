@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: "Fallverwaltung",
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className={`h-full antialiased ${inter.variable}`}>
+    <html lang="de" className={`h-full antialiased ${outfit.variable}`}>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>

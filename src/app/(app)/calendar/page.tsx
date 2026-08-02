@@ -79,7 +79,7 @@ export default async function CalendarPage({
       </div>
 
       {dueReminders.length > 0 && (
-        <div className="rounded-[var(--radius-card)] border border-[#f4b83f]/40 bg-[#fdf3dc] p-4 text-sm text-[#8a5a12]">
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-gold)]/40 bg-[var(--color-warn-soft)] p-4 text-sm text-[var(--color-warn-text)]">
           <p className="mb-1 font-semibold">Bevorstehende Termine:</p>
           {dueReminders.map((a) => (
             <div key={a.id}>

@@ -112,7 +112,7 @@ export default async function TimeTrackingPage({
         )}
       </div>
 
-      <p className="rounded-[var(--radius-control)] bg-[#fdf3dc] px-4 py-2.5 text-sm text-[#8a5a12]">
+      <p className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-4 py-2.5 text-sm text-[var(--color-warn-text)]">
         Für den <strong>Leistungsnachweis ans Jugendamt</strong> trägst du Einträge stattdessen im jeweiligen Fall unter „Leistungsdokumentation" ein.
       </p>
 

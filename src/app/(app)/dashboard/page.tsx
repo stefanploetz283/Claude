@@ -144,9 +144,9 @@ export default async function DashboardPage({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<StatFaelleIcon />} color="var(--color-primary)" bg="var(--color-primary-soft)" value={totalOpen} label="Gesamtfälle" sub="Alle aktiven Fälle" />
-        <StatCard icon={<StatActiveIcon />} color="#c08a1b" bg="#fdf3dc" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
-        <StatCard icon={<StatDoneIcon />} color="var(--color-orange)" bg="#fdecd9" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
-        <StatCard icon={<StatArchiveIcon />} color="var(--color-coral)" bg="#f9e3dc" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
+        <StatCard icon={<StatActiveIcon />} color="var(--color-warn-text)" bg="var(--color-warn-soft)" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
+        <StatCard icon={<StatDoneIcon />} color="var(--color-gold)" bg="var(--color-gold-soft)" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
+        <StatCard icon={<StatArchiveIcon />} color="var(--color-coral)" bg="var(--color-coral-soft)" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
       </div>
 
       <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
@@ -225,7 +225,7 @@ function FilterField({ label, children }: { label: string; children: React.React
 function StatusBadge({ status }: { status: CaseStatus }) {
   const colors: Record<CaseStatus, string> = {
     ACTIVE: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-    PAUSED: "bg-[#fdf1dc] text-[#8a5a12]",
+    PAUSED: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
     COMPLETED: "bg-[var(--color-border)] text-[var(--color-text-muted)]",
   };
   return <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${colors[status]}`}>{STATUS_LABELS[status]}</span>;

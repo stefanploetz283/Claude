@@ -1,0 +1,12 @@
+<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g style="isolation:isolate">
+    <circle cx="238" cy="252" r="150" fill="#204D4B" style="mix-blend-mode:multiply"></circle>
+    <circle cx="132" cy="300" r="92" fill="#9FA47E" style="mix-blend-mode:multiply"></circle>
+    <circle cx="300" cy="150" r="58" fill="#D2AD69" style="mix-blend-mode:multiply"></circle>
+  </g>
+  <g fill="none" stroke="#F5F0E8" stroke-width="3" opacity="0.92">
+    <circle cx="238" cy="252" r="150"></circle>
+    <circle cx="132" cy="300" r="92"></circle>
+    <circle cx="300" cy="150" r="58"></circle>
+  </g>
+</svg>

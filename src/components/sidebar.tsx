@@ -50,11 +50,15 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
   return (
     <aside className="relative hidden min-h-[600px] lg:block">
       <div className="pointer-events-none absolute -inset-x-8 -top-6 h-[480px] overflow-hidden rounded-[32px]">
-        <svg viewBox="0 0 320 480" preserveAspectRatio="xMidYMin slice" className="absolute top-0 left-0 h-full w-full">
-          <circle cx="60" cy="60" r="130" fill="var(--color-green-medium)" opacity="0.5" />
-          <circle cx="220" cy="120" r="150" fill="var(--color-yellow)" opacity="0.55" />
-          <circle cx="140" cy="300" r="170" fill="var(--color-coral)" opacity="0.45" />
-          <circle cx="30" cy="330" r="120" fill="var(--color-orange)" opacity="0.4" />
+        <svg viewBox="0 0 288 560" preserveAspectRatio="xMidYMin slice" className="absolute top-0 left-0 h-full w-full">
+          <g style={{ isolation: "isolate" }}>
+            <circle cx="70" cy="150" r="150" fill="var(--color-sage)" style={{ mixBlendMode: "multiply" }} />
+            <circle cx="200" cy="300" r="140" fill="var(--color-gold)" style={{ mixBlendMode: "multiply" }} />
+          </g>
+          <g fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.6">
+            <circle cx="70" cy="150" r="150" />
+            <circle cx="200" cy="300" r="140" />
+          </g>
         </svg>
       </div>
 
@@ -100,7 +104,7 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
           </svg>
         </QuickLink>
 
-        <QuickLink href="/calendar" color="var(--color-orange)" softColor="#fdecd9" label="Kalender öffnen">
+        <QuickLink href="/calendar" color="var(--color-gold)" softColor="var(--color-warn-soft)" label="Kalender öffnen">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="5" width="18" height="16" rx="2" />
             <line x1="3" y1="10" x2="21" y2="10" />
@@ -109,7 +113,7 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
           </svg>
         </QuickLink>
 
-        <QuickLink href="/knowledge-base" color="var(--color-coral)" softColor="#f9e3dc" label="Fachbox öffnen">
+        <QuickLink href="/knowledge-base" color="var(--color-coral)" softColor="var(--color-coral-soft)" label="Fachbox öffnen">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 19V6a2 2 0 0 1 2-2h6l2 3h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
           </svg>

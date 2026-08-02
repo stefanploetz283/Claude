@@ -35,7 +35,7 @@ export function EntryRow({
 
   if (editing) {
     return (
-      <tr className="border-t border-[var(--color-border)] bg-[#fdf3dc]/40">
+      <tr className="border-t border-[var(--color-border)] bg-[var(--color-warn-soft)]/40">
         <td colSpan={5} className="px-5 py-3.5">
           <form
             action={async (fd) => {

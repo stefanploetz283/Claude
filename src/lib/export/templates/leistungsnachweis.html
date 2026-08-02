@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Leistungsnachweis</title>
+<style>
+  :root{
+    --petrol:#204D4B;
+    --sage:#9FA47E;
+    --gold:#D2AD69;
+    --cream:#F5F0E8;
+    --cream-2:#EFE8DB;
+    --ink:#2E3330;
+    --ink-soft:#5C635E;
+    --line:#E2D9C8;
+  }
+  *{box-sizing:border-box}
+  html,body{ margin:0; padding:0; }
+  body{ background:var(--cream); font-family:'Outfit', Arial, sans-serif; color:var(--ink); }
+
+  .case-section{ position:relative; width:794px; margin:0 auto; padding:56px 64px 90px; }
+  .case-section + .case-section{ break-before:page; }
+
+  .logo-img{ width:230px; display:block; }
+  .logorule{ height:1.5px; background:var(--gold); width:100%; margin:18px 0 0; }
+  h1.doc{ font-weight:700; color:var(--petrol); font-size:30px; margin:40px 0 0; letter-spacing:0.01em; }
+  .sub{ font-size:13px; color:var(--ink-soft); margin-top:6px; }
+
+  .cards{ display:flex; gap:16px; margin-top:26px; }
+  .card{ flex:1; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .card b{ display:block; font-weight:600; color:var(--petrol); margin-bottom:8px; font-size:13px; }
+  .card .row{ font-size:12.5px; line-height:1.9; }
+  .card .row span:first-child{ color:var(--petrol); display:inline-block; width:78px; }
+
+  .infoboxes{ display:flex; gap:16px; margin-top:16px; }
+  .infobox{ flex:1; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .infobox .l{ font-size:11px; color:var(--ink-soft); }
+  .infobox .v{ font-weight:600; font-size:13.5px; color:var(--ink); margin-top:6px; }
+
+  table{ width:100%; border-collapse:collapse; margin-top:26px; font-size:12.5px; }
+  thead{ display:table-header-group; }
+  thead td{ background:var(--sage); color:#fff; font-weight:600; font-size:11px; letter-spacing:0.05em; padding:11px 12px; }
+  tbody td{ padding:11px 12px; border-bottom:1px solid var(--line); }
+  tbody tr{ break-inside:avoid; }
+  tbody tr:nth-child(even){ background:var(--cream-2); }
+
+  .prozess{ margin-top:20px; border:1px solid var(--line); border-radius:10px; padding:16px 18px; break-inside:avoid; }
+  .prozess b{ display:block; font-weight:600; color:var(--petrol); margin-bottom:8px; font-size:13px; }
+  .prozess .text{ font-size:12.5px; line-height:1.6; white-space:pre-wrap; }
+
+  .tail{ display:flex; gap:16px; margin-top:20px; break-inside:avoid; }
+  .sumbox{ flex:0 0 220px; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .sumbox .l{ font-size:11px; color:var(--ink-soft); }
+  .sumbox .v{ font-weight:700; font-size:24px; color:var(--petrol); margin-top:6px; }
+  .signbox{ flex:1; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .signbox .l{ font-size:11px; color:var(--ink-soft); margin-bottom:22px; }
+  .signline{ border-top:1px solid var(--ink-soft); padding-top:6px; font-size:11px; color:var(--ink-soft); margin-bottom:18px; }
+
+  .ifoot{ position:fixed; left:64px; right:64px; bottom:24px; text-align:center; font-size:11px; line-height:1.9; color:#8a8578; border-top:1.5px solid var(--gold); padding-top:14px; }
+  .ifoot p{ margin:0; }
+  .ifoot b{ font-weight:600; color:var(--petrol); }
+</style>
+</head>
+<body>
+<div data-html-field="sections"></div>
+<div class="ifoot">
+  <p><b>Adresse</b> Bernsteinstraße 1, 93152 Nittendorf&nbsp;&nbsp;·&nbsp;&nbsp;<b>Steuernummer</b> 235/258/80303</p>
+  <p><b>Website</b> www.stefanploetz.de&nbsp;&nbsp;·&nbsp;&nbsp;<b>Bank</b> FINOM&nbsp;&nbsp;·&nbsp;&nbsp;<b>SWIFT/BIC</b> FNOMDEB2&nbsp;&nbsp;·&nbsp;&nbsp;<b>IBAN</b> DE58 1001 8000 0100 4975 04</p>
+</div>
+</body>
+</html>

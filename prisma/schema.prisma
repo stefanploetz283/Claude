@@ -475,9 +475,9 @@ model Settings {
   practicePhone                String?
   practiceEmail                String?
   logoUrl                     String?
-  colorPrimary                String  @default("#1F5A36")
-  colorAccentLight             String  @default("#F8F7F3")
-  colorTextDark                String  @default("#24342C")
+  colorPrimary                String  @default("#204D4B")
+  colorAccentLight             String  @default("#F5F0E8")
+  colorTextDark                String  @default("#2E3330")
   hourlyRate                  Decimal? @db.Decimal(7, 2) // Stundensatz für Rechnungen (Praxis-weit einheitlich)
 
   // Kapazitätsplanung (Stunden-Budget-Modell)

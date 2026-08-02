@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Visitenkarte — Stefan Plötz</title>
+<style>
+  :root{
+    --petrol:#204D4B;
+    --gold:#D2AD69;
+    --cream:#F5F0E8;
+    --ink:#2E3330;
+    --ink-soft:#5C635E;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Outfit', Arial, sans-serif;
+    color:var(--ink);
+    background:#c9c4ba;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:32px;
+    padding:36px;
+  }
+  .bc{ width:510px; height:330px; position:relative; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,.18); }
+  .front{ background:var(--cream); padding:38px; }
+  .name{ font-weight:700; color:var(--petrol); font-size:17px; margin-top:26px; }
+  .role{ font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin-top:6px; }
+  .divline{ height:1.5px; background:var(--gold); width:120px; margin:20px 0; }
+  .back{ background:var(--petrol); padding:38px; color:#F4EFE6; }
+  .backrule{ height:1.5px; background:var(--gold); width:100%; margin-bottom:26px; }
+  .bline{ font-size:12.5px; line-height:1.5; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="bc front">
+  <img src="assets/logo-lockup.png" alt="Praxis für Systemische Entwicklung" style="width:240px;display:block">
+  <div class="name">Stefan Plötz</div>
+  <div class="role">Systemischer Berater &amp; Pädagoge<br>staatl. anerkannter Heilerziehungspfleger (B.A. Professional)</div>
+  <div class="divline"></div>
+</div>
+<div class="bc back">
+  <div class="backrule"></div>
+  <div class="bline">Bernsteinstraße 1, 93152 Nittendorf</div>
+  <div class="bline">0151 588 25 324</div>
+  <div class="bline">info@systemisch-entwicklung.de</div>
+  <div class="bline">www.stefanploetz.de</div>
+</div>
+</body>
+</html>

@@ -24,8 +24,8 @@ export default async function EmployeesPage() {
 
   const ROLE_LABELS: Record<string, string> = { ADMIN: "Admin", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" };
 
-  const palette = ["#1F5A36", "#ED9438", "#D65A3A", "#4F845F"];
-  const softPalette = ["var(--color-primary-soft)", "#fdecd9", "#f9e3dc", "var(--color-primary-soft)"];
+  const palette = ["var(--color-primary)", "var(--color-gold)", "var(--color-coral)", "var(--color-sage)"];
+  const softPalette = ["var(--color-primary-soft)", "var(--color-gold-soft)", "var(--color-coral-soft)", "var(--color-primary-soft)"];
 
   return (
     <div className="flex flex-col gap-6">

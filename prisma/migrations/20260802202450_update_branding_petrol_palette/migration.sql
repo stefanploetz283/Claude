@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Settings" ALTER COLUMN "colorPrimary" SET DEFAULT '#204D4B',
+ALTER COLUMN "colorAccentLight" SET DEFAULT '#F5F0E8',
+ALTER COLUMN "colorTextDark" SET DEFAULT '#2E3330';

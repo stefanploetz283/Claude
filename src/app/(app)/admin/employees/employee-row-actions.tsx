@@ -10,7 +10,7 @@ export function EmployeeRowActions({ id, active }: { id: string; active: boolean
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
       {tempPassword && (
-        <span className="rounded-[var(--radius-control)] bg-[#fdf3dc] px-2 py-1 font-mono text-[#8a5a12]">
+        <span className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-2 py-1 font-mono text-[var(--color-warn-text)]">
           Neues Passwort: {tempPassword}
         </span>
       )}

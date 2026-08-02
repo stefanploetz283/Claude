@@ -15,7 +15,7 @@ import { de } from "date-fns/locale";
 const STATUS_LABELS: Record<string, string> = { ACTIVE: "Aktiv", PAUSED: "Pausiert", COMPLETED: "Abgeschlossen" };
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-  PAUSED: "bg-[#fdf1dc] text-[#8a5a12]",
+  PAUSED: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
   COMPLETED: "bg-[var(--color-border)] text-[var(--color-text-muted)]",
 };
 
@@ -91,7 +91,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
       <CaseTabs caseId={caseRecord.id} />
 
       {deadlineWarnings.length > 0 && (
-        <div className="rounded-[var(--radius-card)] border border-[#f4b83f]/40 bg-[#fdf3dc] p-4 text-sm text-[#8a5a12]">
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-gold)]/40 bg-[var(--color-warn-soft)] p-4 text-sm text-[var(--color-warn-text)]">
           {deadlineWarnings.map((w) => (
             <div key={w.label}>
               ⚠ {w.label}: {format(w.date, "dd.MM.yyyy", { locale: de })}

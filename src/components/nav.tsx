@@ -137,7 +137,7 @@ export function Nav({
       <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-7 px-5 py-2.5">
         <Link href="/dashboard" className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoUrl ?? "/logo.svg"} alt={practiceName} className="h-14 w-auto object-contain" />
+          <img src={logoUrl ?? "/logo-lockup.png"} alt={practiceName} className="h-14 w-auto object-contain" />
         </Link>
 
         <nav className="flex flex-1 flex-wrap items-center gap-0.5">
@@ -188,10 +188,7 @@ export function Nav({
           </button>
         </div>
       </div>
-      <div
-        className="h-[3px] w-full"
-        style={{ background: "linear-gradient(to right, var(--color-primary), var(--color-yellow), var(--color-orange), var(--color-coral))" }}
-      />
+      <div className="h-[1.5px] w-full bg-[var(--color-gold)]" />
     </header>
   );
 }
