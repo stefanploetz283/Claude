@@ -59,7 +59,7 @@ export function Nav({
   const rowTwo = isVerwaltung ? [] : role === "ADMIN" ? [...ROW2_EMPLOYEE_ITEMS, ...ROW2_ADMIN_EXTRA] : ROW2_EMPLOYEE_ITEMS;
 
   const tabCls = (active: boolean) =>
-    `flex items-center whitespace-nowrap border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
+    `flex min-w-0 items-center overflow-visible border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
       active
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
