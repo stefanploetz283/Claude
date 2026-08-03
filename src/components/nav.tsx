@@ -54,8 +54,9 @@ export function Nav({
   userName: string;
 }) {
   const pathname = usePathname();
-  const rowOne = role === "VERWALTUNG" ? VERWALTUNG_ITEMS : ROW1_ITEMS;
-  const rowTwo = role === "VERWALTUNG" ? [] : role === "ADMIN" ? [...ROW2_EMPLOYEE_ITEMS, ...ROW2_ADMIN_EXTRA] : ROW2_EMPLOYEE_ITEMS;
+  const isVerwaltung = role === "VERWALTUNG";
+  const rowOne = isVerwaltung ? VERWALTUNG_ITEMS : ROW1_ITEMS;
+  const rowTwo = isVerwaltung ? [] : role === "ADMIN" ? [...ROW2_EMPLOYEE_ITEMS, ...ROW2_ADMIN_EXTRA] : ROW2_EMPLOYEE_ITEMS;
 
   const tabCls = (active: boolean) =>
     `flex items-center whitespace-nowrap border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
@@ -63,6 +64,10 @@ export function Nav({
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
     }`;
+  // Row1/Row2 haben je 6 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
+  // damit gleichnamige Spalten zeilenübergreifend exakt untereinanderstehen, unabhängig
+  // von der Textlänge. Verwaltung hat ein eigenes, kleineres Set ohne zweite Zeile.
+  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-6 items-stretch";
 
   return (
     <header className="sticky top-0 z-40 flex items-stretch bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
@@ -76,7 +81,7 @@ export function Nav({
       <div className="min-w-0 flex-1 px-6 py-5">
       <div className="mx-auto flex max-w-[1112px] min-w-0 flex-wrap items-center gap-[22px]">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <nav className="flex flex-wrap items-stretch justify-between gap-0 border-b border-[var(--color-border)]">
+          <nav className={`${rowGridCls} border-b border-[var(--color-border)]`}>
             {rowOne.map((item) => (
               <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
                 {item.label}
@@ -84,7 +89,7 @@ export function Nav({
             ))}
           </nav>
           {rowTwo.length > 0 && (
-            <nav className="flex flex-wrap items-stretch justify-start gap-0">
+            <nav className={rowGridCls}>
               {rowTwo.map((item) => (
                 <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
                   {item.label}
