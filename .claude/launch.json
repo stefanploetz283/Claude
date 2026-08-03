@@ -6,6 +6,11 @@
       "runtimeExecutable": "C:\\Users\\User 1\\Desktop\\pros verwaltung (claude)\\.claude\\run-dev.bat",
       "runtimeArgs": [],
       "port": 3000
+    },
+    {
+      "name": "design-ref",
+      "url": "http://localhost:4173",
+      "port": 4173
     }
   ]
 }

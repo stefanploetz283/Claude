@@ -143,10 +143,10 @@ export default async function DashboardPage({
       </form>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<StatFaelleIcon />} color="var(--color-primary)" bg="var(--color-primary-soft)" value={totalOpen} label="Gesamtfälle" sub="Alle aktiven Fälle" />
-        <StatCard icon={<StatActiveIcon />} color="var(--color-warn-text)" bg="var(--color-warn-soft)" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
-        <StatCard icon={<StatDoneIcon />} color="var(--color-gold)" bg="var(--color-gold-soft)" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
-        <StatCard icon={<StatArchiveIcon />} color="var(--color-coral)" bg="var(--color-coral-soft)" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
+        <StatCard icon={<StatFaelleIcon />} color="#204D4B" bg="#204D4B1f" value={totalOpen} label="Gesamtfälle" sub="Alle aktiven Fälle" />
+        <StatCard icon={<StatActiveIcon />} color="#9FA47E" bg="#9FA47E1f" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
+        <StatCard icon={<StatDoneIcon />} color="#D2AD69" bg="#D2AD691f" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
+        <StatCard icon={<StatArchiveIcon />} color="#5C635E" bg="#5C635E1f" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
       </div>
 
       <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
@@ -224,9 +224,9 @@ function FilterField({ label, children }: { label: string; children: React.React
 
 function StatusBadge({ status }: { status: CaseStatus }) {
   const colors: Record<CaseStatus, string> = {
-    ACTIVE: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-    PAUSED: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
-    COMPLETED: "bg-[var(--color-border)] text-[var(--color-text-muted)]",
+    ACTIVE: "bg-[#9FA47E29] text-[#3f5a2f]",
+    PAUSED: "bg-[#D2AD6929] text-[#7d611f]",
+    COMPLETED: "bg-[#204D4B1f] text-[#204D4B]",
   };
   return <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${colors[status]}`}>{STATUS_LABELS[status]}</span>;
 }

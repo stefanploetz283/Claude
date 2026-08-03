@@ -45,3 +45,6 @@ launcher/launcher.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Lokale Design-Referenz zum Selbst-Abgleich (nicht Teil der App)
+design-ref-tmp/
