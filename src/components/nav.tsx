@@ -65,13 +65,16 @@ export function Nav({
     }`;
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
-      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-[22px] px-6 py-5">
+    <header className="sticky top-0 z-40 flex items-stretch bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
+      <div className="flex w-[288px] flex-none items-center justify-center py-5">
         <Link href="/dashboard" className="shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={logoUrl ?? "/logo-lockup.png"} alt={practiceName} className="h-auto w-[210px] object-contain" />
         </Link>
+      </div>
 
+      <div className="min-w-0 flex-1 px-6 py-5">
+      <div className="mx-auto flex max-w-[1112px] min-w-0 flex-wrap items-center gap-[22px]">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <nav className="flex flex-wrap items-stretch justify-between gap-0 border-b border-[var(--color-border)]">
             {rowOne.map((item) => (
@@ -121,6 +124,7 @@ export function Nav({
             Abmelden
           </button>
         </div>
+      </div>
       </div>
       <div className="h-[1.5px] w-full bg-[var(--color-gold)]" />
     </header>
