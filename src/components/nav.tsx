@@ -70,7 +70,8 @@ export function Nav({
   const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-6 items-stretch";
 
   return (
-    <header className="sticky top-0 z-40 flex items-stretch bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
+    <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
+      <div className="flex items-stretch">
       <div className="flex w-[288px] flex-none items-center justify-center py-5">
         <Link href="/dashboard" className="shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -129,6 +130,7 @@ export function Nav({
             Abmelden
           </button>
         </div>
+      </div>
       </div>
       </div>
       <div className="h-[1.5px] w-full bg-[var(--color-gold)]" />

@@ -11,6 +11,11 @@
       "name": "design-ref",
       "url": "http://localhost:4173",
       "port": 4173
+    },
+    {
+      "name": "nav-test",
+      "url": "http://localhost:4174",
+      "port": 4174
     }
   ]
 }
