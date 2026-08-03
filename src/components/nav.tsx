@@ -59,7 +59,7 @@ export function Nav({
   const rowTwo = isVerwaltung ? [] : role === "ADMIN" ? [...ROW2_EMPLOYEE_ITEMS, ...ROW2_ADMIN_EXTRA] : ROW2_EMPLOYEE_ITEMS;
 
   const tabCls = (active: boolean) =>
-    `flex min-w-0 items-center overflow-visible border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
+    `flex min-w-0 items-center border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
       active
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
@@ -84,7 +84,7 @@ export function Nav({
           <nav className={`${rowGridCls} border-b border-[var(--color-border)]`}>
             {rowOne.map((item) => (
               <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
-                {item.label}
+                <span className="truncate">{item.label}</span>
               </Link>
             ))}
           </nav>
@@ -92,7 +92,7 @@ export function Nav({
             <nav className={rowGridCls}>
               {rowTwo.map((item) => (
                 <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
-                  {item.label}
+                  <span className="truncate">{item.label}</span>
                 </Link>
               ))}
             </nav>
