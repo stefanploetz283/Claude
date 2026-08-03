@@ -36,7 +36,7 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
     return { ok: false, error: "Keine Sprache erkannt. Bitte erneut versuchen." };
   }
   if (!process.env.ANTHROPIC_API_KEY) {
-    return { ok: false, error: "Die Sprachdokumentation ist nicht konfiguriert (fehlender API-Key). Bitte den Administrator informieren." };
+    return { ok: false, error: "Das Diktat ist nicht konfiguriert (fehlender API-Key). Bitte den Administrator informieren." };
   }
 
   const user = await requireUser();

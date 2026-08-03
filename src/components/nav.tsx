@@ -8,7 +8,7 @@ type NavItem = { href: string; label: string };
 
 const ROW1_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Fälle" },
-  { href: "/voice-entry", label: "Sprachdokumentation" },
+  { href: "/voice-entry", label: "Diktat" },
   { href: "/kapazitaet", label: "Kapazität" },
   { href: "/calendar", label: "Kalender" },
   { href: "/time-tracking", label: "Zeiterfassung" },
