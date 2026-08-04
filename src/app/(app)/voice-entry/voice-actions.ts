@@ -51,7 +51,7 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
   let response;
   try {
     response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
       system: `Du extrahierst strukturierte Daten aus dem Diktat einer sozialpädagogischen Fachkraft für eine Leistungsdokumentation. Heutiges Datum (Referenz für relative Angaben wie "heute" oder unvollständige Daten ohne Jahr): ${today}. Formuliere den Bemerkungstext fachlich sauber und sachlich in ganzen Sätzen, auf Basis des Diktats - erfinde keine Inhalte hinzu, die nicht genannt wurden. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.`,
       tool_choice: { type: "tool", name: "extract_service_entry" },
@@ -85,7 +85,8 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
       ],
       messages: [{ role: "user", content: trimmed }],
     });
-  } catch {
+  } catch (err) {
+    console.error("Anthropic-Aufruf für Diktat-Extraktion fehlgeschlagen:", err);
     return { ok: false, error: "Die Sprachverarbeitung ist fehlgeschlagen. Bitte erneut versuchen." };
   }
 
