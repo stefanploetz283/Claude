@@ -74,20 +74,20 @@ export async function getOrCreateInvoicePdf(params: {
     }
   }
 
+  const faelligkeitsdatum = new Date(invoice.issuedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
+
   const templateHtml = readFileSync(TEMPLATE_PATH, "utf-8");
   const pdf = await renderHtmlTemplateToPdf(templateHtml, {
     dokument_titel: "Rechnung",
     rechnungsnummer: invoice.number,
     rechnungsdatum: formatDate(invoice.issuedAt),
+    faelligkeitsdatum: formatDate(faelligkeitsdatum),
     kostentraeger: caseRecord.authority,
-    fallname: `${caseRecord.client.lastName}, ${caseRecord.client.firstName}`,
-    kostentraeger_adresse: caseRecord.client.address ?? "",
     leistungszeitraum: `${formatDate(periodFrom)}–${formatDate(periodTo)}`,
-    row1_leistung: caseRecord.helpType.name,
-    row1_stunden: invoice.hours.toNumber().toLocaleString("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    row1_leistung: `${caseRecord.helpType.name} – ${caseRecord.client.lastName}, ${caseRecord.client.firstName}`,
+    row1_stunden: invoice.hours.toNumber().toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     row1_satz: formatEuro(invoice.hourlyRate.toNumber()),
     row1_betrag: formatEuro(invoice.totalAmount.toNumber()),
-    zwischensumme: formatEuro(invoice.totalAmount.toNumber()),
     endbetrag: formatEuro(invoice.totalAmount.toNumber()),
     hinweis_text: "Hinweis: Bitte den Betrag innerhalb von 14 Tagen auf das angegebene Konto überweisen.",
     seitenzahl: "Seite 1 von 1",

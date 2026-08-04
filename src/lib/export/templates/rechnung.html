@@ -26,8 +26,6 @@
   .logorule{ height:1.5px; background:var(--gold); width:100%; margin:18px 0 0; }
 
   h1.doc{ font-weight:700; color:var(--petrol); font-size:30px; margin:40px 0 0; letter-spacing:0.01em; }
-  .case-line{ margin-top:8px; font-size:13px; color:var(--ink-soft); }
-  .case-line b{ color:var(--petrol); font-weight:600; }
 
   .meta{ display:flex; justify-content:space-between; margin-top:26px; font-size:13px; }
   .meta .addr b{ font-weight:600; color:var(--petrol); }
@@ -37,17 +35,16 @@
 
   table{ width:100%; border-collapse:collapse; margin-top:34px; font-size:13px; }
   thead td{ background:var(--sage); color:#fff; font-weight:600; font-size:11px; letter-spacing:0.05em; padding:11px 14px; }
-  thead td.zahl{ text-align:right; }
+  thead td.tr{ text-align:right; }
   tbody td{ padding:13px 14px; border-bottom:1px solid var(--line); }
-  tbody td.zahl{ text-align:right; }
+  tbody td.tr{ text-align:right; }
 
-  .summen-block{ display:flex; justify-content:flex-end; margin-top:16px; }
-  .sumbox{ background:var(--sage); color:#fff; padding:16px 22px; border-radius:6px; min-width:190px; }
+  .sumbox{ margin-top:24px; background:var(--sage); color:#fff; padding:16px 22px; border-radius:6px; min-width:190px; }
   .sumbox .l{ font-size:11px; letter-spacing:0.08em; opacity:.9; }
   .sumbox .v{ font-weight:700; font-size:24px; margin-top:4px; }
 
   .note{ margin-top:36px; font-size:13px; line-height:1.7; max-width:360px; }
-  .sign{ margin-top:44px; font-size:13px; }
+  .sign{ position:absolute; left:64px; bottom:210px; font-size:13px; }
 
   .ifoot{ position:absolute; left:64px; right:64px; bottom:34px; text-align:center; font-size:11px; line-height:1.9; color:#8a8578; border-top:1.5px solid var(--gold); padding-top:14px; }
   .ifoot p{ margin:0; }
@@ -60,36 +57,37 @@
   <img class="logo-img" src="logo-lockup.png" alt="Praxis für Systemische Entwicklung">
   <div class="logorule"></div>
   <h1 class="doc" data-field="dokument_titel">Rechnung</h1>
-  <div class="case-line"><b>Fall:</b> <span data-field="fallname">Max Mustermann</span> &nbsp;·&nbsp; <b>Zeitraum:</b> <span data-field="leistungszeitraum">01.07.–31.07.2026</span></div>
 
   <div class="meta">
     <div class="addr">
-      <b data-field="kostentraeger">ASD Mitte, Frau Schmidt</b><br>
-      <span data-field="kostentraeger_adresse">Musterweg 12, 12345 Musterstadt</span>
+      <b data-field="kostentraeger">ASD Mitte, Frau Schmidt</b>
     </div>
     <div class="num">
       <div><span>Rechnungsnummer</span><span data-field="rechnungsnummer">2026-07-001</span></div>
       <div><span>Rechnungsdatum</span><span data-field="rechnungsdatum">23.07.2026</span></div>
+      <div><span>Fälligkeitsdatum</span><span data-field="faelligkeitsdatum">06.08.2026</span></div>
     </div>
   </div>
 
   <table>
-    <thead><tr><td>LEISTUNG</td><td class="zahl">STUNDEN</td><td class="zahl">STUNDENSATZ</td><td class="zahl">BETRAG</td></tr></thead>
+    <thead><tr><td>LEISTUNG</td><td>ZEITRAUM</td><td class="tr">STUNDEN</td><td class="tr">EINZELPREIS</td><td class="tr">GESAMTPREIS</td></tr></thead>
     <tbody>
       <tr>
-        <td data-field="row1_leistung">Systemische Beratung</td>
-        <td class="zahl" data-field="row1_stunden">12,0</td>
-        <td class="zahl" data-field="row1_satz">45,00 €</td>
-        <td class="zahl" data-field="row1_betrag">540,00 €</td>
+        <td data-field="row1_leistung">Systemische Beratung – Max Mustermann</td>
+        <td data-field="leistungszeitraum">01.07.–31.07.2026</td>
+        <td class="tr" data-field="row1_stunden">12,00</td>
+        <td class="tr" data-field="row1_satz">45,00 €</td>
+        <td class="tr" data-field="row1_betrag">540,00 €</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="summen-block"><div class="sumbox">
-    <div class="l">ENDBETRAG</div><div class="v" data-field="endbetrag">540,00 €</div>
+  <div style="display:flex;justify-content:flex-end"><div class="sumbox">
+    <div class="l">GESAMTBETRAG</div><div class="v" data-field="endbetrag">540,00 €</div>
   </div></div>
 
   <div class="note" data-field="hinweis_text">Hinweis: Bitte den Betrag innerhalb von 14 Tagen auf das angegebene Konto überweisen.</div>
+
   <div class="sign">Mit freundlichen Grüßen<br><b style="color:var(--petrol)">Stefan Plötz</b></div>
 
   <div class="ifoot">
