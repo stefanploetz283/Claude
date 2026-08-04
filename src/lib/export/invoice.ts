@@ -83,6 +83,8 @@ export async function getOrCreateInvoicePdf(params: {
     rechnungsdatum: formatDate(invoice.issuedAt),
     faelligkeitsdatum: formatDate(faelligkeitsdatum),
     kostentraeger: caseRecord.authority,
+    kostentraeger_strasse: caseRecord.authorityStreet ?? "",
+    kostentraeger_plz: caseRecord.authorityPostalCodeCity ?? "",
     leistungszeitraum: `${formatDate(periodFrom)}–${formatDate(periodTo)}`,
     row1_leistung: `${caseRecord.helpType.name} – ${caseRecord.client.lastName}, ${caseRecord.client.firstName}`,
     row1_stunden: invoice.hours.toNumber().toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),

@@ -116,6 +116,12 @@ export function NewCaseForm({
           <Field label="Zuständiges Jugendamt/Auftraggeber (ASD)">
             <input name="authority" required className={inputCls} />
           </Field>
+          <Field label="Rechnungsadresse: Straße">
+            <input name="authorityStreet" placeholder="Musterstraße 12" className={inputCls} />
+          </Field>
+          <Field label="Rechnungsadresse: PLZ / Ort">
+            <input name="authorityPostalCodeCity" placeholder="12345 Musterstadt" className={inputCls} />
+          </Field>
           <Field label="Hilfeart">
             <select
               name="helpTypeId"

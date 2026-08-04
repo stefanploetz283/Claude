@@ -121,6 +121,8 @@ model Case {
   id                   String     @id @default(cuid())
   caseNumber           String     @unique // Aktenzeichen/Fallnummer
   authority            String     // zuständiges Jugendamt/Auftraggeber
+  authorityStreet          String? // Rechnungsadresse Kostenträger
+  authorityPostalCodeCity  String?
 
   client               Client     @relation(fields: [clientId], references: [id])
   clientId             String

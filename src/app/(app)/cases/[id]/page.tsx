@@ -121,6 +121,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             <Row label="Vertretung" value={caseRecord.substituteEmployee?.name ?? "Keine"} />
             <Row label="Startdatum" value={format(caseRecord.startDate, "dd.MM.yyyy")} />
             <Row label="Status" value={STATUS_LABELS[caseRecord.status]} />
+            <Row label="Rechnungsadresse: Straße" value={caseRecord.authorityStreet ?? "–"} />
+            <Row label="Rechnungsadresse: PLZ / Ort" value={caseRecord.authorityPostalCodeCity ?? "–"} />
           </dl>
         </div>
 

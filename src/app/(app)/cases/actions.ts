@@ -21,6 +21,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const contactInfo = String(formData.get("contactInfo") ?? "").trim();
 
   const authority = String(formData.get("authority") ?? "").trim();
+  const authorityStreet = String(formData.get("authorityStreet") ?? "").trim();
+  const authorityPostalCodeCity = String(formData.get("authorityPostalCodeCity") ?? "").trim();
   const helpTypeId = String(formData.get("helpTypeId") ?? "").trim();
   const assignedEmployeeId = String(formData.get("assignedEmployeeId") ?? "").trim();
   const substituteEmployeeId = String(formData.get("substituteEmployeeId") ?? "").trim();
@@ -65,6 +67,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
     data: {
       caseNumber,
       authority,
+      authorityStreet: authorityStreet || null,
+      authorityPostalCodeCity: authorityPostalCodeCity || null,
       clientId,
       helpTypeId,
       assignedEmployeeId,
