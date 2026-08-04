@@ -111,6 +111,31 @@ export async function updateCaseCapacityFields(_prev: ActionState, formData: For
   return undefined;
 }
 
+export async function updateCaseAuthorityFields(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const caseId = String(formData.get("caseId") ?? "");
+  const authority = String(formData.get("authority") ?? "").trim();
+  const authorityStreet = String(formData.get("authorityStreet") ?? "").trim();
+  const authorityPostalCodeCity = String(formData.get("authorityPostalCodeCity") ?? "").trim();
+
+  if (!authority) {
+    return { error: "Bitte das zuständige Jugendamt/Auftraggeber angeben." };
+  }
+
+  await prisma.case.update({
+    where: { id: caseId },
+    data: {
+      authority,
+      authorityStreet: authorityStreet || null,
+      authorityPostalCodeCity: authorityPostalCodeCity || null,
+    },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Kostenträger/Rechnungsadresse geändert" });
+  revalidatePath(`/cases/${caseId}`);
+  return undefined;
+}
+
 export async function updateCaseStatus(formData: FormData) {
   const user = await requireUser();
   const caseId = String(formData.get("caseId") ?? "");

@@ -10,6 +10,7 @@ import { StatusForm } from "./status-form";
 import { ArchiveCaseButton } from "./archive-button";
 import { DeleteCaseButton } from "./delete-button";
 import { CapacityPlanningForm } from "./capacity-planning-form";
+import { AuthorityAddressForm } from "./authority-address-form";
 import { differenceInCalendarDays, addMonths, format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -121,8 +122,6 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             <Row label="Vertretung" value={caseRecord.substituteEmployee?.name ?? "Keine"} />
             <Row label="Startdatum" value={format(caseRecord.startDate, "dd.MM.yyyy")} />
             <Row label="Status" value={STATUS_LABELS[caseRecord.status]} />
-            <Row label="Rechnungsadresse: Straße" value={caseRecord.authorityStreet ?? "–"} />
-            <Row label="Rechnungsadresse: PLZ / Ort" value={caseRecord.authorityPostalCodeCity ?? "–"} />
           </dl>
         </div>
 
@@ -153,6 +152,17 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             />
           </div>
         </div>
+      </div>
+
+      <div className={cardCls}>
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Kostenträger / Rechnungsadresse</h2>
+        <p className="mb-3 text-sm text-[var(--color-text-muted)]">Wird auf der Rechnung als Empfängeradresse verwendet.</p>
+        <AuthorityAddressForm
+          caseId={caseRecord.id}
+          authority={caseRecord.authority}
+          authorityStreet={caseRecord.authorityStreet}
+          authorityPostalCodeCity={caseRecord.authorityPostalCodeCity}
+        />
       </div>
 
       <div className={cardCls}>
