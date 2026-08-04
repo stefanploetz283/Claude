@@ -4,7 +4,7 @@ import { requireUser, canAccessCase } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 import { buildCaseServicePdf } from "@/lib/export/case-pdf";
 import { getPracticeForExport } from "@/lib/export/practice-info";
-import { monthOrRangeLabel, singleMonthOf } from "@/lib/date";
+import { monthOrRangeLabel } from "@/lib/date";
 import { format } from "date-fns";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -33,19 +33,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     getPracticeForExport(),
   ]);
 
-  const single = singleMonthOf(from, to);
-  const processNoteRecord = single
-    ? await prisma.monthlyProcessNote.findUnique({
-        where: { caseId_year_month: { caseId: id, year: single.year, month: single.month } },
-      })
-    : null;
-
   const pdfBuffer = await buildCaseServicePdf({
     caseInfo: {
       authority: caseRecord.authority,
       clientFirstName: caseRecord.client.firstName,
       clientLastName: caseRecord.client.lastName,
-      clientAddress: caseRecord.client.address,
+      clientStreet: caseRecord.client.street ?? caseRecord.client.address,
+      clientPostalCodeCity: caseRecord.client.postalCodeCity,
       helpTypeName: caseRecord.helpType.name,
       assignedEmployeeName: caseRecord.assignedEmployee.name,
     },
@@ -59,7 +53,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     })),
     periodLabel: `${format(from, "dd.MM.yyyy")} – ${format(to, "dd.MM.yyyy")}`,
     monthLabel: monthOrRangeLabel(from, to),
-    processNote: processNoteRecord?.text ?? null,
     practice,
   });
 

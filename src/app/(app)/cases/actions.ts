@@ -16,7 +16,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const birthDate = String(formData.get("birthDate") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
+  const street = String(formData.get("street") ?? "").trim();
+  const postalCodeCity = String(formData.get("postalCodeCity") ?? "").trim();
   const contactInfo = String(formData.get("contactInfo") ?? "").trim();
 
   const authority = String(formData.get("authority") ?? "").trim();
@@ -51,7 +52,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
         firstName,
         lastName,
         birthDate: birthDate ? new Date(birthDate) : null,
-        address: address || null,
+        street: street || null,
+        postalCodeCity: postalCodeCity || null,
         contactInfo: contactInfo || null,
       },
     });

@@ -9,7 +9,7 @@ export async function buildBulkPdf(params: {
   practice: PracticeForExport;
   periodLabel: string;
   monthLabel: string;
-  sections: { caseInfo: CaseForExport; entries: ServiceEntryForExport[]; processNote: string | null }[];
+  sections: { caseInfo: CaseForExport; entries: ServiceEntryForExport[] }[];
 }): Promise<Buffer> {
   const templateHtml = readFileSync(TEMPLATE_PATH, "utf-8");
 
@@ -23,7 +23,6 @@ export async function buildBulkPdf(params: {
         caseInfo: section.caseInfo,
         entries: section.entries,
         monthLabel: params.monthLabel,
-        processNote: section.processNote,
         practice: params.practice,
       })
     )

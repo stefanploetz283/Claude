@@ -97,8 +97,11 @@ export function NewCaseForm({
             <Field label="Geburtsdatum">
               <input name="birthDate" type="date" className={inputCls} />
             </Field>
-            <Field label="Adresse">
-              <input name="address" className={inputCls} />
+            <Field label="Straße">
+              <input name="street" placeholder="Musterstraße 12" className={inputCls} />
+            </Field>
+            <Field label="PLZ / Ort">
+              <input name="postalCodeCity" placeholder="12345 Musterstadt" className={inputCls} />
             </Field>
             <Field label="Kontaktdaten (Telefon/E-Mail)">
               <input name="contactInfo" className={inputCls} />

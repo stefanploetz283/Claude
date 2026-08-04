@@ -23,38 +23,25 @@
 
   .logo-img{ width:230px; display:block; }
   .logorule{ height:1.5px; background:var(--gold); width:100%; margin:18px 0 0; }
-  h1.doc{ font-weight:700; color:var(--petrol); font-size:30px; margin:40px 0 0; letter-spacing:0.01em; }
-  .sub{ font-size:13px; color:var(--ink-soft); margin-top:6px; }
+  h1.doc{ font-weight:700; color:var(--petrol); font-size:30px; margin-top:40px; letter-spacing:0.01em; }
 
-  .cards{ display:flex; gap:16px; margin-top:26px; }
-  .card{ flex:1; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
-  .card b{ display:block; font-weight:600; color:var(--petrol); margin-bottom:8px; font-size:13px; }
-  .card .row{ font-size:12.5px; line-height:1.9; }
-  .card .row span:first-child{ color:var(--petrol); display:inline-block; width:78px; }
+  .meta{ display:flex; justify-content:space-between; margin-top:26px; font-size:13px; }
+  .meta .box{ line-height:1.7; }
+  .meta .box b{ display:block; font-weight:600; color:var(--petrol); margin-bottom:4px; }
+  .meta .box span{ color:var(--petrol); display:inline-block; width:88px; }
 
-  .infoboxes{ display:flex; gap:16px; margin-top:16px; }
-  .infobox{ flex:1; border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
-  .infobox .l{ font-size:11px; color:var(--ink-soft); }
-  .infobox .v{ font-weight:600; font-size:13.5px; color:var(--ink); margin-top:6px; }
-
-  table{ width:100%; border-collapse:collapse; margin-top:26px; font-size:12.5px; }
+  table{ width:100%; border-collapse:collapse; margin-top:30px; font-size:12.5px; }
   thead{ display:table-header-group; }
   thead td{ background:var(--sage); color:#fff; font-weight:600; font-size:11px; letter-spacing:0.05em; padding:11px 12px; }
   tbody td{ padding:11px 12px; border-bottom:1px solid var(--line); }
   tbody tr{ break-inside:avoid; }
   tbody tr:nth-child(even){ background:var(--cream-2); }
+  .sumrow td{ font-weight:600; color:var(--petrol); border-top:1.5px solid var(--gold); border-bottom:none; padding-top:13px; }
 
-  .prozess{ margin-top:20px; border:1px solid var(--line); border-radius:10px; padding:16px 18px; break-inside:avoid; }
-  .prozess b{ display:block; font-weight:600; color:var(--petrol); margin-bottom:8px; font-size:13px; }
-  .prozess .text{ font-size:12.5px; line-height:1.6; white-space:pre-wrap; }
-
-  .tail{ display:flex; gap:16px; margin-top:20px; break-inside:avoid; }
-  .sumbox{ flex:0 0 220px; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
-  .sumbox .l{ font-size:11px; color:var(--ink-soft); }
-  .sumbox .v{ font-weight:700; font-size:24px; color:var(--petrol); margin-top:6px; }
-  .signbox{ flex:1; border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
-  .signbox .l{ font-size:11px; color:var(--ink-soft); margin-bottom:22px; }
-  .signline{ border-top:1px solid var(--ink-soft); padding-top:6px; font-size:11px; color:var(--ink-soft); margin-bottom:18px; }
+  .sign{ margin-top:44px; display:flex; gap:48px; max-width:560px; break-inside:avoid; }
+  .sigcol{ flex:0 0 240px; }
+  .sigline{ height:1px; background:var(--ink-soft); margin-bottom:7px; }
+  .sigcap{ font-size:11px; color:var(--ink-soft); }
 
   .ifoot{ position:fixed; left:64px; right:64px; bottom:24px; text-align:center; font-size:11px; line-height:1.9; color:#8a8578; border-top:1.5px solid var(--gold); padding-top:14px; }
   .ifoot p{ margin:0; }

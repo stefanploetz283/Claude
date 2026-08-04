@@ -6,7 +6,7 @@ import { logAccess } from "@/lib/access-log";
 import { buildBulkPdf } from "@/lib/export/bulk-pdf";
 import { buildBulkExcel } from "@/lib/export/bulk-excel";
 import { getPracticeForExport } from "@/lib/export/practice-info";
-import { monthOrRangeLabel, singleMonthOf } from "@/lib/date";
+import { monthOrRangeLabel } from "@/lib/date";
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
 
   const from = fromStr ? new Date(fromStr) : new Date(0);
   const to = toStr ? new Date(new Date(toStr).getTime() + 24 * 60 * 60 * 1000 - 1) : new Date();
-  const single = singleMonthOf(from, to);
 
   const cases = await prisma.case.findMany({
     where: { id: { in: caseIds }, ...caseVisibilityWhere(user) },
@@ -32,24 +31,18 @@ export async function POST(req: NextRequest) {
 
   const sections = await Promise.all(
     cases.map(async (c) => {
-      const [entries, processNoteRecord] = await Promise.all([
-        prisma.serviceEntry.findMany({
-          where: { caseId: c.id, date: { gte: from, lte: to } },
-          include: { employee: true },
-          orderBy: { date: "asc" },
-        }),
-        single
-          ? prisma.monthlyProcessNote.findUnique({
-              where: { caseId_year_month: { caseId: c.id, year: single.year, month: single.month } },
-            })
-          : Promise.resolve(null),
-      ]);
+      const entries = await prisma.serviceEntry.findMany({
+        where: { caseId: c.id, date: { gte: from, lte: to } },
+        include: { employee: true },
+        orderBy: { date: "asc" },
+      });
       return {
         caseInfo: {
           authority: c.authority,
           clientFirstName: c.client.firstName,
           clientLastName: c.client.lastName,
-          clientAddress: c.client.address,
+          clientStreet: c.client.street ?? c.client.address,
+          clientPostalCodeCity: c.client.postalCodeCity,
           helpTypeName: c.helpType.name,
           assignedEmployeeName: c.assignedEmployee.name,
         },
@@ -61,7 +54,6 @@ export async function POST(req: NextRequest) {
           description: e.description,
           employeeName: e.employee.name,
         })),
-        processNote: processNoteRecord?.text ?? null,
       };
     })
   );

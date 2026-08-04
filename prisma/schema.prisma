@@ -96,7 +96,9 @@ model Client {
   firstName    String
   lastName     String
   birthDate    DateTime?
-  address      String?
+  address      String? // veraltet - siehe street/postalCodeCity; bleibt für Altdatensätze erhalten
+  street          String?
+  postalCodeCity  String?
   contactInfo  String?
   archived     Boolean  @default(false)
   createdAt    DateTime @default(now())

@@ -105,7 +105,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Klient</h2>
           <dl className="flex flex-col gap-2 text-sm">
             <Row label="Geburtsdatum" value={caseRecord.client.birthDate ? format(caseRecord.client.birthDate, "dd.MM.yyyy") : "–"} />
-            <Row label="Adresse" value={caseRecord.client.address ?? "–"} />
+            <Row label="Straße" value={caseRecord.client.street ?? caseRecord.client.address ?? "–"} />
+            <Row label="PLZ / Ort" value={caseRecord.client.postalCodeCity ?? "–"} />
             <Row label="Kontakt" value={caseRecord.client.contactInfo ?? "–"} />
           </dl>
         </div>
