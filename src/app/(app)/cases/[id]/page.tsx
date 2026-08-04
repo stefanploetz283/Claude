@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser, canAccessCase } from "@/lib/rbac";
 import { getRemainingHours } from "@/lib/case-helpers";
+import { resolveClientAddress } from "@/lib/client-address";
 import { logAccess } from "@/lib/access-log";
 import { CaseTabs } from "./case-tabs";
 import { StatusForm } from "./status-form";
@@ -68,6 +69,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
     if (days <= caseRecord.reminderLeadDays) deadlineWarnings.push({ label: "Verlängerungsantrag fällig", date: caseRecord.extensionDeadline });
   }
 
+  const clientAddress = resolveClientAddress(caseRecord.client);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -105,8 +108,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Klient</h2>
           <dl className="flex flex-col gap-2 text-sm">
             <Row label="Geburtsdatum" value={caseRecord.client.birthDate ? format(caseRecord.client.birthDate, "dd.MM.yyyy") : "–"} />
-            <Row label="Straße" value={caseRecord.client.street ?? caseRecord.client.address ?? "–"} />
-            <Row label="PLZ / Ort" value={caseRecord.client.postalCodeCity ?? "–"} />
+            <Row label="Straße" value={clientAddress.street ?? "–"} />
+            <Row label="PLZ / Ort" value={clientAddress.postalCodeCity ?? "–"} />
             <Row label="Kontakt" value={caseRecord.client.contactInfo ?? "–"} />
           </dl>
         </div>

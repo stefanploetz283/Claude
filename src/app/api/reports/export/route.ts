@@ -7,6 +7,7 @@ import { buildBulkPdf } from "@/lib/export/bulk-pdf";
 import { buildBulkExcel } from "@/lib/export/bulk-excel";
 import { getPracticeForExport } from "@/lib/export/practice-info";
 import { monthOrRangeLabel } from "@/lib/date";
+import { resolveClientAddress } from "@/lib/client-address";
 
 export async function POST(req: NextRequest) {
   const user = await requireUser();
@@ -36,13 +37,14 @@ export async function POST(req: NextRequest) {
         include: { employee: true },
         orderBy: { date: "asc" },
       });
+      const clientAddress = resolveClientAddress(c.client);
       return {
         caseInfo: {
           authority: c.authority,
           clientFirstName: c.client.firstName,
           clientLastName: c.client.lastName,
-          clientStreet: c.client.street ?? c.client.address,
-          clientPostalCodeCity: c.client.postalCodeCity,
+          clientStreet: clientAddress.street,
+          clientPostalCodeCity: clientAddress.postalCodeCity,
           helpTypeName: c.helpType.name,
           assignedEmployeeName: c.assignedEmployee.name,
         },

@@ -5,6 +5,7 @@ import { logAccess } from "@/lib/access-log";
 import { buildCaseServicePdf } from "@/lib/export/case-pdf";
 import { getPracticeForExport } from "@/lib/export/practice-info";
 import { monthOrRangeLabel } from "@/lib/date";
+import { resolveClientAddress } from "@/lib/client-address";
 import { format } from "date-fns";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -33,13 +34,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     getPracticeForExport(),
   ]);
 
+  const clientAddress = resolveClientAddress(caseRecord.client);
+
   const pdfBuffer = await buildCaseServicePdf({
     caseInfo: {
       authority: caseRecord.authority,
       clientFirstName: caseRecord.client.firstName,
       clientLastName: caseRecord.client.lastName,
-      clientStreet: caseRecord.client.street ?? caseRecord.client.address,
-      clientPostalCodeCity: caseRecord.client.postalCodeCity,
+      clientStreet: clientAddress.street,
+      clientPostalCodeCity: clientAddress.postalCodeCity,
       helpTypeName: caseRecord.helpType.name,
       assignedEmployeeName: caseRecord.assignedEmployee.name,
     },
