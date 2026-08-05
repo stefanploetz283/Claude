@@ -1,7 +1,8 @@
 import { addWeeks, differenceInCalendarWeeks, startOfWeek } from "date-fns";
-import type { Case, HelpType, HelpTypeActivityProfile, User } from "@prisma/client";
+import type { Case, Client, HelpType, HelpTypeActivityProfile, User } from "@prisma/client";
 
 export type CaseWithProfile = Case & {
+  client: Client;
   helpType: HelpType & { activityProfiles: HelpTypeActivityProfile[] };
 };
 
@@ -43,25 +44,73 @@ export function getEmployeeCapacity(employee: User, billableCapacityFactor: numb
   return contract * billableCapacityFactor;
 }
 
+export type WeeklyCaseEntry = {
+  caseId: string;
+  clientName: string;
+  helpTypeId: string;
+  helpTypeName: string;
+  rate: number;
+};
+
+export type WeeklyCapacityBreakdown = {
+  weekStart: Date;
+  capacity: number;
+  used: number;
+  free: number;
+  entries: WeeklyCaseEntry[];
+  /** Summierte Rate je Hilfeart in dieser Woche, für die gestapelte Flächendarstellung. */
+  byHelpType: { helpTypeId: string; helpTypeName: string; rate: number }[];
+};
+
 export type WeeklyCapacityPoint = { weekStart: Date; used: number; capacity: number; free: number };
 
-/** Simuliert die Wochenauslastung einer Fachkraft über einen Horizont (Wochen ab `from`). */
-export function simulateEmployeeWeeklyCapacity(
+/**
+ * Simuliert die Wochenauslastung einer Fachkraft über einen Horizont (Wochen ab `from`), inkl. Aufschlüsselung
+ * nach einzelnen Fällen und nach Hilfeart - Basis sowohl für die Zeitstrahl-Grafik als auch für die
+ * aggregierte Kapazitätslinie (`toCapacityPoints`).
+ */
+export function simulateEmployeeWeeklyBreakdown(
   employee: User,
   cases: CaseWithProfile[],
   billableCapacityFactor: number,
   horizonWeeks: number,
   from: Date = new Date()
-): WeeklyCapacityPoint[] {
+): WeeklyCapacityBreakdown[] {
   const capacity = getEmployeeCapacity(employee, billableCapacityFactor);
   const start = startOfWeek(from, { weekStartsOn: 1 });
-  const points: WeeklyCapacityPoint[] = [];
+  const points: WeeklyCapacityBreakdown[] = [];
+
   for (let i = 0; i < horizonWeeks; i++) {
     const weekStart = addWeeks(start, i);
-    const used = cases.reduce((sum, c) => sum + getCaseWeeklyRateAtDate(c, weekStart), 0);
-    points.push({ weekStart, used, capacity, free: capacity - used });
+
+    const entries: WeeklyCaseEntry[] = cases
+      .map((c) => ({
+        caseId: c.id,
+        clientName: `${c.client.lastName}, ${c.client.firstName}`,
+        helpTypeId: c.helpTypeId,
+        helpTypeName: c.helpType.name,
+        rate: getCaseWeeklyRateAtDate(c, weekStart),
+      }))
+      .filter((e) => e.rate > 0.001);
+
+    const byHelpTypeMap = new Map<string, { helpTypeName: string; rate: number }>();
+    for (const e of entries) {
+      const existing = byHelpTypeMap.get(e.helpTypeId);
+      if (existing) existing.rate += e.rate;
+      else byHelpTypeMap.set(e.helpTypeId, { helpTypeName: e.helpTypeName, rate: e.rate });
+    }
+    const byHelpType = Array.from(byHelpTypeMap.entries()).map(([helpTypeId, v]) => ({ helpTypeId, ...v }));
+
+    const used = entries.reduce((sum, e) => sum + e.rate, 0);
+    points.push({ weekStart, capacity, used, free: capacity - used, entries, byHelpType });
   }
+
   return points;
+}
+
+/** Aggregierte Sicht (ohne Fall-/Hilfeart-Details) für die Lückensuche der Warteliste. */
+export function toCapacityPoints(breakdown: WeeklyCapacityBreakdown[]): WeeklyCapacityPoint[] {
+  return breakdown.map((p) => ({ weekStart: p.weekStart, used: p.used, capacity: p.capacity, free: p.free }));
 }
 
 /**
