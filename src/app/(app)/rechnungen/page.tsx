@@ -107,7 +107,7 @@ export default async function RechnungenPage() {
         ))}
         {cards.length === 0 && (
           <p className="text-sm text-[var(--color-text-muted)]">
-            Aktuell keine freigegebenen Zeiträume. Freigaben erfolgen unter „Freigaben" nach Prüfung der Leistungsdokumentation.
+            Aktuell keine freigegebenen Zeiträume. Freigaben erfolgen unter „Freigaben&quot; nach Prüfung der Leistungsdokumentation.
           </p>
         )}
       </div>

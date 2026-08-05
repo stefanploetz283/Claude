@@ -80,3 +80,32 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   revalidatePath("/", "layout");
   return { success: "Einstellungen gespeichert." };
 }
+
+export async function createBetriebsferienPeriod(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+
+  const label = String(formData.get("label") ?? "").trim();
+  const startDateStr = String(formData.get("startDate") ?? "");
+  const endDateStr = String(formData.get("endDate") ?? "");
+
+  if (!label || !startDateStr || !endDateStr) return { error: "Bitte Bezeichnung, Start- und Enddatum angeben." };
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+  if (endDate < startDate) return { error: "Das Enddatum muss nach dem Startdatum liegen." };
+
+  await prisma.betriebsferienPeriod.create({ data: { label, startDate, endDate } });
+  await logAccess({ userId: admin.id, action: "CREATE", entityType: "BetriebsferienPeriod", details: label });
+  revalidatePath("/admin/settings");
+  revalidatePath("/bonus");
+  revalidatePath("/admin/bonus");
+  return { success: "Betriebsferien angelegt." };
+}
+
+export async function deleteBetriebsferienPeriod(id: string) {
+  const admin = await requireAdmin();
+  await prisma.betriebsferienPeriod.delete({ where: { id } });
+  await logAccess({ userId: admin.id, action: "DELETE", entityType: "BetriebsferienPeriod", entityId: id });
+  revalidatePath("/admin/settings");
+  revalidatePath("/bonus");
+  revalidatePath("/admin/bonus");
+}

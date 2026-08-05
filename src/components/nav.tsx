@@ -18,6 +18,7 @@ const ROW1_ITEMS: NavItem[] = [
 const ROW2_EMPLOYEE_ITEMS: NavItem[] = [
   { href: "/knowledge-base", label: "Fachbox" },
   { href: "/messages", label: "Nachrichten" },
+  { href: "/bonus", label: "Bonus" },
   { href: "/reports", label: "Sammel-Export" },
 ];
 
@@ -64,10 +65,10 @@ export function Nav({
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
     }`;
-  // Row1/Row2 haben je 6 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
+  // Row1/Row2 haben je 7 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
   // damit gleichnamige Spalten zeilenübergreifend exakt untereinanderstehen, unabhängig
   // von der Textlänge. Verwaltung hat ein eigenes, kleineres Set ohne zweite Zeile.
-  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-6 items-stretch";
+  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-7 items-stretch";
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">

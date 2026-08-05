@@ -46,6 +46,9 @@ model User {
   createdWaitlistEntries WaitlistEntry[]
   submittedApprovals MonthlyApproval[] @relation("ApprovalSubmittedBy")
   reviewedApprovals  MonthlyApproval[] @relation("ApprovalReviewedBy")
+  gutscheinAuswahlen GutscheinAuswahl[]
+  bonusPayouts       QuarterlyBonusPayout[]
+  paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
 
   sentMessages      Message[]
   messageRecipients MessageRecipient[]
@@ -532,4 +535,56 @@ model Settings {
   sessionIdleTimeoutMinutes   Int     @default(20)
   employeesCanContributeKnowledge Boolean @default(false)
   updatedAt                   DateTime @updatedAt
+}
+
+// ---------- Bonus-Cockpit ----------
+
+// Praxisweite Schließzeiten (August-Schließung, Weihnachten) - Wochen, die vollständig in einen dieser
+// Zeiträume fallen, zählen weder im Kapazitäts- noch im Bonus-Nenner/Zähler als Anwesenheitswochen.
+model BetriebsferienPeriod {
+  id        String   @id @default(cuid())
+  label     String // z.B. "Sommerschließung 2026"
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  @@index([startDate, endDate])
+}
+
+enum GutscheinAnbieter {
+  EDEKA
+  DM
+  MEDIAMARKT
+}
+
+// Monatlicher 50€-Sachbezug nach §8 Abs.2 S.11 EStG - unabhängig von der Quartalsquote, ein Eintrag je
+// Mitarbeiter und Kalendermonat.
+model GutscheinAuswahl {
+  id         String            @id @default(cuid())
+  employee   User              @relation(fields: [employeeId], references: [id])
+  employeeId String
+  year       Int
+  month      Int // 1-12
+  anbieter   GutscheinAnbieter
+  beschafft  Boolean           @default(false) // manuelle Beschaffung/Versand durch die Praxisleitung
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([employeeId, year, month])
+  @@index([year, month])
+}
+
+// Markiert, dass der Quartals-Bonus eines Mitarbeiters tatsächlich ausgezahlt wurde (üblicherweise im
+// Kalendermonat nach Quartalsende). Quote/Bonusbetrag selbst werden live berechnet, nicht persistiert.
+model QuarterlyBonusPayout {
+  id         String   @id @default(cuid())
+  employee   User     @relation(fields: [employeeId], references: [id])
+  employeeId String
+  year       Int
+  quarter    Int // 1-4
+  paidOutAt  DateTime @default(now())
+  paidOutBy  User     @relation("BonusPaidOutBy", fields: [paidOutById], references: [id])
+  paidOutById String
+
+  @@unique([employeeId, year, quarter])
 }

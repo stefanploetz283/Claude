@@ -214,7 +214,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             <p className="text-sm text-[var(--color-text-muted)]">
               Diese Hilfe kann nicht gelöscht werden, da bereits <strong>{relatedEntryCount}</strong> zugehörige Einträge vorhanden
               sind (Leistungsdokumentation, Termine, Dokumente, Nachrichten oder Zeiterfassung). Nutzen Sie stattdessen „Fall
-              archivieren".
+              archivieren&quot;.
             </p>
           ) : (
             <>
