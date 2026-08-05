@@ -3,9 +3,13 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
-import { computeQuarterBonus, getCurrentQuarter, type Quarter } from "@/lib/bonus";
+import { computeQuarterBonus, computeQuoteTrend, getCurrentQuarter, type Quarter } from "@/lib/bonus";
+import { GUTSCHEIN_STYLES, type GutscheinAnbieterKey } from "@/lib/bonus-colors";
 import { PayoutButton } from "./payout-button";
 import { BeschafftToggle } from "./beschafft-toggle";
+import { QuoteTrendSparkline } from "./quote-trend-sparkline";
+
+const TREND_QUARTERS = 6;
 
 function formatEuro(amount: number): string {
   return amount.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -17,8 +21,6 @@ function prevQuarter(year: number, quarter: Quarter): { year: number; quarter: Q
 function nextQuarter(year: number, quarter: Quarter): { year: number; quarter: Quarter } {
   return quarter === 4 ? { year: year + 1, quarter: 1 } : { year, quarter: (quarter + 1) as Quarter };
 }
-
-const GUTSCHEIN_LABELS: Record<string, string> = { EDEKA: "Edeka", DM: "dm", MEDIAMARKT: "MediaMarkt" };
 
 export default async function AdminBonusPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdmin();
@@ -45,6 +47,12 @@ export default async function AdminBonusPage({ searchParams }: { searchParams: P
         });
         return { employee: e, result, payout };
       })
+  );
+
+  const trends = await Promise.all(
+    employees
+      .filter((e) => e.weeklyContractHours != null)
+      .map(async (e) => ({ employee: e, trend: await computeQuoteTrend(e, TREND_QUARTERS, now) }))
   );
 
   const gutscheinMonth = now.getMonth() + 1;
@@ -124,6 +132,38 @@ export default async function AdminBonusPage({ searchParams }: { searchParams: P
       </div>
 
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Quotenentwicklung</h2>
+        <p className="mb-3 text-sm text-[var(--color-text-muted)]">Letzte {TREND_QUARTERS} Quartale je Fachkraft, gestrichelt die Zielquote (75%).</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+              <tr>
+                <th className="px-4 py-2.5">Mitarbeiter</th>
+                <th className="px-4 py-2.5">Entwicklung</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trends.map(({ employee, trend }) => (
+                <tr key={employee.id} className="border-t border-[var(--color-border)]">
+                  <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{employee.name}</td>
+                  <td className="px-4 py-2.5">
+                    <QuoteTrendSparkline points={trend} />
+                  </td>
+                </tr>
+              ))}
+              {trends.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-4 py-6 text-center text-[var(--color-text-muted)]">
+                    Keine Fachkräfte mit hinterlegten Vertragsstunden.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">
           Sachbezug-Gutscheine · {format(now, "MMMM yyyy", { locale: de })}
         </h2>
@@ -141,7 +181,19 @@ export default async function AdminBonusPage({ searchParams }: { searchParams: P
               {gutscheinAuswahlen.map((g) => (
                 <tr key={g.id} className="border-t border-[var(--color-border)]">
                   <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{g.employee.name}</td>
-                  <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{GUTSCHEIN_LABELS[g.anbieter] ?? g.anbieter}</td>
+                  <td className="px-4 py-2.5">
+                    {(() => {
+                      const style = GUTSCHEIN_STYLES[g.anbieter as GutscheinAnbieterKey];
+                      return (
+                        <span
+                          className="inline-block rounded-full px-3 py-1 text-xs font-semibold"
+                          style={{ background: style.bg, color: style.text }}
+                        >
+                          {style.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td className="px-4 py-2.5 text-right">
                     <BeschafftToggle id={g.id} beschafft={g.beschafft} />
                   </td>

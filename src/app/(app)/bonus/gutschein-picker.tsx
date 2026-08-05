@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { selectGutschein, type ActionState } from "./actions";
-import { GUTSCHEIN_STYLES, type GutscheinAnbieterKey } from "./bonus-colors";
+import { GUTSCHEIN_STYLES, type GutscheinAnbieterKey } from "@/lib/bonus-colors";
 
 export function GutscheinPicker({
   year,

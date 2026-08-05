@@ -157,6 +157,37 @@ export async function computeQuarterBonus(
   };
 }
 
+export type QuoteTrendPoint = { year: number; quarter: Quarter; quote: number | null; isCurrent: boolean };
+
+/**
+ * Quartalsquote der letzten `count` Quartale (chronologisch, ältestes zuerst) - fürs laufende Quartal
+ * wird die Prognose (Quote der bisher abgeschlossenen Wochen) verwendet, für abgeschlossene Quartale die
+ * finale Quartalsquote.
+ */
+export async function computeQuoteTrend(employee: User, count: number, now: Date = new Date()): Promise<QuoteTrendPoint[]> {
+  const current = getCurrentQuarter(now);
+  const targets: { year: number; quarter: Quarter }[] = [];
+  let y = current.year;
+  let q = current.quarter;
+  for (let i = 0; i < count; i++) {
+    targets.unshift({ year: y, quarter: q });
+    if (q === 1) {
+      q = 4;
+      y -= 1;
+    } else {
+      q = (q - 1) as Quarter;
+    }
+  }
+
+  return Promise.all(
+    targets.map(async ({ year, quarter }) => {
+      const isCurrent = year === current.year && quarter === current.quarter;
+      const result = await computeQuarterBonus(employee, year, quarter, now);
+      return { year, quarter, quote: isCurrent ? result.prognose.quote : result.quartalsquote, isCurrent };
+    })
+  );
+}
+
 export type UpcomingWeek = { weekStart: Date; weekEnd: Date; isBetriebsferien: boolean };
 
 /** Für den Kapazitätskalender: die nächsten `count` Wochen ab jetzt, mit Betriebsferien-Kennzeichnung. */

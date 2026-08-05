@@ -7,8 +7,8 @@ import { computeQuarterBonus, buildUpcomingWeeks, getCurrentQuarter, EURO_PRO_PU
 import { QuoteRing } from "./quote-ring";
 import { CapacityCalendar } from "./capacity-calendar";
 import { GutscheinPicker } from "./gutschein-picker";
-import { BONUS_PRIMARY, BONUS_LIGHT, BONUS_DARK_TEXT } from "./bonus-colors";
-import type { GutscheinAnbieterKey } from "./bonus-colors";
+import { BONUS_PRIMARY, BONUS_LIGHT, BONUS_DARK_TEXT } from "@/lib/bonus-colors";
+import type { GutscheinAnbieterKey } from "@/lib/bonus-colors";
 
 function formatEuro(amount: number): string {
   return amount.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";

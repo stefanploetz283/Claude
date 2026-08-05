@@ -15,11 +15,13 @@ const ROW1_ITEMS: NavItem[] = [
   { href: "/absences", label: "Urlaub/Abwesenheit" },
 ];
 
+// Bonus-Cockpit ist nur für Fachkräfte relevant (eigenes Stundenmodell/Quote) - Admin hat kein
+// persönliches Cockpit, sondern die Übersicht unter /admin/bonus.
 const ROW2_EMPLOYEE_ITEMS: NavItem[] = [
   { href: "/knowledge-base", label: "Fachbox" },
   { href: "/messages", label: "Nachrichten" },
-  { href: "/bonus", label: "Bonus" },
   { href: "/reports", label: "Sammel-Export" },
+  { href: "/bonus", label: "Bonus" },
 ];
 
 const ROW2_ADMIN_EXTRA: NavItem[] = [
@@ -57,7 +59,11 @@ export function Nav({
   const pathname = usePathname();
   const isVerwaltung = role === "VERWALTUNG";
   const rowOne = isVerwaltung ? VERWALTUNG_ITEMS : ROW1_ITEMS;
-  const rowTwo = isVerwaltung ? [] : role === "ADMIN" ? [...ROW2_EMPLOYEE_ITEMS, ...ROW2_ADMIN_EXTRA] : ROW2_EMPLOYEE_ITEMS;
+  const rowTwo = isVerwaltung
+    ? []
+    : role === "ADMIN"
+      ? [...ROW2_EMPLOYEE_ITEMS.filter((item) => item.href !== "/bonus"), ...ROW2_ADMIN_EXTRA]
+      : ROW2_EMPLOYEE_ITEMS;
 
   const tabCls = (active: boolean) =>
     `flex min-w-0 items-center border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
@@ -65,10 +71,10 @@ export function Nav({
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
     }`;
-  // Row1/Row2 haben je 7 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
+  // Row1/Row2 haben je 6 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
   // damit gleichnamige Spalten zeilenübergreifend exakt untereinanderstehen, unabhängig
   // von der Textlänge. Verwaltung hat ein eigenes, kleineres Set ohne zweite Zeile.
-  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-7 items-stretch";
+  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-6 items-stretch";
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import type { UpcomingWeek } from "@/lib/bonus";
-import { BONUS_PRIMARY } from "./bonus-colors";
+import { BONUS_PRIMARY } from "@/lib/bonus-colors";
 
 export function CapacityCalendar({ weeks }: { weeks: UpcomingWeek[] }) {
   return (

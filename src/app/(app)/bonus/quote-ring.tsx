@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BONUS_PRIMARY, BONUS_DARK_TEXT } from "./bonus-colors";
+import { BONUS_PRIMARY, BONUS_DARK_TEXT } from "@/lib/bonus-colors";
 
 const SIZE = 176;
 const STROKE = 14;
