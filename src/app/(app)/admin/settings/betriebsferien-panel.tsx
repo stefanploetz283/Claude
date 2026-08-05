@@ -13,7 +13,7 @@ export function BetriebsferienPanel({ periods }: { periods: BetriebsferienRow[] 
     <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
       <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Betriebsferien</h2>
       <p className="mb-3 text-sm text-[var(--color-text-muted)]">
-        Wochen, die vollständig in einen dieser Zeiträume fallen, zählen weder in der Kapazitätsplanung noch im Bonus-Cockpit als
+        Wochen, die vollständig in einen dieser Zeiträume fallen, zählen weder in der Kapazitätsplanung noch im Bonus-Bereich als
         Anwesenheitswochen.
       </p>
 

@@ -32,7 +32,7 @@ export default async function BonusPage() {
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Bonus-Cockpit</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Bonus</h1>
         </div>
         <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
           <p className="text-sm text-[var(--color-text-muted)]">

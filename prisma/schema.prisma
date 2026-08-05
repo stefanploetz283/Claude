@@ -56,6 +56,13 @@ model User {
   weeklyContractHours Decimal?   @db.Decimal(5, 2) // Vertragsstunden/Woche, für Kapazitätsplanung
   allowedHelpTypes    HelpType[] @relation("EmployeeAllowedHelpTypes") // welche Hilfearten diese Fachkraft bearbeiten darf
 
+  // Stundenmodell-Rechner (Jahresarbeitszeit/August-Vorarbeit)
+  weeklyWorkDays   Int?     // Tage/Woche, 4 oder 5
+  hireDate         DateTime? @db.Date // Eintrittsdatum
+  fondsBasisAtHire Decimal?  @db.Decimal(5, 2) // Bestandsschutz-Snapshot der Fonds-Basis bei Einstellung
+
+  mitarbeiterPlaene MitarbeiterPlan[]
+
   @@index([role])
 }
 
@@ -534,6 +541,11 @@ model Settings {
   contingentWarningThreshold  Int     @default(10) // Prozent
   sessionIdleTimeoutMinutes   Int     @default(20)
   employeesCanContributeKnowledge Boolean @default(false)
+
+  // Stundenmodell-Rechner: EINE zentrale Fonds-Basis (%), neue Mitarbeiter übernehmen sie bei Einstellung
+  // als eigenen Bestandsschutz-Snapshot (User.fondsBasisAtHire) - kein Mitarbeiter-Wahlrecht.
+  aktuelleFondsBasis          Decimal @default(70.28) @db.Decimal(5, 2)
+
   updatedAt                   DateTime @updatedAt
 }
 
@@ -587,4 +599,41 @@ model QuarterlyBonusPayout {
   paidOutById String
 
   @@unique([employeeId, year, quarter])
+}
+
+// ---------- Stundenmodell-Rechner ----------
+
+// Katalog datierter Sondertage (Konzeptionstag/Teamtag), die einem oder mehreren Mitarbeiter-Plänen
+// zugeordnet werden können - als gemeinsamer Katalog, damit die Team-Gesamtansicht Kollisionen erkennen kann.
+model SondertagTyp {
+  id                String            @id @default(cuid())
+  name              String // z.B. "Konzeptionstag" oder "Teamtag"
+  datum             DateTime          @db.Date
+  dauerStd          Decimal           @db.Decimal(4, 2)
+  istEchterExtraTag Boolean // true = Tag ohne normale Arbeitszeit, false = verlängerter Normaltag
+  createdAt         DateTime          @default(now())
+
+  plaene            MitarbeiterPlan[]
+
+  @@index([datum])
+}
+
+// Versionierter Arbeitszeit-/Wochenplan eines Mitarbeiters ("Anpassen ab jetzt"): ein neuer Eintrag mit
+// gültigAb legt eine neue Version an, ältere Pläne bleiben unverändert als Historie erhalten.
+model MitarbeiterPlan {
+  id         String   @id @default(cuid())
+  employee   User     @relation(fields: [employeeId], references: [id])
+  employeeId String
+  gueltigAb  DateTime @db.Date
+
+  // Liste von {day: 1-7 (Mo-So), start: "HH:mm", end: "HH:mm"} - bewusst als JSON, da es sich um eine
+  // kleine, in sich geschlossene Struktur ohne eigene Abfragebedürfnisse handelt.
+  wochenplan Json
+
+  sondertage SondertagTyp[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([employeeId, gueltigAb])
 }

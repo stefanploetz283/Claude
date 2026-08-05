@@ -47,7 +47,7 @@ export async function startTimer(_prev: ActionState, formData: FormData): Promis
     },
   });
 
-  revalidatePath("/time-tracking");
+  revalidatePath("/zeit-kapazitaet/zeiterfassung");
 }
 
 export async function stopTimer() {
@@ -63,7 +63,7 @@ export async function stopTimer() {
     data: { endTime: now, durationMinutes },
   });
 
-  revalidatePath("/time-tracking");
+  revalidatePath("/zeit-kapazitaet/zeiterfassung");
 }
 
 export async function createManualEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -112,7 +112,7 @@ export async function createManualEntry(_prev: ActionState, formData: FormData):
   });
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "TimeEntry" });
-  revalidatePath("/time-tracking");
+  revalidatePath("/zeit-kapazitaet/zeiterfassung");
 }
 
 export async function deleteTimeEntry(id: string) {
@@ -122,5 +122,5 @@ export async function deleteTimeEntry(id: string) {
 
   await prisma.timeEntry.delete({ where: { id } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "TimeEntry", entityId: id, details: "Gelöscht" });
-  revalidatePath("/time-tracking");
+  revalidatePath("/zeit-kapazitaet/zeiterfassung");
 }

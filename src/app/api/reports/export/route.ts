@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
-import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
+import { requireAdmin } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 import { buildBulkPdf } from "@/lib/export/bulk-pdf";
 import { buildBulkExcel } from "@/lib/export/bulk-excel";
@@ -10,7 +10,7 @@ import { monthOrRangeLabel } from "@/lib/date";
 import { resolveClientAddress } from "@/lib/client-address";
 
 export async function POST(req: NextRequest) {
-  const user = await requireUser();
+  const user = await requireAdmin();
   const formData = await req.formData();
 
   const caseIds = formData.getAll("caseIds").map(String);
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const to = toStr ? new Date(new Date(toStr).getTime() + 24 * 60 * 60 * 1000 - 1) : new Date();
 
   const cases = await prisma.case.findMany({
-    where: { id: { in: caseIds }, ...caseVisibilityWhere(user) },
+    where: { id: { in: caseIds } },
     include: { client: true, helpType: true, assignedEmployee: true },
   });
 

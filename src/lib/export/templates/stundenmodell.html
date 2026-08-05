@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jahresarbeitszeit-Vereinbarung</title>
+<style>
+  :root{
+    --petrol:#204D4B;
+    --sage:#9FA47E;
+    --gold:#D2AD69;
+    --cream:#F5F0E8;
+    --ink:#2E3330;
+    --ink-soft:#5C635E;
+    --line:#E2D9C8;
+  }
+  *{box-sizing:border-box}
+  body{ margin:0; background:var(--cream); font-family:'Outfit', Arial, sans-serif; color:var(--ink); }
+  .page{ position:relative; width:794px; min-height:1123px; margin:0 auto; padding:56px 64px; background:var(--cream); }
+  .logo-img{ width:200px; display:block; }
+  .logorule{ height:1.5px; background:var(--gold); width:100%; margin:18px 0 0; }
+  h1.doc{ font-weight:700; color:var(--petrol); font-size:26px; margin:36px 0 4px; }
+  .sub{ color:var(--ink-soft); font-size:13px; margin-bottom:28px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 28px; font-size:13px; margin-bottom:26px; }
+  .grid .k{ color:var(--ink-soft); }
+  .grid .v{ font-weight:600; color:var(--petrol); text-align:right; }
+  table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+  thead td{ background:var(--sage); color:#fff; font-weight:600; font-size:11px; letter-spacing:0.05em; padding:9px 12px; }
+  tbody td{ padding:9px 12px; border-bottom:1px solid var(--line); }
+  h2.section{ font-size:14px; color:var(--petrol); margin:26px 0 8px; }
+  .footer{ position:absolute; bottom:40px; left:64px; right:64px; font-size:10px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <img class="logo-img" src="logo-lockup.png" alt="Logo">
+    <div class="logorule"></div>
+    <h1 class="doc">Jahresarbeitszeit-Vereinbarung</h1>
+    <p class="sub" data-field="untertitel"></p>
+
+    <div class="grid">
+      <div class="k">Mitarbeiter</div><div class="v" data-field="mitarbeiter_name"></div>
+      <div class="k">Wochenstunden / Tage</div><div class="v" data-field="wochenstunden_tage"></div>
+      <div class="k">Fonds-Basis</div><div class="v" data-field="fonds_basis"></div>
+      <div class="k">Std./Tag</div><div class="v" data-field="std_pro_tag"></div>
+      <div class="k">Fonds-Tage</div><div class="v" data-field="fonds_tage"></div>
+      <div class="k">Vorarbeit (Tage / Std.)</div><div class="v" data-field="vorarbeit"></div>
+      <div class="k">Überschuss Sondertage</div><div class="v" data-field="ueberschuss"></div>
+      <div class="k">Rest (Std. / Min. pro Tag)</div><div class="v" data-field="rest"></div>
+      <div class="k">Gültig ab</div><div class="v" data-field="gueltig_ab"></div>
+    </div>
+
+    <h2 class="section">Wochenplan</h2>
+    <table>
+      <thead><tr><td>Tag</td><td>Von</td><td>Bis</td></tr></thead>
+      <tbody data-html-field="wochenplan_rows"></tbody>
+    </table>
+
+    <h2 class="section">Zugeordnete Sondertage</h2>
+    <table>
+      <thead><tr><td>Name</td><td>Datum</td><td>Dauer</td><td>Art</td></tr></thead>
+      <tbody data-html-field="sondertag_rows"></tbody>
+    </table>
+
+    <div class="footer" data-field="footer_text"></div>
+  </div>
+</body>
+</html>

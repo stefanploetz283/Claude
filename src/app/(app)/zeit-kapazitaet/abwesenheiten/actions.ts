@@ -25,7 +25,7 @@ export async function createAbsence(_prev: ActionState, formData: FormData): Pro
   });
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Absence" });
-  revalidatePath("/absences");
+  revalidatePath("/zeit-kapazitaet/abwesenheiten");
 }
 
 export async function deleteAbsence(id: string) {
@@ -35,5 +35,5 @@ export async function deleteAbsence(id: string) {
 
   await prisma.absence.delete({ where: { id } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "Absence", entityId: id, details: "Gelöscht" });
-  revalidatePath("/absences");
+  revalidatePath("/zeit-kapazitaet/abwesenheiten");
 }

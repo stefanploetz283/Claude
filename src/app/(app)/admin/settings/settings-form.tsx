@@ -110,6 +110,25 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       </div>
 
       <div className={cardCls}>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Stundenmodell-Rechner</h2>
+        <label className="flex max-w-xs flex-col gap-1.5">
+          <span className={labelCls}>Aktuelle Fonds-Basis (%)</span>
+          <input
+            name="aktuelleFondsBasis"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            defaultValue={settings.aktuelleFondsBasis.toString()}
+            className={inputCls}
+          />
+          <span className="text-xs text-[var(--color-text-muted)]">
+            Neue Mitarbeiter übernehmen diesen Wert bei Einstellung als Bestandsschutz-Snapshot.
+          </span>
+        </label>
+      </div>
+
+      <div className={cardCls}>
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Verhalten</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">

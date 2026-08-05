@@ -65,7 +65,7 @@ export default async function AdminBonusPage({ searchParams }: { searchParams: P
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Bonus-Cockpit · Verwaltung</h1>
+        <h1 className="text-xl font-semibold text-[var(--color-text)]">Bonus · Verwaltung</h1>
         <p className="mt-1 text-sm text-black/60">Quartals-Bonus prüfen und auszahlen, Sachbezug-Gutscheine der Mitarbeiter einsehen.</p>
       </div>
 

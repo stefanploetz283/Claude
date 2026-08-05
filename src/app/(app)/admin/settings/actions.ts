@@ -27,6 +27,7 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   const billableCapacityFactorStr = String(formData.get("billableCapacityFactor") ?? "").trim();
   const defaultPhaseOutWeeksStr = String(formData.get("defaultPhaseOutWeeks") ?? "").trim();
   const targetParallelCasesAtFullTimeStr = String(formData.get("targetParallelCasesAtFullTime") ?? "").trim();
+  const aktuelleFondsBasisStr = String(formData.get("aktuelleFondsBasis") ?? "").trim();
 
   if (!practiceName) return { error: "Bitte einen Praxisnamen angeben." };
 
@@ -40,6 +41,11 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   const targetParallelCasesAtFullTime = targetParallelCasesAtFullTimeStr ? Number(targetParallelCasesAtFullTimeStr) : undefined;
   if (billableCapacityFactor !== undefined && (!Number.isFinite(billableCapacityFactor) || billableCapacityFactor <= 0)) {
     return { error: "Bitte einen gültigen Kapazitätsfaktor angeben." };
+  }
+
+  const aktuelleFondsBasis = aktuelleFondsBasisStr ? Number(aktuelleFondsBasisStr) : undefined;
+  if (aktuelleFondsBasis !== undefined && (!Number.isFinite(aktuelleFondsBasis) || aktuelleFondsBasis < 0 || aktuelleFondsBasis > 100)) {
+    return { error: "Bitte eine gültige Fonds-Basis (0-100%) angeben." };
   }
 
   let logoUrl: string | undefined;
@@ -69,6 +75,7 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
       billableCapacityFactor,
       defaultPhaseOutWeeks: Number.isFinite(defaultPhaseOutWeeks) ? defaultPhaseOutWeeks : undefined,
       targetParallelCasesAtFullTime: Number.isFinite(targetParallelCasesAtFullTime) ? targetParallelCasesAtFullTime : undefined,
+      aktuelleFondsBasis,
       contingentWarningThreshold: Number.isFinite(contingentWarningThreshold) ? contingentWarningThreshold : undefined,
       sessionIdleTimeoutMinutes: Number.isFinite(sessionIdleTimeoutMinutes) ? sessionIdleTimeoutMinutes : undefined,
       employeesCanContributeKnowledge,

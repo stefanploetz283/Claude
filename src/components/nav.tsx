@@ -6,34 +6,23 @@ import { signOut } from "next-auth/react";
 
 type NavItem = { href: string; label: string };
 
+// Obere Reiterleiste: tägliches Arbeitswerkzeug, für Fachkraft und Admin bewusst identisch (der Admin
+// bearbeitet laut Bestand auch eigene Fälle). Verwaltungs-/Planungswerkzeuge stehen stattdessen nur für
+// die Admin-Rolle in der linken Seitenleiste (siehe sidebar.tsx).
 const ROW1_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Fälle" },
   { href: "/voice-entry", label: "Diktat" },
-  { href: "/kapazitaet", label: "Kapazität" },
+  { href: "/zeit-kapazitaet", label: "Zeit & Kapazität" },
   { href: "/calendar", label: "Kalender" },
-  { href: "/time-tracking", label: "Zeiterfassung" },
-  { href: "/absences", label: "Urlaub/Abwesenheit" },
-];
-
-// Bonus-Cockpit ist nur für Fachkräfte relevant (eigenes Stundenmodell/Quote) - Admin hat kein
-// persönliches Cockpit, sondern die Übersicht unter /admin/bonus.
-const ROW2_EMPLOYEE_ITEMS: NavItem[] = [
   { href: "/knowledge-base", label: "Fachbox" },
-  { href: "/messages", label: "Nachrichten" },
-  { href: "/reports", label: "Sammel-Export" },
   { href: "/bonus", label: "Bonus" },
-];
-
-const ROW2_ADMIN_EXTRA: NavItem[] = [
-  { href: "/rechnungen", label: "Rechnungen" },
-  { href: "/statistics", label: "Statistik" },
-  { href: "/admin/employees", label: "Mitarbeiter" },
+  { href: "/messages", label: "Nachrichten" },
 ];
 
 // Verwaltung sieht bewusst keine fachliche Dokumentation - eigener, reduzierter Navigationsumfang.
 const VERWALTUNG_ITEMS: NavItem[] = [
   { href: "/rechnungen", label: "Rechnungen" },
-  { href: "/kapazitaet", label: "Kapazität" },
+  { href: "/zeit-kapazitaet/kapazitaet", label: "Kapazität" },
 ];
 
 const ROLE_LABELS = { ADMIN: "Administrator", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" } as const;
@@ -59,11 +48,6 @@ export function Nav({
   const pathname = usePathname();
   const isVerwaltung = role === "VERWALTUNG";
   const rowOne = isVerwaltung ? VERWALTUNG_ITEMS : ROW1_ITEMS;
-  const rowTwo = isVerwaltung
-    ? []
-    : role === "ADMIN"
-      ? [...ROW2_EMPLOYEE_ITEMS.filter((item) => item.href !== "/bonus"), ...ROW2_ADMIN_EXTRA]
-      : ROW2_EMPLOYEE_ITEMS;
 
   const tabCls = (active: boolean) =>
     `flex min-w-0 items-center border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
@@ -71,10 +55,7 @@ export function Nav({
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
     }`;
-  // Row1/Row2 haben je 6 fest definierte Spalten (ROW1_ITEMS/ROW2_*) - Grid statt Flex,
-  // damit gleichnamige Spalten zeilenübergreifend exakt untereinanderstehen, unabhängig
-  // von der Textlänge. Verwaltung hat ein eigenes, kleineres Set ohne zweite Zeile.
-  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-6 items-stretch";
+  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-7 items-stretch";
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
@@ -96,15 +77,6 @@ export function Nav({
               </Link>
             ))}
           </nav>
-          {rowTwo.length > 0 && (
-            <nav className={rowGridCls}>
-              {rowTwo.map((item) => (
-                <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
-                  <span className="truncate">{item.label}</span>
-                </Link>
-              ))}
-            </nav>
-          )}
         </div>
 
         <div className="w-7 shrink-0" />

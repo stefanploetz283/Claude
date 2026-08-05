@@ -25,7 +25,7 @@ export async function createWaitlistEntry(_prev: ActionState, formData: FormData
   });
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "WaitlistEntry", details: clientName });
-  revalidatePath("/kapazitaet");
+  revalidatePath("/zeit-kapazitaet/kapazitaet");
   return { success: "Auf die Warteliste gesetzt." };
 }
 
@@ -33,7 +33,7 @@ export async function cancelWaitlistEntry(id: string) {
   const user = await requireAdminOrVerwaltung();
   await prisma.waitlistEntry.update({ where: { id }, data: { status: "CANCELLED" } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "WaitlistEntry", entityId: id, details: "Zurückgezogen" });
-  revalidatePath("/kapazitaet");
+  revalidatePath("/zeit-kapazitaet/kapazitaet");
 }
 
 export type ConvertActionState = { error?: string } | undefined;
@@ -87,6 +87,6 @@ export async function convertWaitlistEntry(_prev: ConvertActionState, formData: 
   await prisma.waitlistEntry.update({ where: { id: waitlistEntryId }, data: { status: "CONVERTED", matchedCaseId: newCase.id } });
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Case", entityId: newCase.id, details: "Aus Warteliste eingeplant" });
-  revalidatePath("/kapazitaet");
+  revalidatePath("/zeit-kapazitaet/kapazitaet");
   redirect(`/cases/${newCase.id}`);
 }

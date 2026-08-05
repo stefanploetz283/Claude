@@ -5,7 +5,7 @@ import { Sidebar, shouldShowSidebar } from "./sidebar";
 
 export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG"; children: React.ReactNode }) {
   const pathname = usePathname();
-  const withSidebar = shouldShowSidebar(pathname);
+  const withSidebar = role === "ADMIN" && shouldShowSidebar(pathname);
 
   if (!withSidebar) {
     return (

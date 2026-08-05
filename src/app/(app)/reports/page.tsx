@@ -1,13 +1,15 @@
-import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
+import { requireAdmin } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { toDateInputValue } from "@/lib/date";
 import { SelectAllCheckbox } from "./select-all";
 
+// Bulk-Export für Jugendamt/Steuerberater, bewusst kein Werkzeug für einzelne Fachkräfte - deshalb nur
+// noch über die Admin-Seitenleiste erreichbar.
 export default async function ReportsPage() {
-  const user = await requireUser();
+  await requireAdmin();
 
   const cases = await prisma.case.findMany({
-    where: { archived: false, ...caseVisibilityWhere(user) },
+    where: { archived: false },
     include: { client: true, helpType: true },
     orderBy: [{ client: { lastName: "asc" } }],
   });
