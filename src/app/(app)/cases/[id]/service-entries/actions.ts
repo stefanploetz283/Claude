@@ -93,6 +93,32 @@ export async function deleteServiceEntry(id: string, caseId: string) {
   revalidatePath(`/cases/${caseId}`);
 }
 
+export async function submitForApproval(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const caseId = String(formData.get("caseId") ?? "");
+  const year = Number(formData.get("year") ?? 0);
+  const month = Number(formData.get("month") ?? 0);
+
+  if (!year || !month) return { error: "Ungültiger Zeitraum." };
+
+  const user = await assertCaseAccess(caseId);
+
+  await prisma.monthlyApproval.upsert({
+    where: { caseId_year_month: { caseId, year, month } },
+    update: { status: "WARTET_AUF_FREIGABE", submittedById: user.id, submittedAt: new Date(), correctionNote: null },
+    create: { caseId, year, month, status: "WARTET_AUF_FREIGABE", submittedById: user.id, submittedAt: new Date() },
+  });
+
+  await logAccess({
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "MonthlyApproval",
+    entityId: caseId,
+    details: `Zur Freigabe eingereicht ${month}/${year}`,
+  });
+  revalidatePath(`/cases/${caseId}/service-entries`);
+  return { success: true };
+}
+
 export async function saveProcessNote(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const caseId = String(formData.get("caseId") ?? "");
   const year = Number(formData.get("year") ?? 0);

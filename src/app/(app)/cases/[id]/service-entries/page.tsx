@@ -10,6 +10,20 @@ import { CaseTabs } from "../case-tabs";
 import { NewEntryForm } from "./entry-form";
 import { EntryRow } from "./entry-row";
 import { ProcessNoteForm } from "./process-note-form";
+import { ApprovalForm } from "./approval-form";
+
+const APPROVAL_STATUS_LABELS: Record<string, string> = {
+  IN_BEARBEITUNG: "In Bearbeitung",
+  WARTET_AUF_FREIGABE: "Wartet auf Freigabe",
+  FREIGEGEBEN: "Freigegeben",
+  KORREKTUR_ANGEFORDERT: "Korrektur angefordert",
+};
+const APPROVAL_STATUS_COLORS: Record<string, string> = {
+  IN_BEARBEITUNG: "bg-[var(--color-border)] text-[var(--color-text-muted)]",
+  WARTET_AUF_FREIGABE: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
+  FREIGEGEBEN: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
+  KORREKTUR_ANGEFORDERT: "bg-[var(--color-coral)]/15 text-[var(--color-coral)]",
+};
 
 export default async function ServiceEntriesPage({
   params,
@@ -48,6 +62,10 @@ export default async function ServiceEntriesPage({
   const noteMonth = Number(sp.pmonth) || now.getMonth() + 1;
   const processNote = await prisma.monthlyProcessNote.findUnique({
     where: { caseId_year_month: { caseId: id, year: noteYear, month: noteMonth } },
+  });
+  const approval = await prisma.monthlyApproval.findUnique({
+    where: { caseId_year_month: { caseId: id, year: noteYear, month: noteMonth } },
+    include: { reviewedBy: true },
   });
   const noteMonthLabel = format(new Date(Date.UTC(noteYear, noteMonth - 1, 1)), "MMMM yyyy", { locale: de });
   const prevNote = noteMonth === 1 ? { year: noteYear - 1, month: 12 } : { year: noteYear, month: noteMonth - 1 };
@@ -169,6 +187,55 @@ export default async function ServiceEntriesPage({
                 Als PDF exportieren
               </button>
             </form>
+          </div>
+
+          <div className={cardCls}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-[var(--color-text)]">Freigabe der Leistungsdokumentation</h2>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${APPROVAL_STATUS_COLORS[approval?.status ?? "IN_BEARBEITUNG"]}`}
+              >
+                {APPROVAL_STATUS_LABELS[approval?.status ?? "IN_BEARBEITUNG"]}
+              </span>
+            </div>
+            <div className="mb-3 flex items-center justify-between text-sm">
+              <Link
+                href={`?pyear=${prevNote.year}&pmonth=${prevNote.month}`}
+                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+              >
+                ← Vormonat
+              </Link>
+              <span className="font-semibold text-[var(--color-text)]">{noteMonthLabel}</span>
+              <Link
+                href={`?pyear=${nextNote.year}&pmonth=${nextNote.month}`}
+                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+              >
+                Folgemonat →
+              </Link>
+            </div>
+
+            {approval?.status === "KORREKTUR_ANGEFORDERT" && approval.correctionNote && (
+              <p className="mb-3 rounded-[var(--radius-control)] bg-[var(--color-coral)]/10 px-3.5 py-2.5 text-sm text-[var(--color-text)]">
+                <strong>Korrektur von {approval.reviewedBy?.name ?? "Admin"}:</strong> {approval.correctionNote}
+              </p>
+            )}
+
+            {approval?.status === "WARTET_AUF_FREIGABE" && (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Wartet auf Prüfung durch den Admin. Änderungen an den Einträgen sind bis zur Freigabe weiterhin möglich.
+              </p>
+            )}
+
+            {approval?.status === "FREIGEGEBEN" && (
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Freigegeben{approval.reviewedAt ? ` am ${format(approval.reviewedAt, "dd.MM.yyyy", { locale: de })}` : ""}
+                {approval.reviewedBy ? ` von ${approval.reviewedBy.name}` : ""}. Bereit zur Rechnungsstellung.
+              </p>
+            )}
+
+            {(!approval || approval.status === "IN_BEARBEITUNG" || approval.status === "KORREKTUR_ANGEFORDERT") && (
+              <ApprovalForm caseId={id} year={noteYear} month={noteMonth} />
+            )}
           </div>
 
           <div className={cardCls}>

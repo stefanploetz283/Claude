@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const SIDEBAR_ROUTES = ["/dashboard", "/cases", "/admin/help-types", "/admin/access-log", "/admin/settings"];
+const SIDEBAR_ROUTES = ["/dashboard", "/cases", "/admin/approvals", "/admin/help-types", "/admin/access-log", "/admin/settings"];
 
 export function shouldShowSidebar(pathname: string) {
   return SIDEBAR_ROUTES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/") || pathname.startsWith(prefix + "?"));
@@ -17,6 +17,16 @@ const ICON_FAELLE = (
 );
 
 const ADMIN_LINKS = [
+  {
+    href: "/admin/approvals",
+    label: "Freigaben",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 12l2 2 4-4" />
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    ),
+  },
   {
     href: "/admin/help-types",
     label: "Angebotskatalog",

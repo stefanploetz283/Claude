@@ -21,3 +21,21 @@ export function monthOrRangeLabel(from: Date, to: Date): string {
   if (single) return format(new Date(Date.UTC(single.year, single.month - 1, 1)), "MMMM yyyy", { locale: de });
   return `${format(from, "dd.MM.yyyy")} – ${format(to, "dd.MM.yyyy")}`;
 }
+
+/** Erster und letzter Tag (23:59:59.999 UTC) eines Kalendermonats, z.B. für Abrechnungszeiträume. */
+export function monthDateRange(year: number, month: number): { from: Date; to: Date } {
+  const from = new Date(Date.UTC(year, month - 1, 1));
+  const to = new Date(Date.UTC(year, month, 1) - 1);
+  return { from, to };
+}
+
+/**
+ * Wie monthDateRange, aber als "YYYY-MM-DD"-Strings (erster/letzter Tag) für <input type="date">
+ * bzw. Query-Parameter - bewusst ohne Date-Objekt-Umweg über lokale Zeitzone, damit es exakt zu den
+ * UTC-basierten Zeitraumsgrenzen von monthDateRange passt.
+ */
+export function monthDateInputRange(year: number, month: number): { fromStr: string; toStr: string } {
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return { fromStr: `${year}-${pad(month)}-01`, toStr: `${year}-${pad(month)}-${pad(lastDay)}` };
+}

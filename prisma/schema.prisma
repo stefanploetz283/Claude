@@ -44,6 +44,8 @@ model User {
   accessLogs        AccessLog[]
   issuedInvoices    Invoice[]
   createdWaitlistEntries WaitlistEntry[]
+  submittedApprovals MonthlyApproval[] @relation("ApprovalSubmittedBy")
+  reviewedApprovals  MonthlyApproval[] @relation("ApprovalReviewedBy")
 
   sentMessages      Message[]
   messageRecipients MessageRecipient[]
@@ -161,6 +163,7 @@ model Case {
   documents            Document[]
   messages             Message[]
   processNotes         MonthlyProcessNote[]
+  monthlyApprovals     MonthlyApproval[]
   invoices             Invoice[]
   waitlistOrigin       WaitlistEntry?
 
@@ -237,6 +240,42 @@ model MonthlyProcessNote {
 
   @@unique([caseId, year, month])
   @@index([caseId])
+}
+
+enum ApprovalStatus {
+  IN_BEARBEITUNG
+  WARTET_AUF_FREIGABE
+  FREIGEGEBEN
+  KORREKTUR_ANGEFORDERT
+}
+
+// Freigabe-Workflow für die Leistungsdokumentation eines Falls in einem Abrechnungsmonat.
+// Erst ab Status FREIGEGEBEN wird der Zeitraum im Verwaltungsbereich zur Rechnungsstellung sichtbar.
+model MonthlyApproval {
+  id     String @id @default(cuid())
+  case   Case   @relation(fields: [caseId], references: [id])
+  caseId String
+  year   Int
+  month  Int // 1-12
+
+  status ApprovalStatus @default(IN_BEARBEITUNG)
+
+  submittedBy   User?     @relation("ApprovalSubmittedBy", fields: [submittedById], references: [id])
+  submittedById String?
+  submittedAt   DateTime?
+
+  reviewedBy   User?     @relation("ApprovalReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  correctionNote String? // Pflichtkommentar bei Korrektur-Anforderung, sichtbar für die Fachkraft
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([caseId, year, month])
+  @@index([caseId])
+  @@index([status])
 }
 
 model CaseStatusHistory {
