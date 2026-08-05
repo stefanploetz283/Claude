@@ -33,6 +33,7 @@ export async function createAppointment(_prev: ActionState, formData: FormData):
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Appointment" });
   revalidatePath("/calendar");
+  if (caseId) revalidatePath(`/cases/${caseId}/appointments`);
 }
 
 export async function deleteAppointment(id: string) {
@@ -43,4 +44,5 @@ export async function deleteAppointment(id: string) {
   await prisma.appointment.delete({ where: { id } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "Appointment", entityId: id, details: "Gelöscht" });
   revalidatePath("/calendar");
+  if (appointment.caseId) revalidatePath(`/cases/${appointment.caseId}/appointments`);
 }
