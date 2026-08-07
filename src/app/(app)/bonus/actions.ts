@@ -31,5 +31,5 @@ export async function selectGutschein(_prev: ActionState, formData: FormData): P
     details: `${anbieter} ${month}/${year}`,
   });
   revalidatePath("/bonus");
-  revalidatePath("/admin/bonus");
+  revalidatePath(`/mitarbeiter/${user.id}/bonus`);
 }

@@ -54,6 +54,9 @@ export type Warning = { level: "gelb" | "rot"; message: string };
 
 export type SondertagWithMeta = SondertagInput & { id: string; name: string; datum: Date };
 
+/** Serialisierbare Sondertag-Katalogzeile für Client-Komponenten (datum als ISO-String statt Date). */
+export type SondertagRow = { id: string; name: string; datum: string; dauerStd: number; istEchterExtraTag: boolean };
+
 export type StundenmodellParams = {
   wochenstunden: number;
   tageProWoche: number;

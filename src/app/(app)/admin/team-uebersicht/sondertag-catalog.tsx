@@ -2,9 +2,8 @@
 
 import { useActionState, useTransition } from "react";
 import { format } from "date-fns";
+import type { SondertagRow } from "@/lib/stundenmodell";
 import { createSondertagTyp, deleteSondertagTyp } from "./actions";
-
-export type SondertagRow = { id: string; name: string; datum: string; dauerStd: number; istEchterExtraTag: boolean };
 
 export function SondertagCatalog({ sondertage }: { sondertage: SondertagRow[] }) {
   const [state, formAction, pending] = useActionState(createSondertagTyp, undefined);

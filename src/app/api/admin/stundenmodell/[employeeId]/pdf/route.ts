@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 import { logAccess } from "@/lib/access-log";
 import { buildStundenmodellPdf } from "@/lib/export/stundenmodell-pdf";
-import type { WochenplanEntry } from "@/app/(app)/admin/stundenmodell/actions";
+import type { WochenplanEntry } from "@/app/(app)/mitarbeiter/[id]/vertrag/actions";
 import type { SondertagWithMeta } from "@/lib/stundenmodell";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ employeeId: string }> }) {

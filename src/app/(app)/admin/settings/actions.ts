@@ -104,7 +104,6 @@ export async function createBetriebsferienPeriod(_prev: ActionState, formData: F
   await logAccess({ userId: admin.id, action: "CREATE", entityType: "BetriebsferienPeriod", details: label });
   revalidatePath("/admin/settings");
   revalidatePath("/bonus");
-  revalidatePath("/admin/bonus");
   return { success: "Betriebsferien angelegt." };
 }
 
@@ -114,5 +113,4 @@ export async function deleteBetriebsferienPeriod(id: string) {
   await logAccess({ userId: admin.id, action: "DELETE", entityType: "BetriebsferienPeriod", entityId: id });
   revalidatePath("/admin/settings");
   revalidatePath("/bonus");
-  revalidatePath("/admin/bonus");
 }

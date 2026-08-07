@@ -2,10 +2,16 @@
 
 import { usePathname } from "next/navigation";
 import { Sidebar, shouldShowSidebar } from "./sidebar";
+import { MitarbeiterSubnav } from "./mitarbeiter-subnav";
+import { FinanzenSubnav } from "./finanzen-subnav";
 
 export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG"; children: React.ReactNode }) {
   const pathname = usePathname();
-  const withSidebar = role === "ADMIN" && shouldShowSidebar(pathname);
+  const isAdmin = role === "ADMIN";
+
+  const mitarbeiterMatch = isAdmin ? pathname.match(/^\/mitarbeiter\/([^/]+)/) : null;
+  const inFinanzen = isAdmin && pathname.startsWith("/finanzen");
+  const withSidebar = isAdmin && (mitarbeiterMatch != null || inFinanzen || shouldShowSidebar(pathname));
 
   if (!withSidebar) {
     return (
@@ -17,7 +23,13 @@ export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERW
 
   return (
     <div className="flex flex-1 items-stretch">
-      <Sidebar role={role} />
+      {mitarbeiterMatch ? (
+        <MitarbeiterSubnav employeeId={mitarbeiterMatch[1]} />
+      ) : inFinanzen ? (
+        <FinanzenSubnav />
+      ) : (
+        <Sidebar role={role} />
+      )}
       <div className="min-w-0 flex-1 px-5 py-8">
         <main className="mx-auto flex max-w-[1112px] min-w-0 flex-col gap-6">{children}</main>
       </div>

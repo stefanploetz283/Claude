@@ -19,9 +19,16 @@ const ROW1_ITEMS: NavItem[] = [
   { href: "/messages", label: "Nachrichten" },
 ];
 
+// Zusätzlich zu den 7 gemeinsamen Reitern, nur für Admin: zwei umfangreiche Hauptbereiche mit eigenen
+// Unterreitern (kontextuelle linke Navigation, siehe mitarbeiter-subnav.tsx/finanzen-subnav.tsx).
+const ADMIN_EXTRA_ITEMS: NavItem[] = [
+  { href: "/mitarbeiter", label: "Mitarbeiter" },
+  { href: "/finanzen", label: "Finanzen" },
+];
+
 // Verwaltung sieht bewusst keine fachliche Dokumentation - eigener, reduzierter Navigationsumfang.
 const VERWALTUNG_ITEMS: NavItem[] = [
-  { href: "/rechnungen", label: "Rechnungen" },
+  { href: "/finanzen/rechnungen", label: "Rechnungen" },
   { href: "/zeit-kapazitaet/kapazitaet", label: "Kapazität" },
 ];
 
@@ -47,7 +54,7 @@ export function Nav({
 }) {
   const pathname = usePathname();
   const isVerwaltung = role === "VERWALTUNG";
-  const rowOne = isVerwaltung ? VERWALTUNG_ITEMS : ROW1_ITEMS;
+  const rowOne = isVerwaltung ? VERWALTUNG_ITEMS : role === "ADMIN" ? [...ROW1_ITEMS, ...ADMIN_EXTRA_ITEMS] : ROW1_ITEMS;
 
   const tabCls = (active: boolean) =>
     `flex min-w-0 items-center border-b-2 px-2 py-[9px] text-[13.5px] leading-none transition ${
@@ -55,7 +62,7 @@ export function Nav({
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
         : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
     }`;
-  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : "grid grid-cols-7 items-stretch";
+  const rowGridCls = isVerwaltung ? "flex flex-wrap items-stretch" : role === "ADMIN" ? "grid grid-cols-9 items-stretch" : "grid grid-cols-7 items-stretch";
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">

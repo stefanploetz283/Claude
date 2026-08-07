@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import type { SondertagRow } from "./sondertag-catalog";
+import type { SondertagRow } from "@/lib/stundenmodell";
 
 export function TeamOverview({
   employees,

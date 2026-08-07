@@ -19,6 +19,6 @@ export async function updateHourlyRate(_prev: ActionState, formData: FormData): 
 
   await prisma.settings.update({ where: { id: "singleton" }, data: { hourlyRate } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "Settings", details: "Stundensatz geändert" });
-  revalidatePath("/rechnungen");
+  revalidatePath("/finanzen/rechnungen");
   return { success: "Stundensatz gespeichert." };
 }

@@ -2,16 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SidebarShell } from "./sidebar-shell";
 
 const SIDEBAR_ROUTES = [
   "/dashboard",
   "/cases",
-  "/rechnungen",
-  "/reports",
-  "/statistics",
-  "/admin/umsatz",
-  "/admin/employees",
-  "/admin/stundenmodell",
+  "/admin/team-uebersicht",
   "/admin/fahrtenrechner",
   "/admin/approvals",
   "/admin/help-types",
@@ -26,46 +22,11 @@ export function shouldShowSidebar(pathname: string) {
 type SidebarItem = { href: string; label: string; icon: React.ReactNode };
 type SidebarGroup = { title: string; items: SidebarItem[] };
 
-const ICON_RECHNUNGEN = (
+const ICON_TEAM = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" />
-    <path d="M9 13h6M9 17h6M9 9h2" />
-  </svg>
-);
-const ICON_EXPORT = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3v11" />
-    <path d="M8 7l4-4 4 4" />
-    <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-  </svg>
-);
-const ICON_STATISTIK = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="21" x2="5" y2="12" />
-    <line x1="12" y1="21" x2="12" y2="7" />
-    <line x1="19" y1="21" x2="19" y2="15" />
-  </svg>
-);
-const ICON_UMSATZ = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9.5 15.5c.5 1 1.4 1.5 2.5 1.5 1.7 0 3-1 3-2.2 0-2.8-5.5-1.3-5.5-4.1C9.5 9.5 10.8 8.5 12.5 8.5c1.1 0 2 .5 2.5 1.5" />
-    <line x1="12" y1="7" x2="12" y2="8.5" />
-    <line x1="12" y1="17" x2="12" y2="18.5" />
-  </svg>
-);
-const ICON_MITARBEITER = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-const ICON_STUNDENMODELL = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" />
-    <polyline points="12 7 12 12 15.5 14" />
+    <rect x="3" y="4" width="18" height="14" rx="2" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+    <line x1="9" y1="4" x2="9" y2="18" />
   </svg>
 );
 const ICON_FAHRTEN = (
@@ -102,24 +63,14 @@ const ICON_EINSTELLUNGEN = (
 
 const SIDEBAR_GROUPS: SidebarGroup[] = [
   {
-    title: "Verwaltung & Finanzen",
+    title: "Team-Planung",
     items: [
-      { href: "/rechnungen", label: "Rechnungen", icon: ICON_RECHNUNGEN },
-      { href: "/reports", label: "Sammel-Export", icon: ICON_EXPORT },
-      { href: "/statistics", label: "Statistik", icon: ICON_STATISTIK },
-      { href: "/admin/umsatz", label: "Umsatz-Cockpit", icon: ICON_UMSATZ },
-    ],
-  },
-  {
-    title: "Personal-Planung",
-    items: [
-      { href: "/admin/employees", label: "Mitarbeiter", icon: ICON_MITARBEITER },
-      { href: "/admin/stundenmodell", label: "Stundenmodell-Rechner", icon: ICON_STUNDENMODELL },
+      { href: "/admin/team-uebersicht", label: "Team-Gesamtansicht", icon: ICON_TEAM },
       { href: "/admin/fahrtenrechner", label: "Fahrten-/Fallrechner", icon: ICON_FAHRTEN },
     ],
   },
   {
-    title: "Freigaben & System",
+    title: "System",
     items: [
       { href: "/admin/approvals", label: "Freigaben", icon: ICON_FREIGABEN },
       { href: "/admin/help-types", label: "Angebotskatalog", icon: ICON_KATALOG },
@@ -129,25 +80,15 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
   },
 ];
 
-// Linke Seitenleiste ist bewusst Planung/Verwaltung und nur für die Admin-Rolle sichtbar/gefüllt - für
-// Fachkraft und Verwaltung bleibt sie komplett ausgeblendet (siehe app-body.tsx).
+// Linke Seitenleiste ist bewusst nur für die Admin-Rolle sichtbar/gefüllt, für die verbleibenden
+// kleineren Planungs-/Systemfunktionen. Innerhalb von /mitarbeiter und /finanzen wird sie durch die
+// kontextuelle Unter-Navigation dieser Bereiche ersetzt (siehe app-body.tsx).
 export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" }) {
   const pathname = usePathname();
   if (role !== "ADMIN") return null;
 
   return (
-    <aside className="relative hidden min-h-[600px] w-[288px] flex-none overflow-hidden bg-[var(--color-primary)] px-[22px] py-[28px] lg:block">
-      <svg viewBox="0 0 288 560" preserveAspectRatio="xMidYMin slice" className="pointer-events-none absolute top-0 left-0 h-full w-full" aria-hidden="true">
-        <g style={{ isolation: "isolate" }}>
-          <circle cx="70" cy="150" r="150" fill="var(--color-sage)" style={{ mixBlendMode: "multiply" }} />
-          <circle cx="200" cy="300" r="140" fill="var(--color-gold)" style={{ mixBlendMode: "multiply" }} />
-        </g>
-        <g fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.6">
-          <circle cx="70" cy="150" r="150" />
-          <circle cx="200" cy="300" r="140" />
-        </g>
-      </svg>
-
+    <SidebarShell>
       <div className="relative flex flex-col gap-3.5 rounded-[14px] bg-white p-5 shadow-[0_10px_24px_rgba(0,0,0,.15)]">
         <h2 className="text-[15px] font-semibold text-[var(--color-text)]">Schnellzugriff</h2>
 
@@ -206,6 +147,6 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
           </div>
         </div>
       ))}
-    </aside>
+    </SidebarShell>
   );
 }

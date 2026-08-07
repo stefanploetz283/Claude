@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function RechnungenRedirect() {
+export default function FinanzenRedirect() {
   redirect("/finanzen/rechnungen");
 }

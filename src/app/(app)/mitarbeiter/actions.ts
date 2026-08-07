@@ -32,7 +32,7 @@ export async function createEmployee(_prev: ActionState, formData: FormData): Pr
   const passwordHash = await hashPassword(tempPassword);
 
   // Neue Fachkräfte werden zunächst nur für "PROS Schule" freigegeben (Kapazitätsplanung) - weitere
-  // Hilfearten gibt der Admin danach manuell frei (Kapazität/Hilfearten-Bearbeitung unten auf der Seite).
+  // Hilfearten gibt der Admin danach manuell frei (Unterreiter "Vertrag & Stundenmodell").
   const defaultHelpType =
     role === "EMPLOYEE" ? await prisma.helpType.findUnique({ where: { name: DEFAULT_ALLOWED_HELP_TYPE_NAME } }) : null;
 
@@ -47,32 +47,9 @@ export async function createEmployee(_prev: ActionState, formData: FormData): Pr
   });
 
   await logAccess({ userId: admin.id, action: "CREATE", entityType: "User", entityId: user.id });
-  revalidatePath("/admin/employees");
+  revalidatePath("/mitarbeiter");
 
   return { success: `Mitarbeiter ${name} wurde angelegt.`, tempPassword };
-}
-
-export async function updateEmployeeCapacity(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const admin = await requireAdmin();
-  const userId = String(formData.get("userId") ?? "");
-  const weeklyStr = String(formData.get("weeklyContractHours") ?? "").trim();
-  const allowedHelpTypeIds = formData.getAll("allowedHelpTypeIds").map(String);
-
-  const weeklyContractHours = weeklyStr ? Number(weeklyStr) : null;
-  if (weeklyStr && (!Number.isFinite(weeklyContractHours) || weeklyContractHours! < 0)) {
-    return { error: "Bitte gültige Vertragsstunden angeben." };
-  }
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      weeklyContractHours,
-      allowedHelpTypes: { set: allowedHelpTypeIds.map((id) => ({ id })) },
-    },
-  });
-  await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: userId, details: "Kapazität/Hilfearten geändert" });
-  revalidatePath("/admin/employees");
-  return { success: "Gespeichert." };
 }
 
 export async function setEmployeeActive(userId: string, active: boolean) {
@@ -85,7 +62,8 @@ export async function setEmployeeActive(userId: string, active: boolean) {
     entityId: userId,
     details: active ? "Reaktiviert" : "Deaktiviert (archiviert)",
   });
-  revalidatePath("/admin/employees");
+  revalidatePath("/mitarbeiter");
+  revalidatePath(`/mitarbeiter/${userId}/stammdaten`);
 }
 
 export async function resetEmployeePassword(userId: string): Promise<{ tempPassword: string }> {
@@ -97,6 +75,25 @@ export async function resetEmployeePassword(userId: string): Promise<{ tempPassw
     data: { passwordHash, totpEnabled: false, totpSecret: null, totpSecretPending: null },
   });
   await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: userId, details: "Passwort zurückgesetzt" });
-  revalidatePath("/admin/employees");
+  revalidatePath(`/mitarbeiter/${userId}/stammdaten`);
   return { tempPassword };
+}
+
+export async function saveStammdaten(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const address = String(formData.get("address") ?? "").trim() || null;
+  const birthdayStr = String(formData.get("birthday") ?? "").trim();
+  const emergencyContact = String(formData.get("emergencyContact") ?? "").trim() || null;
+
+  if (!userId) return { error: "Mitarbeiter nicht gefunden." };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { address, birthday: birthdayStr ? new Date(birthdayStr) : null, emergencyContact },
+  });
+
+  await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: userId, details: "Stammdaten geändert" });
+  revalidatePath(`/mitarbeiter/${userId}/stammdaten`);
+  return { success: "Stammdaten gespeichert." };
 }

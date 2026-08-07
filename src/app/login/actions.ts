@@ -68,7 +68,7 @@ export async function verifyLogin(_prevState: ActionState, formData: FormData): 
 
   await clearPendingAuthCookie();
   const loggedInUser = await prisma.user.findUnique({ where: { email: pending.email }, select: { role: true } });
-  redirect(loggedInUser?.role === "VERWALTUNG" ? "/rechnungen" : "/dashboard");
+  redirect(loggedInUser?.role === "VERWALTUNG" ? "/finanzen/rechnungen" : "/dashboard");
 }
 
 export async function cancelLogin() {

@@ -7,13 +7,15 @@ import { logAccess } from "@/lib/access-log";
 
 export type ActionState = { error?: string; success?: string } | undefined;
 
-export async function saveProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function saveVertrag(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireAdmin();
 
   const employeeId = String(formData.get("employeeId") ?? "");
   const wochenstunden = Number(formData.get("wochenstunden") ?? "");
   const tageProWoche = Number(formData.get("tageProWoche") ?? "");
   const eintrittsdatumStr = String(formData.get("eintrittsdatum") ?? "").trim();
+  const tvoedStufe = String(formData.get("tvoedStufe") ?? "").trim() || null;
+  const allowedHelpTypeIds = formData.getAll("allowedHelpTypeIds").map(String);
 
   if (!employeeId || !Number.isFinite(wochenstunden) || wochenstunden <= 0) {
     return { error: "Bitte gültige Wochenstunden angeben." };
@@ -39,36 +41,14 @@ export async function saveProfile(_prev: ActionState, formData: FormData): Promi
       weeklyWorkDays: tageProWoche,
       hireDate: eintrittsdatumStr ? new Date(eintrittsdatumStr) : null,
       fondsBasisAtHire,
+      tvoedStufe,
+      allowedHelpTypes: { set: allowedHelpTypeIds.map((id) => ({ id })) },
     },
   });
 
-  await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: employeeId, details: "Stundenmodell-Profil gespeichert" });
-  revalidatePath("/admin/stundenmodell");
-  return { success: "Profil gespeichert." };
-}
-
-export async function createSondertagTyp(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const admin = await requireAdmin();
-
-  const name = String(formData.get("name") ?? "").trim();
-  const datumStr = String(formData.get("datum") ?? "");
-  const dauerStd = Number(formData.get("dauerStd") ?? "");
-  const istEchterExtraTag = formData.get("istEchterExtraTag") === "on";
-
-  if (!name || !datumStr) return { error: "Bitte Name und Datum angeben." };
-  if (!Number.isFinite(dauerStd) || dauerStd <= 0) return { error: "Bitte eine gültige Dauer angeben." };
-
-  await prisma.sondertagTyp.create({ data: { name, datum: new Date(datumStr), dauerStd, istEchterExtraTag } });
-  await logAccess({ userId: admin.id, action: "CREATE", entityType: "SondertagTyp", details: `${name} ${datumStr}` });
-  revalidatePath("/admin/stundenmodell");
-  return { success: "Sondertag angelegt." };
-}
-
-export async function deleteSondertagTyp(id: string) {
-  const admin = await requireAdmin();
-  await prisma.sondertagTyp.delete({ where: { id } });
-  await logAccess({ userId: admin.id, action: "DELETE", entityType: "SondertagTyp", entityId: id });
-  revalidatePath("/admin/stundenmodell");
+  await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: employeeId, details: "Vertrag & Stundenmodell gespeichert" });
+  revalidatePath(`/mitarbeiter/${employeeId}/vertrag`);
+  return { success: "Gespeichert." };
 }
 
 export type WochenplanEntry = { day: number; start: string; end: string };
@@ -106,6 +86,7 @@ export async function savePlan(_prev: ActionState, formData: FormData): Promise<
     entityId: employeeId,
     details: `Gültig ab ${gueltigAbStr}`,
   });
-  revalidatePath("/admin/stundenmodell");
+  revalidatePath(`/mitarbeiter/${employeeId}/vertrag`);
+  revalidatePath("/admin/team-uebersicht");
   return { success: "Plan gespeichert (neue Version, gültig ab)." };
 }

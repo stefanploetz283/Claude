@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setEmployeeActive, resetEmployeePassword } from "./actions";
+import { setEmployeeActive, resetEmployeePassword } from "../../actions";
 
-export function EmployeeRowActions({ id, active }: { id: string; active: boolean }) {
+export function AccountActions({ id, active }: { id: string; active: boolean }) {
   const [pending, startTransition] = useTransition();
   const [tempPassword, setTempPassword] = useState<string | null>(null);
 

@@ -20,10 +20,10 @@ export async function markBonusPaidOut(employeeId: string, year: number, quarter
     entityId: employeeId,
     details: `Q${quarter}/${year} als ausgezahlt markiert`,
   });
-  revalidatePath("/admin/bonus");
+  revalidatePath(`/mitarbeiter/${employeeId}/bonus`);
 }
 
-export async function toggleGutscheinBeschafft(id: string, beschafft: boolean) {
+export async function toggleGutscheinBeschafft(id: string, employeeId: string, beschafft: boolean) {
   const admin = await requireAdmin();
   await prisma.gutscheinAuswahl.update({ where: { id }, data: { beschafft } });
   await logAccess({
@@ -33,5 +33,5 @@ export async function toggleGutscheinBeschafft(id: string, beschafft: boolean) {
     entityId: id,
     details: beschafft ? "Als beschafft markiert" : "Beschaffung zurückgesetzt",
   });
-  revalidatePath("/admin/bonus");
+  revalidatePath(`/mitarbeiter/${employeeId}/bonus`);
 }

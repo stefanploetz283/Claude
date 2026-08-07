@@ -24,7 +24,7 @@ export async function approveMonth(caseId: string, year: number, month: number) 
   });
   revalidatePath("/admin/approvals");
   revalidatePath(`/cases/${caseId}/service-entries`);
-  revalidatePath("/rechnungen");
+  revalidatePath("/finanzen/rechnungen");
 }
 
 export async function requestCorrection(_prev: ActionState, formData: FormData): Promise<ActionState> {

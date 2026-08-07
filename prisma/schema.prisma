@@ -40,6 +40,8 @@ model User {
   absences          Absence[]
   appointments      Appointment[]     @relation("AppointmentOrganizer")
   uploadedDocuments Document[]
+  employeeDocuments EmployeeDocument[]
+  uploadedEmployeeDocuments EmployeeDocument[] @relation("EmployeeDocumentUploadedBy")
   knowledgeItems    KnowledgeItem[]
   accessLogs        AccessLog[]
   issuedInvoices    Invoice[]
@@ -60,8 +62,15 @@ model User {
   weeklyWorkDays   Int?     // Tage/Woche, 4 oder 5
   hireDate         DateTime? @db.Date // Eintrittsdatum
   fondsBasisAtHire Decimal?  @db.Decimal(5, 2) // Bestandsschutz-Snapshot der Fonds-Basis bei Einstellung
+  tvoedStufe       String? // z.B. "S8b Stufe 3"
 
   mitarbeiterPlaene MitarbeiterPlan[]
+
+  // Personalakte-Stammdaten
+  address                     String?
+  birthday                    DateTime? @db.Date
+  emergencyContact            String? // Name + Telefonnummer, Freitext
+  fuehrungszeugnisGueltigBis  DateTime? @db.Date // erw. Führungszeugnis nach §72a SGB VIII
 
   @@index([role])
 }
@@ -636,4 +645,22 @@ model MitarbeiterPlan {
   updatedAt  DateTime @updatedAt
 
   @@index([employeeId, gueltigAb])
+}
+
+// Personalakte-Dokumente (Lohnabrechnung/Arbeitsvertrag/Führungszeugnis/Sonstiges) - getrennt vom
+// fallbezogenen Document-Modell, da hier employeeId statt caseId der Bezugspunkt ist.
+model EmployeeDocument {
+  id           String   @id @default(cuid())
+  employee     User     @relation(fields: [employeeId], references: [id])
+  employeeId   String
+  fileName     String
+  fileKey      String // Schlüssel im S3-kompatiblen Speicher
+  mimeType     String
+  sizeBytes    Int
+  category     String?
+  uploadedBy   User     @relation("EmployeeDocumentUploadedBy", fields: [uploadedById], references: [id])
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+
+  @@index([employeeId])
 }
