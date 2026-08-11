@@ -127,7 +127,7 @@ export function Sidebar({ role }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG" })
 
       {SIDEBAR_GROUPS.map((group) => (
         <div key={group.title} className="relative mt-[22px]">
-          <div className="mb-2 px-1 text-[11px] font-semibold tracking-[.12em] text-[var(--color-sage)] uppercase">{group.title}</div>
+          <div className="mb-2 px-1 text-[11px] font-semibold tracking-[.12em] text-black uppercase">{group.title}</div>
           <div className="flex flex-col">
             {group.items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(item.href + "/");
