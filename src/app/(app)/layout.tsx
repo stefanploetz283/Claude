@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Nav } from "@/components/nav";
 import { AppBody } from "@/components/app-body";
 import { IdleTimer } from "@/components/idle-timer";
+import { GlobalDictateWidget } from "@/components/global-dictate/global-dictate-widget";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
@@ -33,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <AppBody role={user.role}>{children}</AppBody>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />
+      {(user.role === "EMPLOYEE" || user.role === "ADMIN") && <GlobalDictateWidget />}
     </div>
   );
 }

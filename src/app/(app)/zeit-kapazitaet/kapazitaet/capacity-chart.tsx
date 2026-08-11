@@ -114,9 +114,10 @@ export function CapacityChart({
         <span className="text-xs text-[var(--color-text-muted)]">{capacity.toFixed(1)} Std./Woche Kapazität</span>
       </div>
 
+      <div className="overflow-x-auto">
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="w-full cursor-crosshair"
+        className="w-full min-w-[640px] cursor-crosshair"
         onMouseLeave={() => setHoveredIndex(null)}
       >
         <defs>
@@ -180,6 +181,7 @@ export function CapacityChart({
           />
         ))}
       </svg>
+      </div>
 
       {overCapacityWeeks.length > 0 && (
         <p className="mt-1 text-xs text-[var(--color-coral)]">
