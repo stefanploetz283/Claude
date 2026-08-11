@@ -16,6 +16,7 @@ type Stage = "idle" | "recording" | "processing" | "review" | "saving" | "done" 
 
 type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
+type SpeechRecognitionErrorEventLike = { error: string };
 type RecognitionLike = {
   lang: string;
   continuous: boolean;
@@ -23,7 +24,7 @@ type RecognitionLike = {
   start: () => void;
   stop: () => void;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
 };
 
@@ -32,6 +33,11 @@ function getSpeechRecognition(): (new () => RecognitionLike) | null {
   const w = window as unknown as { SpeechRecognition?: new () => RecognitionLike; webkitSpeechRecognition?: new () => RecognitionLike };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
+
+// Mobile Browser (v.a. Android Chrome) beenden die Spracherkennung intern oft schon nach wenigen Sekunden
+// Stille, obwohl `continuous: true` gesetzt ist - "no-speech"/"aborted" sind dabei keine echten Fehler,
+// sondern Teil dieses Verhaltens. Wird deshalb weder als Fehler angezeigt noch als Diktatende behandelt.
+const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
 type LeistungReview = {
   date: string;
@@ -71,6 +77,7 @@ export function GlobalDictateWidget() {
   const [pendingItems, setPendingItems] = useState<PendingDictation[]>([]);
   const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
   const recognitionRef = useRef<RecognitionLike | null>(null);
+  const stopRequestedRef = useRef(false);
 
   const refreshPending = useCallback(async () => {
     try {
@@ -94,6 +101,10 @@ export function GlobalDictateWidget() {
   }, [refreshPending]);
 
   function resetAll() {
+    // Falls das Overlay während einer laufenden Aufnahme geschlossen wird: Erkennung wirklich beenden,
+    // statt sie durch die Auto-Neustart-Logik im Hintergrund weiterlaufen zu lassen.
+    stopRequestedRef.current = true;
+    recognitionRef.current?.stop();
     setMode(null);
     setStage("idle");
     setTranscript("");
@@ -178,6 +189,7 @@ export function GlobalDictateWidget() {
 
     let finalText = "";
     let hasErrored = false;
+    stopRequestedRef.current = false;
     const recognition = new Recognition();
     recognition.lang = "de-DE";
     recognition.continuous = true;
@@ -193,13 +205,23 @@ export function GlobalDictateWidget() {
       setTranscript(finalText);
       setInterim(interimText);
     };
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (RECOVERABLE_RECOGNITION_ERRORS.has(event.error)) return;
       hasErrored = true;
       setError("Die Spracherkennung ist fehlgeschlagen. Bitte erneut versuchen.");
       setStage("idle");
     };
     recognition.onend = () => {
       if (hasErrored) return;
+      if (!stopRequestedRef.current) {
+        // Browserseitiger Zwischenstopp (z.B. kurze Sprechpause) - nahtlos weiterhören, statt das Diktat zu beenden.
+        try {
+          recognition.start();
+          return;
+        } catch {
+          // Erkennung lief bereits o.ä. - dann regulär als Ende behandeln.
+        }
+      }
       const text = finalText.trim();
       if (text) runExtraction(m, text);
       else {
@@ -214,6 +236,7 @@ export function GlobalDictateWidget() {
   }
 
   function stopRecording() {
+    stopRequestedRef.current = true;
     recognitionRef.current?.stop();
   }
 

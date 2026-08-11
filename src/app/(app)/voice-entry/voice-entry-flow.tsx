@@ -8,6 +8,7 @@ type CaseOption = { id: string; clientName: string; helpTypeName: string };
 
 type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
+type SpeechRecognitionErrorEventLike = { error: string };
 
 type RecognitionLike = {
   lang: string;
@@ -16,7 +17,7 @@ type RecognitionLike = {
   start: () => void;
   stop: () => void;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
 };
 
@@ -28,6 +29,11 @@ function getSpeechRecognition(): (new () => RecognitionLike) | null {
   };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
+
+// Mobile Browser (v.a. Android Chrome) beenden die Spracherkennung intern oft schon nach wenigen Sekunden
+// Stille, obwohl `continuous: true` gesetzt ist - "no-speech"/"aborted" sind dabei keine echten Fehler,
+// sondern Teil dieses Verhaltens. Wird deshalb weder als Fehler angezeigt noch als Diktatende behandelt.
+const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
 type Stage = "idle" | "recording" | "processing" | "review" | "confirmed";
 
@@ -61,6 +67,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<ReviewData | null>(null);
   const recognitionRef = useRef<RecognitionLike | null>(null);
+  const stopRequestedRef = useRef(false);
 
   useEffect(() => {
     // Spracherkennung ist eine Browser-API, die serverseitig nicht existiert - Erkennung muss nach dem Mount laufen.
@@ -103,6 +110,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
 
     let finalText = "";
     let hasErrored = false;
+    stopRequestedRef.current = false;
 
     const recognition = new Recognition();
     recognition.lang = "de-DE";
@@ -119,13 +127,23 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
       setTranscript(finalText);
       setInterim(interimText);
     };
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
+      if (RECOVERABLE_RECOGNITION_ERRORS.has(event.error)) return;
       hasErrored = true;
       setError("Die Spracherkennung ist fehlgeschlagen. Bitte erneut versuchen.");
       setStage("idle");
     };
     recognition.onend = () => {
       if (hasErrored) return;
+      if (!stopRequestedRef.current) {
+        // Browserseitiger Zwischenstopp (z.B. kurze Sprechpause) - nahtlos weiterhören, statt das Diktat zu beenden.
+        try {
+          recognition.start();
+          return;
+        } catch {
+          // Erkennung lief bereits o.ä. - dann regulär als Ende behandeln.
+        }
+      }
       const text = finalText.trim();
       if (text) {
         runExtraction(text);
@@ -141,6 +159,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
   }, [runExtraction]);
 
   const stopRecording = useCallback(() => {
+    stopRequestedRef.current = true;
     recognitionRef.current?.stop();
   }, []);
 
