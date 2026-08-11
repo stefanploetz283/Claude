@@ -34,9 +34,7 @@ function getSpeechRecognition(): (new () => RecognitionLike) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-// Mobile Browser (v.a. Android Chrome) beenden die Spracherkennung intern oft schon nach wenigen Sekunden
-// Stille, obwohl `continuous: true` gesetzt ist - "no-speech"/"aborted" sind dabei keine echten Fehler,
-// sondern Teil dieses Verhaltens. Wird deshalb weder als Fehler angezeigt noch als Diktatende behandelt.
+// "no-speech"/"aborted" treten bei Sprechpausen regelmäßig auf und sind keine echten Fehler.
 const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
 type LeistungReview = {
@@ -78,6 +76,7 @@ export function GlobalDictateWidget() {
   const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
   const recognitionRef = useRef<RecognitionLike | null>(null);
   const stopRequestedRef = useRef(false);
+  const finalTextRef = useRef("");
 
   const refreshPending = useCallback(async () => {
     try {
@@ -177,32 +176,32 @@ export function GlobalDictateWidget() {
     }
   }, [refreshPending]);
 
-  function startRecording(m: Mode) {
+  // Läuft eine einzelne Erkennungs-"Session" (continuous:false). Android Chrome dupliziert/wiederholt
+  // Text bei sehr langen continuous:true-Sessions (bekanntes Browser-Problem) - deshalb verketten wir
+  // hier selbst kurze Einzel-Sessions zu einem fortlaufenden Diktat, statt eine Session lange offen zu
+  // halten. finalTextRef sammelt über alle Sessions hinweg, jede Session selbst bleibt sauber und kurz.
+  function beginSession(m: Mode) {
     const Recognition = getSpeechRecognition();
     if (!Recognition) {
       setError("Dein Browser unterstützt keine Spracherkennung. Bitte Chrome oder Edge verwenden.");
+      setStage("idle");
       return;
     }
-    setError(null);
-    setTranscript("");
-    setInterim("");
 
-    let finalText = "";
     let hasErrored = false;
-    stopRequestedRef.current = false;
     const recognition = new Recognition();
     recognition.lang = "de-DE";
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
       let interimText = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) finalText += result[0].transcript + " ";
+        if (result.isFinal) finalTextRef.current += result[0].transcript + " ";
         else interimText += result[0].transcript;
       }
-      setTranscript(finalText);
+      setTranscript(finalTextRef.current);
       setInterim(interimText);
     };
     recognition.onerror = (event) => {
@@ -214,15 +213,11 @@ export function GlobalDictateWidget() {
     recognition.onend = () => {
       if (hasErrored) return;
       if (!stopRequestedRef.current) {
-        // Browserseitiger Zwischenstopp (z.B. kurze Sprechpause) - nahtlos weiterhören, statt das Diktat zu beenden.
-        try {
-          recognition.start();
-          return;
-        } catch {
-          // Erkennung lief bereits o.ä. - dann regulär als Ende behandeln.
-        }
+        // Nächstes Segment nahtlos mit einer frischen Session anschließen, solange nicht aktiv gestoppt wurde.
+        beginSession(m);
+        return;
       }
-      const text = finalText.trim();
+      const text = finalTextRef.current.trim();
       if (text) runExtraction(m, text);
       else {
         setError("Es wurde nichts erkannt. Bitte erneut versuchen.");
@@ -232,7 +227,16 @@ export function GlobalDictateWidget() {
 
     recognitionRef.current = recognition;
     recognition.start();
+  }
+
+  function startRecording(m: Mode) {
+    setError(null);
+    setTranscript("");
+    setInterim("");
+    finalTextRef.current = "";
+    stopRequestedRef.current = false;
     setStage("recording");
+    beginSession(m);
   }
 
   function stopRecording() {

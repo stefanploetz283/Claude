@@ -68,6 +68,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
   const [review, setReview] = useState<ReviewData | null>(null);
   const recognitionRef = useRef<RecognitionLike | null>(null);
   const stopRequestedRef = useRef(false);
+  const finalTextRef = useRef("");
 
   useEffect(() => {
     // Spracherkennung ist eine Browser-API, die serverseitig nicht existiert - Erkennung muss nach dem Mount laufen.
@@ -97,34 +98,32 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
     setStage("review");
   }, []);
 
-  const startRecording = useCallback(() => {
+  // Läuft eine einzelne Erkennungs-"Session" (continuous:false). Android Chrome dupliziert/wiederholt
+  // Text bei sehr langen continuous:true-Sessions (bekanntes Browser-Problem) - deshalb verketten wir
+  // hier selbst kurze Einzel-Sessions zu einem fortlaufenden Diktat, statt eine Session lange offen zu
+  // halten. finalTextRef sammelt über alle Sessions hinweg, jede Session selbst bleibt sauber und kurz.
+  function beginSession() {
     const Recognition = getSpeechRecognition();
     if (!Recognition) {
       setSupported(false);
+      setStage("idle");
       return;
     }
-    setError(null);
-    setTranscript("");
-    setInterim("");
-    setReview(null);
 
-    let finalText = "";
     let hasErrored = false;
-    stopRequestedRef.current = false;
-
     const recognition = new Recognition();
     recognition.lang = "de-DE";
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
       let interimText = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) finalText += result[0].transcript + " ";
+        if (result.isFinal) finalTextRef.current += result[0].transcript + " ";
         else interimText += result[0].transcript;
       }
-      setTranscript(finalText);
+      setTranscript(finalTextRef.current);
       setInterim(interimText);
     };
     recognition.onerror = (event) => {
@@ -136,15 +135,11 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
     recognition.onend = () => {
       if (hasErrored) return;
       if (!stopRequestedRef.current) {
-        // Browserseitiger Zwischenstopp (z.B. kurze Sprechpause) - nahtlos weiterhören, statt das Diktat zu beenden.
-        try {
-          recognition.start();
-          return;
-        } catch {
-          // Erkennung lief bereits o.ä. - dann regulär als Ende behandeln.
-        }
+        // Nächstes Segment nahtlos mit einer frischen Session anschließen, solange nicht aktiv gestoppt wurde.
+        beginSession();
+        return;
       }
-      const text = finalText.trim();
+      const text = finalTextRef.current.trim();
       if (text) {
         runExtraction(text);
       } else {
@@ -155,7 +150,22 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
 
     recognitionRef.current = recognition;
     recognition.start();
+  }
+
+  const startRecording = useCallback(() => {
+    if (!getSpeechRecognition()) {
+      setSupported(false);
+      return;
+    }
+    setError(null);
+    setTranscript("");
+    setInterim("");
+    setReview(null);
+    finalTextRef.current = "";
+    stopRequestedRef.current = false;
     setStage("recording");
+    beginSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- beginSession ist eine stabile Funktionsdeklaration im Komponentenkörper, keine Closure über veränderliche Werte.
   }, [runExtraction]);
 
   const stopRecording = useCallback(() => {
