@@ -29,6 +29,13 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   const targetParallelCasesAtFullTimeStr = String(formData.get("targetParallelCasesAtFullTime") ?? "").trim();
   const aktuelleFondsBasisStr = String(formData.get("aktuelleFondsBasis") ?? "").trim();
 
+  const stundensatzVnbStr = String(formData.get("stundensatzVnb") ?? "").trim();
+  const zielFaktorStr = String(formData.get("zielFaktor") ?? "").trim();
+  const mindestFaktorSteuerberaterStr = String(formData.get("mindestFaktorSteuerberater") ?? "").trim();
+  const breakEvenStundensatzStr = String(formData.get("breakEvenStundensatz") ?? "").trim();
+  const gesamtkostenJahrStr = String(formData.get("gesamtkostenJahr") ?? "").trim();
+  const zahlungsverzugTageJugendamtStr = String(formData.get("zahlungsverzugTageJugendamt") ?? "").trim();
+
   if (!practiceName) return { error: "Bitte einen Praxisnamen angeben." };
 
   const hourlyRate = hourlyRateStr ? Number(hourlyRateStr) : null;
@@ -46,6 +53,27 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   const aktuelleFondsBasis = aktuelleFondsBasisStr ? Number(aktuelleFondsBasisStr) : undefined;
   if (aktuelleFondsBasis !== undefined && (!Number.isFinite(aktuelleFondsBasis) || aktuelleFondsBasis < 0 || aktuelleFondsBasis > 100)) {
     return { error: "Bitte eine gültige Fonds-Basis (0-100%) angeben." };
+  }
+
+  const stundensatzVnb = stundensatzVnbStr ? Number(stundensatzVnbStr) : undefined;
+  const zielFaktor = zielFaktorStr ? Number(zielFaktorStr) : undefined;
+  const mindestFaktorSteuerberater = mindestFaktorSteuerberaterStr ? Number(mindestFaktorSteuerberaterStr) : undefined;
+  const breakEvenStundensatz = breakEvenStundensatzStr ? Number(breakEvenStundensatzStr) : undefined;
+  const gesamtkostenJahr = gesamtkostenJahrStr ? Number(gesamtkostenJahrStr) : null;
+  const zahlungsverzugTageJugendamt = zahlungsverzugTageJugendamtStr ? Number(zahlungsverzugTageJugendamtStr) : undefined;
+  for (const [label, value] of [
+    ["Stundensatz mit VNB", stundensatzVnb],
+    ["Zielfaktor", zielFaktor],
+    ["Mindestfaktor", mindestFaktorSteuerberater],
+    ["Break-Even-Stundensatz", breakEvenStundensatz],
+  ] as const) {
+    if (value !== undefined && (!Number.isFinite(value) || value < 0)) return { error: `Bitte einen gültigen Wert für „${label}" angeben.` };
+  }
+  if (gesamtkostenJahr != null && (!Number.isFinite(gesamtkostenJahr) || gesamtkostenJahr < 0)) {
+    return { error: "Bitte gültige Gesamtkosten/Jahr angeben." };
+  }
+  if (zahlungsverzugTageJugendamt !== undefined && (!Number.isFinite(zahlungsverzugTageJugendamt) || zahlungsverzugTageJugendamt < 0)) {
+    return { error: "Bitte einen gültigen Zahlungsverzug (Tage) angeben." };
   }
 
   let logoUrl: string | undefined;
@@ -76,6 +104,12 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
       defaultPhaseOutWeeks: Number.isFinite(defaultPhaseOutWeeks) ? defaultPhaseOutWeeks : undefined,
       targetParallelCasesAtFullTime: Number.isFinite(targetParallelCasesAtFullTime) ? targetParallelCasesAtFullTime : undefined,
       aktuelleFondsBasis,
+      stundensatzVnb,
+      zielFaktor,
+      mindestFaktorSteuerberater,
+      breakEvenStundensatz,
+      gesamtkostenJahr,
+      zahlungsverzugTageJugendamt: Number.isFinite(zahlungsverzugTageJugendamt) ? zahlungsverzugTageJugendamt : undefined,
       contingentWarningThreshold: Number.isFinite(contingentWarningThreshold) ? contingentWarningThreshold : undefined,
       sessionIdleTimeoutMinutes: Number.isFinite(sessionIdleTimeoutMinutes) ? sessionIdleTimeoutMinutes : undefined,
       employeesCanContributeKnowledge,

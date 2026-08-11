@@ -160,6 +160,8 @@ model Case {
   hoursContingent      Decimal    @db.Decimal(7, 2)
   contingentPeriodMonths Int?     // Zeitraum in Monaten, in dem das Kontingent aufgebraucht werden muss
 
+  stundensatz          Decimal?   @db.Decimal(7, 2) // Umsatz-Cockpit: € je FLS-Std. für diesen Fall - null = Settings.stundensatzBasis
+
   status               CaseStatus @default(ACTIVE)
   startDate            DateTime   @default(now())
   endDate              DateTime?
@@ -554,6 +556,15 @@ model Settings {
   // Stundenmodell-Rechner: EINE zentrale Fonds-Basis (%), neue Mitarbeiter übernehmen sie bei Einstellung
   // als eigenen Bestandsschutz-Snapshot (User.fondsBasisAtHire) - kein Mitarbeiter-Wahlrecht.
   aktuelleFondsBasis          Decimal @default(70.28) @db.Decimal(5, 2)
+
+  // Umsatz-Cockpit: hourlyRate (oben) dient bewusst weiter als "Stundensatz Basis" (Vorbelegung für
+  // Case.stundensatz, wie schon für Rechnungen genutzt) statt eines zweiten, leicht divergierenden Feldes.
+  stundensatzVnb               Decimal @default(115) @db.Decimal(7, 2) // mit verhandelter Vor-/Nachbereitungszeit
+  zielFaktor                   Decimal @default(2.2) @db.Decimal(4, 2) // Umsatz ÷ Personalkosten, Zielwert
+  mindestFaktorSteuerberater   Decimal @default(2.1) @db.Decimal(4, 2) // struktureller Mindestwert lt. Steuerberater
+  breakEvenStundensatz         Decimal @default(56) @db.Decimal(7, 2)
+  gesamtkostenJahr             Decimal? @db.Decimal(10, 2) // Personal- + Betriebskosten/Jahr aus der Entgeltkalkulation
+  zahlungsverzugTageJugendamt  Int     @default(45) // Erfahrungswert bis Geldeingang nach Rechnungsstellung
 
   updatedAt                   DateTime @updatedAt
 }

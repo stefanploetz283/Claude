@@ -136,6 +136,23 @@ export async function updateCaseAuthorityFields(_prev: ActionState, formData: Fo
   return undefined;
 }
 
+/** Umsatz-Cockpit: Stundensatz pro Fall - null = Vorbelegung aus Settings.hourlyRate wird verwendet. */
+export async function updateCaseStundensatz(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireAdmin();
+  const caseId = String(formData.get("caseId") ?? "");
+  const raw = String(formData.get("stundensatz") ?? "").trim();
+  const stundensatz = raw ? Number(raw.replace(",", ".")) : null;
+
+  if (raw && (!Number.isFinite(stundensatz) || stundensatz! < 0)) {
+    return { error: "Bitte einen gültigen Stundensatz angeben." };
+  }
+
+  await prisma.case.update({ where: { id: caseId }, data: { stundensatz } });
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Stundensatz geändert" });
+  revalidatePath(`/cases/${caseId}`);
+  return undefined;
+}
+
 export async function updateCaseStatus(formData: FormData) {
   const user = await requireUser();
   const caseId = String(formData.get("caseId") ?? "");

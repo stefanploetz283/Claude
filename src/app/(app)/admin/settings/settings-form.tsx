@@ -77,6 +77,51 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       </div>
 
       <div className={cardCls}>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Umsatz-Cockpit</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Stundensatz mit VNB (€, Referenzwert)</span>
+            <input name="stundensatzVnb" type="number" min="0" step="0.01" defaultValue={settings.stundensatzVnb.toString()} className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Zielfaktor (Umsatz ÷ Personalkosten)</span>
+            <input name="zielFaktor" type="number" min="0" step="0.01" defaultValue={settings.zielFaktor.toString()} className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Mindestfaktor (Steuerberater)</span>
+            <input name="mindestFaktorSteuerberater" type="number" min="0" step="0.01" defaultValue={settings.mindestFaktorSteuerberater.toString()} className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Break-Even-Stundensatz (€)</span>
+            <input name="breakEvenStundensatz" type="number" min="0" step="0.01" defaultValue={settings.breakEvenStundensatz.toString()} className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Gesamtkosten/Jahr (€, aus Entgeltkalkulation)</span>
+            <input
+              name="gesamtkostenJahr"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={settings.gesamtkostenJahr?.toString() ?? ""}
+              placeholder="z.B. 220000"
+              className={inputCls}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Zahlungsverzug Jugendamt (Tage)</span>
+            <input
+              name="zahlungsverzugTageJugendamt"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={settings.zahlungsverzugTageJugendamt}
+              className={inputCls}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className={cardCls}>
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Kapazitätsplanung</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="flex flex-col gap-1.5">

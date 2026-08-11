@@ -11,6 +11,8 @@ import { ArchiveCaseButton } from "./archive-button";
 import { DeleteCaseButton } from "./delete-button";
 import { CapacityPlanningForm } from "./capacity-planning-form";
 import { AuthorityAddressForm } from "./authority-address-form";
+import { StundensatzForm } from "./stundensatz-form";
+import { getSettings } from "@/lib/settings";
 import { differenceInCalendarDays, addMonths, format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -71,6 +73,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   }
 
   const clientAddress = resolveClientAddress(caseRecord.client);
+  const settings = user.role === "ADMIN" ? await getSettings() : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -164,6 +167,20 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           authorityPostalCodeCity={caseRecord.authorityPostalCodeCity}
         />
       </div>
+
+      {user.role === "ADMIN" && settings && (
+        <div className={cardCls}>
+          <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Stundensatz (Umsatz-Cockpit)</h2>
+          <p className="mb-3 text-sm text-[var(--color-text-muted)]">
+            Nicht jedes Jugendamt zahlt denselben Satz — ohne Eintrag gilt der praxisweite Basis-Stundensatz.
+          </p>
+          <StundensatzForm
+            caseId={caseRecord.id}
+            stundensatz={caseRecord.stundensatz?.toString() ?? ""}
+            basisStundensatz={settings.hourlyRate?.toString() ?? "110"}
+          />
+        </div>
+      )}
 
       <div className={cardCls}>
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Kapazitätsplanung</h2>
