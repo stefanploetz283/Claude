@@ -112,6 +112,20 @@ export function Nav({
             </div>
           </div>
 
+          {role === "ADMIN" && (
+            <Link
+              href="/interim"
+              className={`rounded-lg border px-3.5 py-2 text-[13px] font-medium transition ${
+                pathname.startsWith("/interim")
+                  ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-white"
+                  : "border-[var(--color-gold)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-white"
+              }`}
+              title="Übergangslösung bis zur Praxiseröffnung am 1.11."
+            >
+              Interimsmodus
+            </Link>
+          )}
+
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="rounded-lg border border-[var(--color-border)] px-3.5 py-2 text-[13px] font-medium text-[var(--color-primary)] transition hover:bg-[var(--color-primary-soft)]"
@@ -185,6 +199,17 @@ export function Nav({
                 <div className="text-[11px] text-[var(--color-text-muted)]">{ROLE_LABELS[role]}</div>
               </div>
             </div>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 border-t border-[var(--color-border)] pt-3">
+            {role === "ADMIN" && (
+              <Link
+                href="/interim"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg border border-[var(--color-gold)] px-3.5 py-2.5 text-center text-[13px] font-medium text-[var(--color-gold)]"
+              >
+                Interimsmodus
+              </Link>
+            )}
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="rounded-lg border border-[var(--color-border)] px-3.5 py-2.5 text-[13px] font-medium text-[var(--color-primary)]"

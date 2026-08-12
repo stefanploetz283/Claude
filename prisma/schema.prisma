@@ -675,3 +675,50 @@ model EmployeeDocument {
 
   @@index([employeeId])
 }
+
+// ==========================================================================
+// INTERIMSMODUS - bewusst vollständig isoliert vom eigentlichen Fall-/
+// Klientensystem oben (Case/Client/ServiceEntry): keine Relation dorthin,
+// eigene Tabellen mit "Interim"-Präfix. Dient Stefan als Einzelselbstständigem
+// zur Überbrückung bis zur Praxiseröffnung am 1.11. - danach sollen dieser
+// Block, seine Migration und der zugehörige Code (src/lib/interim/,
+// src/app/(app)/interim/) rückstandslos entfernbar sein, ohne das
+// Hauptsystem zu berühren. Nur Admin-Zugriff (siehe requireInterimAdmin).
+// ==========================================================================
+
+enum InterimAngebotsart {
+  ERZIEHUNGSBEISTANDSCHAFT
+  PROS
+}
+
+model InterimCase {
+  id                      String             @id @default(cuid())
+  angebotsart             InterimAngebotsart
+  familienname            String
+  vorname                 String
+  strasseHausnummer       String
+  plzOrt                  String
+  sachbearbeiterSpfd      String
+  bewilligteWochenstunden Decimal            @db.Decimal(6, 2)
+  honorarProStunde        Decimal            @db.Decimal(7, 2)
+  leistungserbringer      String             @default("Stefan Plötz")
+  archived                Boolean            @default(false)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  entries                 InterimEntry[]
+}
+
+model InterimEntry {
+  id        String      @id @default(cuid())
+  case      InterimCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseId    String
+  date      DateTime    @db.Date
+  startTime DateTime
+  endTime   DateTime
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@index([caseId])
+  @@index([date])
+}
