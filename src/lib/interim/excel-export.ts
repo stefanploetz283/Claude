@@ -37,6 +37,11 @@ export async function buildInterimMonthlyExcel(caseId: string, year: number, mon
   await wb.xlsx.readFile(TEMPLATE_PATH);
   const ws = wb.worksheets[0];
 
+  // exceljs berechnet Formeln nie neu - ohne dieses Flag zeigt Excel/LibreOffice die zwischengespeicherten
+  // Formel-Ergebnisse aus der Vorlage (Fremddaten!) an, statt mit den hier eingetragenen Werten neu zu
+  // rechnen. Erzwingt eine vollständige Neuberechnung beim Öffnen der Datei.
+  wb.calcProperties.fullCalcOnLoad = true;
+
   ws.getCell("A1").value =
     interimCase.angebotsart === "PROS" ? "Monatsabrechnung PROS" : "Monatsabrechnung Erziehungsbeistandschaft";
 
