@@ -25,6 +25,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${result.filename}"`,
+      // Export-URL bleibt bei gleichem Fall/Monat identisch, obwohl sich die zugrunde liegenden Daten
+      // (neue Diktate) ändern können - ohne dieses Header könnte Browser eine alte Antwort erneut ausliefern.
+      "Cache-Control": "no-store",
     },
   });
 }
