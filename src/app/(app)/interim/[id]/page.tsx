@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
 import { requireInterimAdmin } from "@/lib/rbac";
 import { InterimDictateWidget } from "./interim-dictate-widget";
 import { InterimEntriesList } from "./interim-entries-list";
 import { ExportControls } from "./export-controls";
+import { CaseDetailsCard } from "./case-details-card";
 
 const ANGEBOTSART_LABELS: Record<string, string> = {
   ERZIEHUNGSBEISTANDSCHAFT: "Erziehungsbeistandschaft",
@@ -57,16 +57,21 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className={cardCls}>
-          <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Falldaten</h2>
-          <dl className="flex flex-col gap-2 text-sm">
-            <Row label="Sachbearbeiter(in) SPFD" value={interimCase.sachbearbeiterSpfd} />
-            <Row label="Bewilligte Wochenstunden" value={`${interimCase.bewilligteWochenstunden.toString()} Std.`} />
-            <Row label="Honorar pro Stunde" value={`${interimCase.honorarProStunde.toString()} €`} />
-            <Row label="Leistungserbringer(in)" value={interimCase.leistungserbringer} />
-            <Row label="Angelegt am" value={format(interimCase.createdAt, "dd.MM.yyyy", { locale: de })} />
-          </dl>
-        </div>
+        <CaseDetailsCard
+          data={{
+            id: interimCase.id,
+            angebotsart: interimCase.angebotsart,
+            familienname: interimCase.familienname,
+            vorname: interimCase.vorname,
+            strasseHausnummer: interimCase.strasseHausnummer,
+            plzOrt: interimCase.plzOrt,
+            sachbearbeiterSpfd: interimCase.sachbearbeiterSpfd,
+            bewilligteWochenstunden: interimCase.bewilligteWochenstunden.toString(),
+            honorarProStunde: interimCase.honorarProStunde.toString(),
+            leistungserbringer: interimCase.leistungserbringer,
+            createdAt: interimCase.createdAt,
+          }}
+        />
 
         <div className={`${cardCls} lg:col-span-2`}>
           <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Als Monatsabrechnung exportieren</h2>
@@ -85,15 +90,6 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
           <InterimEntriesList caseId={interimCase.id} entries={entryRows} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex justify-between gap-4">
-      <dt className="text-[var(--color-text-muted)]">{label}</dt>
-      <dd className="text-right text-[var(--color-text)]">{value}</dd>
     </div>
   );
 }
