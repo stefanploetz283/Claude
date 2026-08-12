@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
-import { monthDateRange } from "@/lib/date";
+import { monthDateRange, toDateInputValue } from "@/lib/date";
 import { ApprovalReviewCard } from "./review-card";
 
 export default async function ApprovalsPage() {
@@ -10,7 +10,11 @@ export default async function ApprovalsPage() {
 
   const pending = await prisma.monthlyApproval.findMany({
     where: { status: "WARTET_AUF_FREIGABE" },
-    include: { case: { include: { client: true, helpType: true, assignedEmployee: true } }, submittedBy: true },
+    include: {
+      case: { include: { client: true, helpType: true, assignedEmployee: true } },
+      submittedBy: true,
+      lastEditedBy: true,
+    },
     orderBy: { submittedAt: "asc" },
   });
 
@@ -34,11 +38,15 @@ export default async function ApprovalsPage() {
         employeeName: a.case.assignedEmployee.name,
         submittedAt: a.submittedAt ? format(a.submittedAt, "dd.MM.yyyy HH:mm", { locale: de }) : "–",
         totalHours,
+        lastEditedByName: a.lastEditedBy?.name ?? null,
+        lastEditedAtLabel: a.lastEditedAt ? format(a.lastEditedAt, "dd.MM.yyyy HH:mm", { locale: de }) : null,
         entries: entries.map((e) => ({
           id: e.id,
-          date: format(e.date, "dd.MM.yyyy"),
+          dateISO: toDateInputValue(e.date),
+          dateLabel: format(e.date, "dd.MM.yyyy"),
           startTime: format(e.startTime, "HH:mm"),
           endTime: format(e.endTime, "HH:mm"),
+          durationHours: e.durationMinutes / 60,
           description: e.description,
         })),
       };

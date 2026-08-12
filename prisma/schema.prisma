@@ -48,6 +48,8 @@ model User {
   createdWaitlistEntries WaitlistEntry[]
   submittedApprovals MonthlyApproval[] @relation("ApprovalSubmittedBy")
   reviewedApprovals  MonthlyApproval[] @relation("ApprovalReviewedBy")
+  lastEditedApprovals MonthlyApproval[] @relation("ApprovalLastEditedBy")
+  serviceEntryChangeLogs ServiceEntryChangeLog[]
   gutscheinAuswahlen GutscheinAuswahl[]
   bonusPayouts       QuarterlyBonusPayout[]
   paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
@@ -291,6 +293,12 @@ model MonthlyApproval {
 
   correctionNote String? // Pflichtkommentar bei Korrektur-Anforderung, sichtbar für die Fachkraft
 
+  // Direktbearbeitung durch Admin (Freigaben-Bereich) - nur gesetzt, wenn tatsächlich ein Feld geändert
+  // wurde (nicht bei reinem Öffnen/Abbrechen des Bearbeiten-Zustands), siehe ServiceEntryChangeLog.
+  lastEditedBy   User?     @relation("ApprovalLastEditedBy", fields: [lastEditedById], references: [id])
+  lastEditedById String?
+  lastEditedAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -337,9 +345,36 @@ model ServiceEntry {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  changeLogs    ServiceEntryChangeLog[]
+
   @@index([caseId])
   @@index([employeeId])
   @@index([date])
+}
+
+enum ServiceEntryChangeField {
+  DATUM
+  ZEIT
+  BEMERKUNG
+}
+
+// Protokolliert Admin-Direktkorrekturen im Freigaben-Bereich - ein Eintrag pro tatsächlich geänderter
+// Zeile (nicht pro Klick auf "Bearbeiten"). Bewusst niedrigschwellig ohne Pflichtbegründung, aber
+// vollständig nachvollziehbar (wer/wann/vorher/nachher), da es sich um Jugendamt-relevante Dokumentation
+// handelt. Feld statt Diff, damit die Historie auch bei künftigen Formatänderungen lesbar bleibt.
+model ServiceEntryChangeLog {
+  id          String                   @id @default(cuid())
+  entry       ServiceEntry             @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entryId     String
+  changedBy   User                     @relation(fields: [changedById], references: [id])
+  changedById String
+  changedAt   DateTime                 @default(now())
+  field       ServiceEntryChangeField
+  oldValue    String
+  newValue    String
+
+  @@index([entryId])
+  @@index([changedAt])
 }
 
 // ---------- Interne Zeiterfassung ----------
