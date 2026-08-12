@@ -14,6 +14,15 @@ function excelTimeOfDay(date: Date): Date {
   return new Date(Date.UTC(1899, 11, 30, date.getUTCHours(), date.getUTCMinutes()));
 }
 
+/** Setzt Formel + Ergebnis über den einzig funktionierenden Weg: `cell.result = x` ist in exceljs nur
+ * ein Getter (lib/doc/cell.js Zeile 260) - die Zuweisung ist ein stiller No-Op, ohne Fehler, ohne Wirkung.
+ * Nur `cell.value = { formula, result }` konstruiert intern tatsächlich einen neuen Formel-Wert mit
+ * Ergebnis (per raw-XML gegengeprüft). Ersetzt bewusst auch geteilte Formeln (D31:D54) durch eigenständige
+ * pro Zeile - harmlos (minimal größere Datei), aber ohne jedes Risiko, die Shared-Formula-Kette zu zerstören. */
+function setFormulaWithResult(cell: ExcelJS.Cell, formula: string, result: number): void {
+  cell.value = { formula, result } as unknown as ExcelJS.CellValue;
+}
+
 export async function buildInterimMonthlyExcel(caseId: string, year: number, month: number): Promise<InterimExportResult> {
   const interimCase = await prisma.interimCase.findUnique({ where: { id: caseId } });
   if (!interimCase) return { ok: false, error: "Fall nicht gefunden." };
@@ -37,9 +46,9 @@ export async function buildInterimMonthlyExcel(caseId: string, year: number, mon
   await wb.xlsx.readFile(TEMPLATE_PATH);
   const ws = wb.worksheets[0];
 
-  // exceljs berechnet Formeln nie neu - ohne dieses Flag zeigt Excel/LibreOffice die zwischengespeicherten
-  // Formel-Ergebnisse aus der Vorlage (Fremddaten!) an, statt mit den hier eingetragenen Werten neu zu
-  // rechnen. Erzwingt eine vollständige Neuberechnung beim Öffnen der Datei.
+  // Weist Excel/LibreOffice zusätzlich an, beim Öffnen neu zu rechnen (Sicherheitsnetz, falls die Datei
+  // manuell weiterbearbeitet wird) - die eigentliche Korrektheit kommt aber aus den unten per
+  // setFormulaWithResult direkt mitgelieferten Ergebnissen, unabhängig von jeglichem Recalc-Verhalten.
   wb.calcProperties.fullCalcOnLoad = true;
 
   ws.getCell("A1").value =
@@ -52,16 +61,31 @@ export async function buildInterimMonthlyExcel(caseId: string, year: number, mon
   ws.getCell("E14").value = interimCase.sachbearbeiterSpfd;
   ws.getCell("E16").value = from; // numFmt "mmmm yyyy" der Vorlage zeigt automatisch den Monatsnamen an
   ws.getCell("E18").value = interimCase.bewilligteWochenstunden.toNumber();
-  ws.getCell("E22").value = interimCase.honorarProStunde.toNumber();
+  const honorarProStunde = interimCase.honorarProStunde.toNumber();
+  ws.getCell("E22").value = honorarProStunde;
   ws.getCell("E24").value = interimCase.leistungserbringer;
 
+  let totalHours = 0;
   entries.forEach((entry, i) => {
     const row = FIRST_ROW + i;
+    const hours = (entry.endTime.getTime() - entry.startTime.getTime()) / 3600000;
+    totalHours += hours;
     ws.getCell(`A${row}`).value = entry.date;
     ws.getCell(`B${row}`).value = excelTimeOfDay(entry.startTime);
     ws.getCell(`C${row}`).value = excelTimeOfDay(entry.endTime);
+    setFormulaWithResult(ws.getCell(`D${row}`), `MOD(C${row}-B${row},1)*24`, hours);
     ws.getCell(`E${row}`).value = entry.content;
   });
+  // Zeilen ohne Eintrag in diesem Monat: Formel-Ergebnis auf 0 setzen (sonst bliebe ein alter Wert einer
+  // Vorlagen-/früheren Ausführung stehen, obwohl B/C dort leer sind).
+  for (let row = FIRST_ROW + entries.length; row < FIRST_ROW + MAX_ROWS; row++) {
+    setFormulaWithResult(ws.getCell(`D${row}`), `MOD(C${row}-B${row},1)*24`, 0);
+  }
+
+  setFormulaWithResult(ws.getCell("E20"), "C61", totalHours);
+  setFormulaWithResult(ws.getCell("C61"), "SUM(D30:D54)", totalHours);
+  setFormulaWithResult(ws.getCell("C62"), "E22", honorarProStunde);
+  setFormulaWithResult(ws.getCell("C63"), "C61*C62", totalHours * honorarProStunde);
 
   const buffer = await wb.xlsx.writeBuffer();
   const monthLabel = from.toLocaleDateString("de-DE", { month: "long", year: "numeric" }).replace(" ", "_");
