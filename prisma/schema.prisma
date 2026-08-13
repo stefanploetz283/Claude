@@ -74,7 +74,21 @@ model User {
   emergencyContact            String? // Name + Telefonnummer, Freitext
   fuehrungszeugnisGueltigBis  DateTime? @db.Date // erw. Führungszeugnis nach §72a SGB VIII
 
+  // Fahrten-/Fallrechner: Referenzpunkt-Bildung (Wohnort, falls hinterlegt, sonst primärer Standort)
+  wohnortAdresse         String?
+  wohnortLat             Decimal?        @db.Decimal(9, 6)
+  wohnortLng             Decimal?        @db.Decimal(9, 6)
+  primaerStandort        PrimaerStandort @default(NITTENDORF)
+  einsatzradiusKm        Decimal         @default(25) @db.Decimal(5, 1)
+  // Vorbelegung, bis der Stundenmodell-Rechner direkt angebunden ist (siehe Fahrten-/Fallrechner-Prompt).
+  zielFlsStdWocheManuell Decimal?        @db.Decimal(5, 2)
+
   @@index([role])
+}
+
+enum PrimaerStandort {
+  NITTENDORF
+  REGENSBURG
 }
 
 // ---------- Stammdaten ----------
@@ -123,6 +137,13 @@ model Client {
   street          String?
   postalCodeCity  String?
   contactInfo  String?
+
+  // Fahrten-/Fallrechner: einmalig per Nominatim geocodiert, dauerhaft gespeichert (kein erneuter
+  // Geocoding-Aufruf bei jedem Kartenaufruf - nur wenn sich street/postalCodeCity ändern).
+  lat          Decimal? @db.Decimal(9, 6)
+  lng          Decimal? @db.Decimal(9, 6)
+  geocodedAt   DateTime?
+
   archived     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -163,6 +184,11 @@ model Case {
   contingentPeriodMonths Int?     // Zeitraum in Monaten, in dem das Kontingent aufgebraucht werden muss
 
   stundensatz          Decimal?   @db.Decimal(7, 2) // Umsatz-Cockpit: € je FLS-Std. für diesen Fall - null = Settings.stundensatzBasis
+
+  // Fahrten-/Fallrechner: Standort selbst kommt vom zugeordneten Client (client.lat/lng über
+  // resolveClientAddress), diese beiden Werte sind fallspezifisch (nicht klientenspezifisch).
+  besucheProWoche      Int        @default(1)
+  geplanteFlsStdWoche  Decimal?   @db.Decimal(5, 2)
 
   status               CaseStatus @default(ACTIVE)
   startDate            DateTime   @default(now())

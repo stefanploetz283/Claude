@@ -65,6 +65,10 @@ export default async function VertragPage({ params }: { params: Promise<{ id: st
     wochenplan: (plan?.wochenplan as unknown as WochenplanEntry[] | undefined) ?? [],
     sondertagIds: plan?.sondertage.map((s) => s.id) ?? [],
     ampel: result.ampel,
+    wohnortAdresse: employee.wohnortAdresse,
+    primaerStandort: employee.primaerStandort,
+    einsatzradiusKm: employee.einsatzradiusKm.toNumber(),
+    zielFlsStdWocheManuell: employee.zielFlsStdWocheManuell?.toNumber() ?? null,
   };
 
   return (

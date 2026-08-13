@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
+import { geocodeAddress } from "@/lib/fahrtenrechner/geocode";
 import type { CaseStatus } from "@prisma/client";
 
 export type ActionState = { error?: string } | undefined;
@@ -34,6 +35,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const helpPlanMeetingDate = String(formData.get("helpPlanMeetingDate") ?? "").trim();
   const extensionDeadline = String(formData.get("extensionDeadline") ?? "").trim();
   const reminderLeadDays = Number(formData.get("reminderLeadDays") ?? 14);
+  const besucheProWocheStr = String(formData.get("besucheProWoche") ?? "").trim();
+  const geplanteFlsStdWocheStr = String(formData.get("geplanteFlsStdWoche") ?? "").trim();
 
   if (!authority || !helpTypeId || !assignedEmployeeId || !hoursContingent) {
     return { error: "Bitte alle Pflichtfelder ausfüllen." };
@@ -44,11 +47,25 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   if (!existingClientId && (!firstName || !lastName)) {
     return { error: "Bitte einen Klienten auswählen oder neue Klientendaten angeben." };
   }
+  const besucheProWoche = besucheProWocheStr ? Number(besucheProWocheStr) : 1;
+  if (!Number.isFinite(besucheProWoche) || besucheProWoche < 0) {
+    return { error: "Bitte eine gültige Anzahl Besuche/Woche angeben." };
+  }
+  let geplanteFlsStdWoche: number | null = null;
+  if (geplanteFlsStdWocheStr) {
+    geplanteFlsStdWoche = Number(geplanteFlsStdWocheStr.replace(",", "."));
+    if (!Number.isFinite(geplanteFlsStdWoche) || geplanteFlsStdWoche < 0) {
+      return { error: "Bitte eine gültige geplante FLS-Stundenzahl/Woche angeben." };
+    }
+  }
 
   const caseNumber = `AZ-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`.toUpperCase();
 
   let clientId = existingClientId;
   if (!clientId) {
+    // Fahrtenrechner-Referenzpunkt: Adresse einmalig geocodieren und dauerhaft speichern, kein
+    // Blocker bei Fehlschlag (Fallback: manuelles Setzen der Koordinaten auf der Karte, siehe Prompt).
+    const geocoded = street && postalCodeCity ? await geocodeAddress(`${street}, ${postalCodeCity}`) : null;
     const client = await prisma.client.create({
       data: {
         firstName,
@@ -57,6 +74,9 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
         street: street || null,
         postalCodeCity: postalCodeCity || null,
         contactInfo: contactInfo || null,
+        lat: geocoded?.lat ?? null,
+        lng: geocoded?.lng ?? null,
+        geocodedAt: geocoded ? new Date() : null,
       },
     });
     clientId = client.id;
@@ -75,6 +95,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
       substituteEmployeeId: substituteEmployeeId || null,
       hoursContingent,
       contingentPeriodMonths,
+      besucheProWoche,
+      geplanteFlsStdWoche,
       startDate: startDate ? new Date(startDate) : new Date(),
       expectedEndDate: expectedEndDate ? new Date(expectedEndDate) : null,
       phaseOutWeeks: phaseOutWeeksStr ? Number(phaseOutWeeksStr) : null,
@@ -108,6 +130,32 @@ export async function updateCaseCapacityFields(_prev: ActionState, formData: For
 
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Kapazitätsplanung geändert" });
   revalidatePath(`/cases/${caseId}`);
+  return undefined;
+}
+
+/** Fahrten-/Fallrechner: Besuche/Woche + geplante FLS-Std./Woche (Grundlage für Fahrzeit-Zuwachs/Score). */
+export async function updateCaseFahrtenrechnerFields(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const caseId = String(formData.get("caseId") ?? "");
+  const besucheProWocheStr = String(formData.get("besucheProWoche") ?? "").trim();
+  const geplanteFlsStdWocheStr = String(formData.get("geplanteFlsStdWoche") ?? "").trim();
+
+  const besucheProWoche = Number(besucheProWocheStr || "1");
+  if (!Number.isFinite(besucheProWoche) || besucheProWoche < 0) {
+    return { error: "Bitte eine gültige Anzahl Besuche/Woche angeben." };
+  }
+  let geplanteFlsStdWoche: number | null = null;
+  if (geplanteFlsStdWocheStr) {
+    geplanteFlsStdWoche = Number(geplanteFlsStdWocheStr.replace(",", "."));
+    if (!Number.isFinite(geplanteFlsStdWoche) || geplanteFlsStdWoche < 0) {
+      return { error: "Bitte eine gültige geplante FLS-Stundenzahl/Woche angeben." };
+    }
+  }
+
+  await prisma.case.update({ where: { id: caseId }, data: { besucheProWoche, geplanteFlsStdWoche } });
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Fahrtenrechner-Fallfelder geändert" });
+  revalidatePath(`/cases/${caseId}`);
+  revalidatePath("/admin/fahrtenrechner");
   return undefined;
 }
 

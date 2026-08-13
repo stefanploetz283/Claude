@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
 import { computeStundenmodell, type SondertagWithMeta, type SondertagRow } from "@/lib/stundenmodell";
-import { savePlan, saveVertrag, type ActionState, type WochenplanEntry } from "./actions";
+import { savePlan, saveVertrag, saveFahrtenrechnerProfil, type ActionState, type WochenplanEntry } from "./actions";
 
 export type VertragEmployee = {
   id: string;
@@ -18,6 +18,10 @@ export type VertragEmployee = {
   wochenplan: WochenplanEntry[];
   sondertagIds: string[];
   ampel: "gruen" | "gelb" | "rot";
+  wohnortAdresse: string | null;
+  primaerStandort: "NITTENDORF" | "REGENSBURG";
+  einsatzradiusKm: number;
+  zielFlsStdWocheManuell: number | null;
 };
 
 const AMPEL_COLOR: Record<string, string> = { gruen: "var(--color-primary)", gelb: "var(--color-gold)", rot: "var(--color-coral)" };
@@ -56,6 +60,7 @@ export function VertragEditor({
 }) {
   const [profileState, profileAction, profilePending] = useActionState<ActionState, FormData>(saveVertrag, undefined);
   const [planState, planAction, planPending] = useActionState<ActionState, FormData>(savePlan, undefined);
+  const [fahrtenState, fahrtenAction, fahrtenPending] = useActionState<ActionState, FormData>(saveFahrtenrechnerProfil, undefined);
 
   const [wochenstunden, setWochenstunden] = useState(employee.wochenstunden ?? 30);
   const [tageProWoche, setTageProWoche] = useState<4 | 5>((employee.tageProWoche as 4 | 5) ?? 5);
@@ -187,6 +192,70 @@ export function VertragEditor({
             : " (noch kein Snapshot – wird beim ersten Speichern übernommen)"}
           {aktuelleFondsBasis !== effectiveFondsBasis && ` · aktuelle Praxis-Basis: ${aktuelleFondsBasis.toFixed(2)}%`}
         </p>
+      </div>
+
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner-Profil</h2>
+        <p className="mb-4 text-sm text-[var(--color-text-muted)]">
+          Referenzpunkt für Fahrzeit-Schätzungen — Wohnort, falls hinterlegt, sonst der primäre Standort.
+        </p>
+        <form action={fahrtenAction} className="flex flex-col gap-4">
+          <input type="hidden" name="employeeId" value={employee.id} />
+          <div className="flex flex-wrap items-end gap-4">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-text-muted)]">Wohnort-Adresse (optional)</span>
+              <input
+                name="wohnortAdresse"
+                defaultValue={employee.wohnortAdresse ?? ""}
+                placeholder="Straße Hausnr., PLZ Ort"
+                className="w-64 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-text-muted)]">Primärer Standort</span>
+              <select
+                name="primaerStandort"
+                defaultValue={employee.primaerStandort}
+                className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              >
+                <option value="NITTENDORF">Nittendorf</option>
+                <option value="REGENSBURG">Regensburg</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-text-muted)]">Einsatzradius (km)</span>
+              <input
+                name="einsatzradiusKm"
+                type="number"
+                min="1"
+                step="0.5"
+                defaultValue={employee.einsatzradiusKm}
+                className="w-28 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-text-muted)]">Ziel-FLS-Std./Woche (manuell)</span>
+              <input
+                name="zielFlsStdWocheManuell"
+                type="number"
+                min="0"
+                step="0.5"
+                defaultValue={employee.zielFlsStdWocheManuell ?? ""}
+                placeholder="z.B. 22.5"
+                className="w-36 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              />
+            </label>
+          </div>
+          <button
+            type="submit"
+            disabled={fahrtenPending}
+            className="self-start rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+          >
+            {fahrtenPending ? "Speichern…" : "Fahrtenrechner-Profil speichern"}
+          </button>
+          {fahrtenState?.error && <p className="text-sm text-[var(--color-coral)]">{fahrtenState.error}</p>}
+          {fahrtenState?.success && <p className="text-sm text-[var(--color-green-medium)]">{fahrtenState.success}</p>}
+        </form>
       </div>
 
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">

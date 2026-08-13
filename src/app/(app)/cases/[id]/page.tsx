@@ -10,6 +10,7 @@ import { StatusForm } from "./status-form";
 import { ArchiveCaseButton } from "./archive-button";
 import { DeleteCaseButton } from "./delete-button";
 import { CapacityPlanningForm } from "./capacity-planning-form";
+import { FahrtenrechnerFieldsForm } from "./fahrtenrechner-fields-form";
 import { AuthorityAddressForm } from "./authority-address-form";
 import { StundensatzForm } from "./stundensatz-form";
 import { getSettings } from "@/lib/settings";
@@ -188,6 +189,18 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
           Für die Kapazitäts-/Wartelisten-Ansicht im Verwaltungsbereich – unabhängig vom Stundenkontingent oben.
         </p>
         <CapacityPlanningForm caseId={caseRecord.id} expectedEndDate={caseRecord.expectedEndDate} phaseOutWeeks={caseRecord.phaseOutWeeks} />
+      </div>
+
+      <div className={cardCls}>
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner</h2>
+        <p className="mb-3 text-sm text-[var(--color-text-muted)]">
+          Grundlage für die Fahrzeit-Zuwachs-Berechnung im Fahrten-/Fallrechner (Admin-Tool).
+        </p>
+        <FahrtenrechnerFieldsForm
+          caseId={caseRecord.id}
+          besucheProWoche={caseRecord.besucheProWoche}
+          geplanteFlsStdWoche={caseRecord.geplanteFlsStdWoche?.toNumber() ?? null}
+        />
       </div>
 
       <div className={cardCls}>

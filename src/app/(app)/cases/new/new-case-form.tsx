@@ -208,6 +208,12 @@ export function NewCaseForm({
           <Field label="Frist Verlängerungsantrag (optional)">
             <input name="extensionDeadline" type="date" className={inputCls} />
           </Field>
+          <Field label="Besuche/Woche (Fahrtenrechner)">
+            <input name="besucheProWoche" type="number" min="0" step="1" defaultValue={1} className={inputCls} />
+          </Field>
+          <Field label="Geplante FLS-Std./Woche (Fahrtenrechner, optional)">
+            <input name="geplanteFlsStdWoche" type="number" min="0" step="0.5" className={inputCls} />
+          </Field>
         </div>
       </section>
 
