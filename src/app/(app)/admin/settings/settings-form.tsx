@@ -174,6 +174,24 @@ export function SettingsForm({ settings }: { settings: Settings }) {
       </div>
 
       <div className={cardCls}>
+        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner</h2>
+        <label className="flex max-w-xs flex-col gap-1.5">
+          <span className={labelCls}>Ø Geschwindigkeit für Fahrzeitschätzung (km/h)</span>
+          <input
+            name="fahrtenrechnerDurchschnittskmh"
+            type="number"
+            min="1"
+            step="1"
+            defaultValue={settings.fahrtenrechnerDurchschnittskmh.toString()}
+            className={inputCls}
+          />
+          <span className="text-xs text-[var(--color-text-muted)]">
+            Umrechnung geschätzte Fahrstrecke → Fahrzeit im Fahrten-/Fallrechner (Admin/Verwaltung).
+          </span>
+        </label>
+      </div>
+
+      <div className={cardCls}>
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Verhalten</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">

@@ -1,14 +1,12 @@
-// Fahrten-/Fallrechner: reine Berechnungslogik (Distanz-/Fahrzeitschätzung, Score) - bewusst getrennt
+// Fahrten-/Fallrechner: reine Berechnungslogik (Distanz-/Fahrzeitschätzung, Kapazität) - bewusst getrennt
 // vom Stundenmodell-Rechner (siehe Prompt: gemeinsame Datenbasis, aber keine gemeinsame Oberfläche).
 
 export type LatLng = { lat: number; lng: number };
 
 /** Umwegfaktor für ländliche/gemischte Straßennetze - keine echte Routing-API (siehe Prompt). */
 export const UMWEGFAKTOR = 1.3;
-/** Ø km/h, Mischung Land-/Kreisstraßen. */
-export const DURCHSCHNITT_KMH = 45;
-/** Startwert für die Score-Gewichtung freier Kapazität - im Tool editierbar, nicht hart verdrahtet. */
-export const KAPAZITAET_GEWICHT_DEFAULT = 10;
+/** Vorbelegung für Settings.fahrtenrechnerDurchschnittskmh - dort admin-editierbar, nicht hart verdrahtet. */
+export const DURCHSCHNITT_KMH_DEFAULT = 80;
 /** Vorbelegung für den Einsatzradius eines Mitarbeiters, falls noch nicht individuell gesetzt. */
 export const EINSATZRADIUS_KM_DEFAULT = 25;
 
@@ -38,13 +36,18 @@ export function estimatedDriveKm(luftlinieKm: number): number {
   return luftlinieKm * UMWEGFAKTOR;
 }
 
-/** Geschätzte Fahrzeit in Minuten - keine exakte Routing-Berechnung, für die Zuteilungsentscheidung ausreichend. */
-export function estimatedDriveMinutes(luftlinieKm: number): number {
-  return (estimatedDriveKm(luftlinieKm) / DURCHSCHNITT_KMH) * 60;
+/** Geschätzte Fahrzeit (einfache Strecke) in Minuten - keine exakte Routing-Berechnung, für die Zuteilungsentscheidung ausreichend. */
+export function estimatedDriveMinutes(luftlinieKm: number, durchschnittKmh: number = DURCHSCHNITT_KMH_DEFAULT): number {
+  return (estimatedDriveKm(luftlinieKm) / durchschnittKmh) * 60;
 }
 
-export function estimatedDriveMinutesBetween(a: LatLng, b: LatLng): number {
-  return estimatedDriveMinutes(haversineKm(a, b));
+export function estimatedDriveMinutesBetween(a: LatLng, b: LatLng, durchschnittKmh: number = DURCHSCHNITT_KMH_DEFAULT): number {
+  return estimatedDriveMinutes(haversineKm(a, b), durchschnittKmh);
+}
+
+/** Fahrzeit/Woche für einen Fall = Hin- und Rückweg × Besuche/Woche. */
+export function weeklyDriveMinutes(einfacheFahrzeitMin: number, besucheProWoche: number): number {
+  return einfacheFahrzeitMin * 2 * besucheProWoche;
 }
 
 /** Referenzpunkt eines Mitarbeiters: Wohnort, falls hinterlegt, sonst der primäre Standort. */
@@ -57,15 +60,6 @@ export function employeeReferencePoint(employee: {
     return { lat: employee.wohnortLat, lng: employee.wohnortLng };
   }
   return STANDORTE[employee.primaerStandort];
-}
-
-/** Score(Mitarbeiter, neuer Fall) = -Fahrzeit_Zuwachs × 1.0 + Freie_FLS_Std_Woche × Gewicht. */
-export function computeScore(
-  fahrzeitZuwachsMin: number,
-  freieFlsStdWoche: number,
-  kapazitaetGewicht: number = KAPAZITAET_GEWICHT_DEFAULT
-): number {
-  return -fahrzeitZuwachsMin * 1.0 + freieFlsStdWoche * kapazitaetGewicht;
 }
 
 /** Resultierende freie Kapazität nach einer (probeweisen) Neuzuteilung - negativ = Überbuchung. */

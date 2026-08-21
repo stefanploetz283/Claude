@@ -12,6 +12,6 @@ const FahrtenrechnerMap = dynamic(() => import("./fahrtenrechner-map").then((mod
   ),
 });
 
-export function FahrtenrechnerClient({ employees }: { employees: EmployeeVM[] }) {
-  return <FahrtenrechnerMap employees={employees} />;
+export function FahrtenrechnerClient({ employees, durchschnittKmh }: { employees: EmployeeVM[]; durchschnittKmh: number }) {
+  return <FahrtenrechnerMap employees={employees} durchschnittKmh={durchschnittKmh} />;
 }

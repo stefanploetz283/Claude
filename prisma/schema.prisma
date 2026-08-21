@@ -627,6 +627,9 @@ model Settings {
   gesamtkostenJahr             Decimal? @db.Decimal(10, 2) // Personal- + Betriebskosten/Jahr aus der Entgeltkalkulation
   zahlungsverzugTageJugendamt  Int     @default(45) // Erfahrungswert bis Geldeingang nach Rechnungsstellung
 
+  // Fahrten-/Fallrechner: Ø km/h für die Umrechnung Fahrstrecke → Fahrzeit (siehe src/lib/fahrtenrechner/calc.ts)
+  fahrtenrechnerDurchschnittskmh Decimal @default(80) @db.Decimal(5, 1)
+
   updatedAt                   DateTime @updatedAt
 }
 

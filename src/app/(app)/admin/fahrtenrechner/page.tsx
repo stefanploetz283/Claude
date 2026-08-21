@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 import {
   employeeReferencePoint,
   estimatedDriveMinutesBetween,
+  weeklyDriveMinutes,
   nichtAbrechenbareFahrstundenWoche,
   type StandortKey,
 } from "@/lib/fahrtenrechner/calc";
@@ -13,12 +14,15 @@ import { FahrtenrechnerClient } from "./fahrtenrechner-client";
 import type { EmployeeVM, CaseVM } from "./types";
 
 export default async function FahrtenrechnerPage() {
-  await requireAdmin();
+  await requireAdminOrVerwaltung();
   const settings = await getSettings();
   const billableCapacityFactor = settings.billableCapacityFactor.toNumber();
+  const durchschnittKmh = settings.fahrtenrechnerDurchschnittskmh.toNumber();
 
   const [employees, cases] = await Promise.all([
-    prisma.user.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+    // Nur Fachkräfte (+ Admin, falls er selbst Fälle übernimmt) - Verwaltung bearbeitet keine Fälle
+    // und darf hier nicht als möglicher Fallübernehmer erscheinen.
+    prisma.user.findMany({ where: { active: true, role: { in: ["EMPLOYEE", "ADMIN"] } }, orderBy: { name: "asc" } }),
     prisma.case.findMany({
       where: { archived: false, status: "ACTIVE" },
       include: { client: true },
@@ -39,7 +43,7 @@ export default async function FahrtenrechnerPage() {
       .map((c) => {
         const clientLat = c.client.lat!.toNumber();
         const clientLng = c.client.lng!.toNumber();
-        const fahrzeitMinEinzel = estimatedDriveMinutesBetween(referencePoint, { lat: clientLat, lng: clientLng });
+        const fahrzeitMinEinzel = estimatedDriveMinutesBetween(referencePoint, { lat: clientLat, lng: clientLng }, durchschnittKmh);
         return {
           id: c.id,
           clientName: `${c.client.lastName}, ${c.client.firstName}`,
@@ -48,7 +52,8 @@ export default async function FahrtenrechnerPage() {
           besucheProWoche: c.besucheProWoche,
           geplanteFlsStdWoche: c.geplanteFlsStdWoche?.toNumber() ?? null,
           fahrzeitMinEinzel,
-          fahrzeitWocheMinFall: fahrzeitMinEinzel * c.besucheProWoche,
+          // Hin- und Rückweg × Besuche/Woche
+          fahrzeitWocheMinFall: weeklyDriveMinutes(fahrzeitMinEinzel, c.besucheProWoche),
         };
       });
     const caseCountMissingGeo = ownCases.length - caseVMs.length;
@@ -83,7 +88,7 @@ export default async function FahrtenrechnerPage() {
           Geografische Übersicht aller aktiven Fälle und Kapazitäten – für die Zuteilungsentscheidung bei neuen Fällen.
         </p>
       </div>
-      <FahrtenrechnerClient employees={employeeVMs} />
+      <FahrtenrechnerClient employees={employeeVMs} durchschnittKmh={durchschnittKmh} />
     </div>
   );
 }

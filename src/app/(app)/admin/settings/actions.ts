@@ -35,6 +35,7 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
   const breakEvenStundensatzStr = String(formData.get("breakEvenStundensatz") ?? "").trim();
   const gesamtkostenJahrStr = String(formData.get("gesamtkostenJahr") ?? "").trim();
   const zahlungsverzugTageJugendamtStr = String(formData.get("zahlungsverzugTageJugendamt") ?? "").trim();
+  const fahrtenrechnerDurchschnittskmhStr = String(formData.get("fahrtenrechnerDurchschnittskmh") ?? "").trim();
 
   if (!practiceName) return { error: "Bitte einen Praxisnamen angeben." };
 
@@ -76,6 +77,11 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
     return { error: "Bitte einen gültigen Zahlungsverzug (Tage) angeben." };
   }
 
+  const fahrtenrechnerDurchschnittskmh = fahrtenrechnerDurchschnittskmhStr ? Number(fahrtenrechnerDurchschnittskmhStr) : undefined;
+  if (fahrtenrechnerDurchschnittskmh !== undefined && (!Number.isFinite(fahrtenrechnerDurchschnittskmh) || fahrtenrechnerDurchschnittskmh <= 0)) {
+    return { error: "Bitte eine gültige Durchschnittsgeschwindigkeit (km/h) für den Fahrten-/Fallrechner angeben." };
+  }
+
   let logoUrl: string | undefined;
   if (logo instanceof File && logo.size > 0) {
     if (!logo.type.startsWith("image/")) return { error: "Das Logo muss eine Bilddatei sein." };
@@ -110,6 +116,7 @@ export async function updateSettings(_prev: ActionState, formData: FormData): Pr
       breakEvenStundensatz,
       gesamtkostenJahr,
       zahlungsverzugTageJugendamt: Number.isFinite(zahlungsverzugTageJugendamt) ? zahlungsverzugTageJugendamt : undefined,
+      fahrtenrechnerDurchschnittskmh,
       contingentWarningThreshold: Number.isFinite(contingentWarningThreshold) ? contingentWarningThreshold : undefined,
       sessionIdleTimeoutMinutes: Number.isFinite(sessionIdleTimeoutMinutes) ? sessionIdleTimeoutMinutes : undefined,
       employeesCanContributeKnowledge,

@@ -7,9 +7,8 @@ import {
   STANDORTE,
   haversineKm,
   estimatedDriveMinutesBetween,
-  computeScore,
+  weeklyDriveMinutes,
   resultingFreeCapacity,
-  KAPAZITAET_GEWICHT_DEFAULT,
   type LatLng,
   type StandortKey,
 } from "@/lib/fahrtenrechner/calc";
@@ -55,8 +54,20 @@ function assistentIcon(): L.DivIcon {
 }
 
 type Tab = "mitarbeiter" | "neuzuteilung";
+type Empfehlungskategorie = "EMPFOHLEN" | "MOEGLICH" | "UEBERBUCHUNG";
 
-export function FahrtenrechnerMap({ employees }: { employees: EmployeeVM[] }) {
+const KATEGORIE_LABEL: Record<Empfehlungskategorie, string> = {
+  EMPFOHLEN: "Empfohlen",
+  MOEGLICH: "Möglich",
+  UEBERBUCHUNG: "Überbuchung",
+};
+const KATEGORIE_CLS: Record<Empfehlungskategorie, string> = {
+  EMPFOHLEN: "bg-[var(--color-primary)] text-white",
+  MOEGLICH: "bg-[var(--color-border)] text-[var(--color-text)]",
+  UEBERBUCHUNG: "bg-[var(--color-coral-soft)] text-[var(--color-coral)]",
+};
+
+export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: EmployeeVM[]; durchschnittKmh: number }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
@@ -74,7 +85,6 @@ export function FahrtenrechnerMap({ employees }: { employees: EmployeeVM[] }) {
   const [manualPinMode, setManualPinMode] = useState(false);
   const [besucheProWoche, setBesucheProWoche] = useState(1);
   const [geplanteFlsStdWoche, setGeplanteFlsStdWoche] = useState<string>("");
-  const [kapazitaetGewicht, setKapazitaetGewicht] = useState(KAPAZITAET_GEWICHT_DEFAULT);
 
   const selectedEmployee = employees.find((e) => e.id === selectedEmployeeId) ?? null;
 
@@ -194,24 +204,44 @@ export function FahrtenrechnerMap({ employees }: { employees: EmployeeVM[] }) {
   const vorschlagsliste = useMemo(() => {
     if (!pin) return [];
     const geplant = geplanteFlsStdWoche ? Number(geplanteFlsStdWoche.replace(",", ".")) : 0;
-    return employees
-      .map((e) => {
-        const fahrzeitZuwachsMin = estimatedDriveMinutesBetween(e.referencePoint, pin) * besucheProWoche;
-        const luftlinieKm = haversineKm(e.referencePoint, pin);
-        const score = computeScore(fahrzeitZuwachsMin, e.freieFlsStdWoche, kapazitaetGewicht);
-        const resultingFree = resultingFreeCapacity(e.freieFlsStdWoche, geplant);
-        return {
-          employee: e,
-          fahrzeitZuwachsMin,
-          luftlinieKm,
-          score,
-          resultingFree,
-          radiusWarning: luftlinieKm > e.einsatzradiusKm,
-          kapazitaetsWarning: resultingFree < 0,
-        };
-      })
-      .sort((a, b) => b.score - a.score);
-  }, [employees, pin, besucheProWoche, geplanteFlsStdWoche, kapazitaetGewicht]);
+    const berechnet = employees.map((e) => {
+      const fahrzeitEinzelMin = estimatedDriveMinutesBetween(e.referencePoint, pin, durchschnittKmh);
+      const fahrzeitZuwachsMin = weeklyDriveMinutes(fahrzeitEinzelMin, besucheProWoche);
+      const fahrzeitWocheNachZuteilung = e.fahrzeitWocheMin + fahrzeitZuwachsMin;
+      const luftlinieKm = haversineKm(e.referencePoint, pin);
+      const resultingFree = resultingFreeCapacity(e.freieFlsStdWoche, geplant);
+      return {
+        employee: e,
+        fahrzeitZuwachsMin,
+        fahrzeitWocheNachZuteilung,
+        luftlinieKm,
+        resultingFree,
+        radiusWarning: luftlinieKm > e.einsatzradiusKm,
+        kapazitaetsWarning: resultingFree < 0,
+      };
+    });
+
+    // Primär nach resultierender Gesamt-Fahrzeit/Woche (aufsteigend); Überbuchung wird unabhängig davon
+    // ans Ende sortiert (bleibt sichtbar/wählbar, ist aber nie die erste Empfehlung).
+    berechnet.sort((a, b) => {
+      if (a.kapazitaetsWarning !== b.kapazitaetsWarning) return a.kapazitaetsWarning ? 1 : -1;
+      return a.fahrzeitWocheNachZuteilung - b.fahrzeitWocheNachZuteilung;
+    });
+
+    let empfohlenVergeben = false;
+    return berechnet.map((v) => {
+      let kategorie: Empfehlungskategorie;
+      if (v.kapazitaetsWarning) {
+        kategorie = "UEBERBUCHUNG";
+      } else if (!empfohlenVergeben) {
+        kategorie = "EMPFOHLEN";
+        empfohlenVergeben = true;
+      } else {
+        kategorie = "MOEGLICH";
+      }
+      return { ...v, kategorie };
+    });
+  }, [employees, pin, besucheProWoche, geplanteFlsStdWoche, durchschnittKmh]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
@@ -365,45 +395,38 @@ export function FahrtenrechnerMap({ employees }: { employees: EmployeeVM[] }) {
                     className="w-32 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
                   />
                 </label>
-                <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="text-xs font-medium text-[var(--color-text-muted)]">Gewicht Kapazität (Score)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={kapazitaetGewicht}
-                    onChange={(e) => setKapazitaetGewicht(Number(e.target.value))}
-                    className="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  />
-                </label>
               </div>
             </div>
 
             {pin && (
               <div className="flex flex-col gap-2">
-                {vorschlagsliste.map((v, i) => (
+                {vorschlagsliste.map((v) => (
                   <div
                     key={v.employee.id}
-                    className={`flex flex-col gap-1 rounded-[var(--radius-card)] border p-3 text-sm ${
-                      i === 0 ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)]" : "border-[var(--color-border)] bg-[var(--color-surface)]"
+                    className={`flex flex-col gap-1.5 rounded-[var(--radius-card)] border p-3 text-sm ${
+                      v.kategorie === "EMPFOHLEN"
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)]"
+                        : "border-[var(--color-border)] bg-[var(--color-surface)]"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: v.employee.color }} />
                       <span className="font-semibold text-[var(--color-text)]">{v.employee.name}</span>
-                      <span className="ml-auto text-xs font-semibold text-[var(--color-text-muted)]">Score: {v.score.toFixed(1)}</span>
+                      <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${KATEGORIE_CLS[v.kategorie]}`}>
+                        {KATEGORIE_LABEL[v.kategorie]}
+                      </span>
                     </div>
-                    <span className="text-[var(--color-text-muted)]">Fahrzeit-Zuwachs: {v.fahrzeitZuwachsMin.toFixed(1)} Min./Woche</span>
-                    <span className={v.resultingFree < 0 ? "font-semibold text-[var(--color-coral)]" : "text-[var(--color-text-muted)]"}>
+                    <span className="text-[var(--color-text)]">
+                      Fahrzeit/Woche nach Zuteilung: <span className="font-semibold">{v.fahrzeitWocheNachZuteilung.toFixed(0)} Min.</span>{" "}
+                      <span className="text-[var(--color-text-muted)]">
+                        (aktuell {v.employee.fahrzeitWocheMin.toFixed(0)} Min., +{v.fahrzeitZuwachsMin.toFixed(0)} Min.)
+                      </span>
+                    </span>
+                    <span className={v.resultingFree < 0 ? "font-semibold text-[var(--color-coral)]" : "text-[var(--color-text)]"}>
                       Freie Kapazität nach Zuteilung: {v.resultingFree.toFixed(2)} Std./Woche
                     </span>
-                    {v.kapazitaetsWarning && (
-                      <span className="rounded-full bg-[var(--color-coral-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-coral)]">
-                        ⚠ Überbuchung
-                      </span>
-                    )}
                     {v.radiusWarning && (
-                      <span className="rounded-full bg-[var(--color-warn-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-warn-text)]">
+                      <span className="self-start rounded-full bg-[var(--color-warn-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-warn-text)]">
                         ⚠ Außerhalb Einsatzradius ({v.employee.einsatzradiusKm} km, Luftlinie {v.luftlinieKm.toFixed(1)} km)
                       </span>
                     )}
