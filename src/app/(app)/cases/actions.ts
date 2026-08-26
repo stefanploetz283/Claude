@@ -6,7 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 import { geocodeAddress } from "@/lib/fahrtenrechner/geocode";
+import { resolveClientAddress } from "@/lib/client-address";
 import type { CaseStatus } from "@prisma/client";
+
+/** Vorbelegung Besuche/Monat für den automatisch angelegten "Zuhause"-Besuchsort bei Fallanlage
+ * (entspricht ca. 1x/Woche, dem bisherigen Standardwert). Feintuning erfolgt danach im Fall selbst. */
+const BESUCHSORT_BESUCHE_PRO_MONAT_DEFAULT = 4.33;
 
 export type ActionState = { error?: string } | undefined;
 
@@ -35,7 +40,6 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const helpPlanMeetingDate = String(formData.get("helpPlanMeetingDate") ?? "").trim();
   const extensionDeadline = String(formData.get("extensionDeadline") ?? "").trim();
   const reminderLeadDays = Number(formData.get("reminderLeadDays") ?? 14);
-  const besucheProWocheStr = String(formData.get("besucheProWoche") ?? "").trim();
   const geplanteFlsStdWocheStr = String(formData.get("geplanteFlsStdWoche") ?? "").trim();
 
   if (!authority || !helpTypeId || !assignedEmployeeId || !hoursContingent) {
@@ -46,10 +50,6 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   }
   if (!existingClientId && (!firstName || !lastName)) {
     return { error: "Bitte einen Klienten auswählen oder neue Klientendaten angeben." };
-  }
-  const besucheProWoche = besucheProWocheStr ? Number(besucheProWocheStr) : 1;
-  if (!Number.isFinite(besucheProWoche) || besucheProWoche < 0) {
-    return { error: "Bitte eine gültige Anzahl Besuche/Woche angeben." };
   }
   let geplanteFlsStdWoche: number | null = null;
   if (geplanteFlsStdWocheStr) {
@@ -62,10 +62,18 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const caseNumber = `AZ-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`.toUpperCase();
 
   let clientId = existingClientId;
+  // Für den automatisch angelegten "Zuhause"-Besuchsort (siehe unten) - Adresse/Koordinaten der Klient*in.
+  let zuhauseAdresse = "";
+  let zuhauseLat: number | null = null;
+  let zuhauseLng: number | null = null;
+
   if (!clientId) {
     // Fahrtenrechner-Referenzpunkt: Adresse einmalig geocodieren und dauerhaft speichern, kein
     // Blocker bei Fehlschlag (Fallback: manuelles Setzen der Koordinaten auf der Karte, siehe Prompt).
-    const geocoded = street && postalCodeCity ? await geocodeAddress(`${street}, ${postalCodeCity}`) : null;
+    zuhauseAdresse = street && postalCodeCity ? `${street}, ${postalCodeCity}` : street || postalCodeCity;
+    const geocoded = zuhauseAdresse ? await geocodeAddress(zuhauseAdresse) : null;
+    zuhauseLat = geocoded?.lat ?? null;
+    zuhauseLng = geocoded?.lng ?? null;
     const client = await prisma.client.create({
       data: {
         firstName,
@@ -74,13 +82,27 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
         street: street || null,
         postalCodeCity: postalCodeCity || null,
         contactInfo: contactInfo || null,
-        lat: geocoded?.lat ?? null,
-        lng: geocoded?.lng ?? null,
+        lat: zuhauseLat,
+        lng: zuhauseLng,
         geocodedAt: geocoded ? new Date() : null,
       },
     });
     clientId = client.id;
     await logAccess({ userId: user.id, action: "CREATE", entityType: "Client", entityId: client.id });
+  } else {
+    const existingClient = await prisma.client.findUnique({ where: { id: clientId } });
+    if (existingClient) {
+      const resolved = resolveClientAddress(existingClient);
+      zuhauseAdresse = [resolved.street, resolved.postalCodeCity].filter(Boolean).join(", ");
+      if (existingClient.lat != null && existingClient.lng != null) {
+        zuhauseLat = existingClient.lat.toNumber();
+        zuhauseLng = existingClient.lng.toNumber();
+      } else if (zuhauseAdresse) {
+        const geocoded = await geocodeAddress(zuhauseAdresse);
+        zuhauseLat = geocoded?.lat ?? null;
+        zuhauseLng = geocoded?.lng ?? null;
+      }
+    }
   }
 
   const newCase = await prisma.case.create({
@@ -95,7 +117,6 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
       substituteEmployeeId: substituteEmployeeId || null,
       hoursContingent,
       contingentPeriodMonths,
-      besucheProWoche,
       geplanteFlsStdWoche,
       startDate: startDate ? new Date(startDate) : new Date(),
       expectedEndDate: expectedEndDate ? new Date(expectedEndDate) : null,
@@ -108,6 +129,22 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
       },
     },
   });
+
+  // Fahrten-/Fallrechner: ein Fall braucht mindestens einen Besuchsort - "Zuhause" wird aus der
+  // Klientenadresse vorbefüllt (weitere Orte wie "Schule" werden danach im Fall selbst ergänzt).
+  if (zuhauseAdresse) {
+    await prisma.besuchsort.create({
+      data: {
+        caseId: newCase.id,
+        bezeichnung: "Zuhause",
+        adresse: zuhauseAdresse,
+        lat: zuhauseLat,
+        lng: zuhauseLng,
+        geocodedAt: zuhauseLat != null ? new Date() : null,
+        besucheProMonat: BESUCHSORT_BESUCHE_PRO_MONAT_DEFAULT,
+      },
+    });
+  }
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Case", entityId: newCase.id });
   revalidatePath("/dashboard");
@@ -133,17 +170,12 @@ export async function updateCaseCapacityFields(_prev: ActionState, formData: For
   return undefined;
 }
 
-/** Fahrten-/Fallrechner: Besuche/Woche + geplante FLS-Std./Woche (Grundlage für Fahrzeit-Zuwachs/Score). */
-export async function updateCaseFahrtenrechnerFields(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/** Fachliche Leistungszeit/Woche für den Fahrten-/Fallrechner - unabhängig von den Besuchsorten/der Fahrt. */
+export async function updateCaseGeplanteFlsStdWoche(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const user = await requireUser();
   const caseId = String(formData.get("caseId") ?? "");
-  const besucheProWocheStr = String(formData.get("besucheProWoche") ?? "").trim();
   const geplanteFlsStdWocheStr = String(formData.get("geplanteFlsStdWoche") ?? "").trim();
 
-  const besucheProWoche = Number(besucheProWocheStr || "1");
-  if (!Number.isFinite(besucheProWoche) || besucheProWoche < 0) {
-    return { error: "Bitte eine gültige Anzahl Besuche/Woche angeben." };
-  }
   let geplanteFlsStdWoche: number | null = null;
   if (geplanteFlsStdWocheStr) {
     geplanteFlsStdWoche = Number(geplanteFlsStdWocheStr.replace(",", "."));
@@ -152,8 +184,99 @@ export async function updateCaseFahrtenrechnerFields(_prev: ActionState, formDat
     }
   }
 
-  await prisma.case.update({ where: { id: caseId }, data: { besucheProWoche, geplanteFlsStdWoche } });
-  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Fahrtenrechner-Fallfelder geändert" });
+  await prisma.case.update({ where: { id: caseId }, data: { geplanteFlsStdWoche } });
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Geplante FLS-Std./Woche geändert" });
+  revalidatePath(`/cases/${caseId}`);
+  revalidatePath("/admin/fahrtenrechner");
+  return undefined;
+}
+
+/** Besuchsort hinzufügen (Fahrten-/Fallrechner) - Adresse wird beim Anlegen einmalig geocodiert. */
+export async function addBesuchsort(
+  caseId: string,
+  bezeichnung: string,
+  adresse: string,
+  besucheProMonatStr: string
+): Promise<{ error?: string } | undefined> {
+  const user = await requireUser();
+  const label = bezeichnung.trim();
+  const address = adresse.trim();
+  if (!label || !address) return { error: "Bitte Bezeichnung und Adresse angeben." };
+  const besucheProMonat = Number(besucheProMonatStr.replace(",", "."));
+  if (!Number.isFinite(besucheProMonat) || besucheProMonat < 0) {
+    return { error: "Bitte eine gültige Anzahl Besuche/Monat angeben." };
+  }
+
+  const geocoded = await geocodeAddress(address);
+  const count = await prisma.besuchsort.count({ where: { caseId } });
+  await prisma.besuchsort.create({
+    data: {
+      caseId,
+      bezeichnung: label,
+      adresse: address,
+      besucheProMonat,
+      lat: geocoded?.lat ?? null,
+      lng: geocoded?.lng ?? null,
+      geocodedAt: geocoded ? new Date() : null,
+      sortOrder: count,
+    },
+  });
+  await logAccess({ userId: user.id, action: "CREATE", entityType: "Besuchsort", entityId: caseId, details: label });
+  revalidatePath(`/cases/${caseId}`);
+  revalidatePath("/admin/fahrtenrechner");
+  return undefined;
+}
+
+/** Besuchsort bearbeiten - re-geocodiert nur, wenn sich die Adresse tatsächlich geändert hat. */
+export async function updateBesuchsort(
+  id: string,
+  caseId: string,
+  bezeichnung: string,
+  adresse: string,
+  besucheProMonatStr: string
+): Promise<{ error?: string } | undefined> {
+  const user = await requireUser();
+  const label = bezeichnung.trim();
+  const address = adresse.trim();
+  if (!label || !address) return { error: "Bitte Bezeichnung und Adresse angeben." };
+  const besucheProMonat = Number(besucheProMonatStr.replace(",", "."));
+  if (!Number.isFinite(besucheProMonat) || besucheProMonat < 0) {
+    return { error: "Bitte eine gültige Anzahl Besuche/Monat angeben." };
+  }
+
+  const existing = await prisma.besuchsort.findUnique({ where: { id } });
+  if (!existing) return { error: "Besuchsort nicht gefunden." };
+
+  let lat = existing.lat?.toNumber() ?? null;
+  let lng = existing.lng?.toNumber() ?? null;
+  let geocodedAt = existing.geocodedAt;
+  if (address !== existing.adresse) {
+    const geocoded = await geocodeAddress(address);
+    if (!geocoded) {
+      return {
+        error: "Die Adresse konnte nicht automatisch gefunden werden. Bitte Schreibweise prüfen und erneut versuchen.",
+      };
+    }
+    lat = geocoded.lat;
+    lng = geocoded.lng;
+    geocodedAt = new Date();
+  }
+
+  await prisma.besuchsort.update({ where: { id }, data: { bezeichnung: label, adresse: address, besucheProMonat, lat, lng, geocodedAt } });
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Besuchsort", entityId: id });
+  revalidatePath(`/cases/${caseId}`);
+  revalidatePath("/admin/fahrtenrechner");
+  return undefined;
+}
+
+/** Besuchsort löschen - ein Fall muss mindestens einen behalten. */
+export async function deleteBesuchsort(id: string, caseId: string): Promise<{ error?: string } | undefined> {
+  const user = await requireUser();
+  const count = await prisma.besuchsort.count({ where: { caseId } });
+  if (count <= 1) return { error: "Ein Fall benötigt mindestens einen Besuchsort." };
+
+  await prisma.besuchsort.delete({ where: { id } });
+  await logAccess({ userId: user.id, action: "DELETE", entityType: "Besuchsort", entityId: id });
   revalidatePath(`/cases/${caseId}`);
   revalidatePath("/admin/fahrtenrechner");
   return undefined;

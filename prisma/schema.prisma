@@ -185,9 +185,9 @@ model Case {
 
   stundensatz          Decimal?   @db.Decimal(7, 2) // Umsatz-Cockpit: € je FLS-Std. für diesen Fall - null = Settings.stundensatzBasis
 
-  // Fahrten-/Fallrechner: Standort selbst kommt vom zugeordneten Client (client.lat/lng über
-  // resolveClientAddress), diese beiden Werte sind fallspezifisch (nicht klientenspezifisch).
-  besucheProWoche      Int        @default(1)
+  // Fahrten-/Fallrechner: mehrere Besuchsorte (Zuhause, Schule, ...) statt einer einzelnen Adresse,
+  // siehe Besuchsort. geplanteFlsStdWoche betrifft die fachliche Leistungszeit, nicht die Fahrt.
+  besuchsorte          Besuchsort[]
   geplanteFlsStdWoche  Decimal?   @db.Decimal(5, 2)
 
   status               CaseStatus @default(ACTIVE)
@@ -220,6 +220,29 @@ model Case {
   @@index([substituteEmployeeId])
   @@index([status])
   @@index([helpTypeId])
+}
+
+// Fahrten-/Fallrechner: ein Fall hat i.d.R. mehrere feste Anlaufstellen mit unterschiedlicher
+// Besuchshäufigkeit (z.B. Zuhause und Schule). besucheProMonat statt -woche, da Rhythmen wie
+// "2x im Monat" real üblich sind und sich nicht sauber als Wochenwert abbilden lassen.
+model Besuchsort {
+  id              String    @id @default(cuid())
+  case            Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseId          String
+  bezeichnung     String // Freitext, z.B. "Zuhause", "Schule", "Sonstiges"
+  adresse         String
+
+  // einmalig per Nominatim geocodiert, dauerhaft gespeichert (wie Client.lat/lng)
+  lat             Decimal?  @db.Decimal(9, 6)
+  lng             Decimal?  @db.Decimal(9, 6)
+  geocodedAt      DateTime?
+
+  besucheProMonat Decimal   @db.Decimal(5, 2)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([caseId])
 }
 
 // Rechnung ans Jugendamt/Kostenträger - fortlaufende, lückenlose Nummerierung pro Jahr (steuerrechtliche Anforderung)

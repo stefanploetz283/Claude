@@ -10,7 +10,7 @@ import { StatusForm } from "./status-form";
 import { ArchiveCaseButton } from "./archive-button";
 import { DeleteCaseButton } from "./delete-button";
 import { CapacityPlanningForm } from "./capacity-planning-form";
-import { FahrtenrechnerFieldsForm } from "./fahrtenrechner-fields-form";
+import { BesuchsorteEditor } from "./besuchsorte-editor";
 import { AuthorityAddressForm } from "./authority-address-form";
 import { StundensatzForm } from "./stundensatz-form";
 import { getSettings } from "@/lib/settings";
@@ -32,6 +32,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
     where: { id },
     include: {
       client: true,
+      besuchsorte: { orderBy: { sortOrder: "asc" } },
       helpType: true,
       assignedEmployee: true,
       substituteEmployee: true,
@@ -194,11 +195,16 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
       <div className={cardCls}>
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner</h2>
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">
-          Grundlage für die Fahrzeit-Zuwachs-Berechnung im Fahrten-/Fallrechner (Admin-Tool).
+          Besuchsorte (Zuhause, Schule, ...) und geplante Leistungszeit - Grundlage für den Fahrten-/Fallrechner (Admin-Tool).
         </p>
-        <FahrtenrechnerFieldsForm
+        <BesuchsorteEditor
           caseId={caseRecord.id}
-          besucheProWoche={caseRecord.besucheProWoche}
+          besuchsorte={caseRecord.besuchsorte.map((b) => ({
+            id: b.id,
+            bezeichnung: b.bezeichnung,
+            adresse: b.adresse,
+            besucheProMonat: b.besucheProMonat.toNumber(),
+          }))}
           geplanteFlsStdWoche={caseRecord.geplanteFlsStdWoche?.toNumber() ?? null}
         />
       </div>

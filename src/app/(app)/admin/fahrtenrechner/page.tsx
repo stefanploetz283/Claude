@@ -4,14 +4,14 @@ import { getSettings } from "@/lib/settings";
 import {
   employeeReferencePoint,
   estimatedDriveMinutesBetween,
-  weeklyDriveMinutes,
+  weeklyDriveMinutesFromMonthly,
   nichtAbrechenbareFahrstundenWoche,
   type StandortKey,
 } from "@/lib/fahrtenrechner/calc";
 import { getEmployeeCapacity } from "@/lib/capacity";
 import { employeeColor } from "@/lib/fahrtenrechner/employee-colors";
 import { FahrtenrechnerClient } from "./fahrtenrechner-client";
-import type { EmployeeVM, CaseVM } from "./types";
+import type { EmployeeVM, CaseVM, BesuchsortVM } from "./types";
 
 export default async function FahrtenrechnerPage() {
   await requireAdminOrVerwaltung();
@@ -25,7 +25,7 @@ export default async function FahrtenrechnerPage() {
     prisma.user.findMany({ where: { active: true, role: { in: ["EMPLOYEE", "ADMIN"] } }, orderBy: { name: "asc" } }),
     prisma.case.findMany({
       where: { archived: false, status: "ACTIVE" },
-      include: { client: true },
+      include: { client: true, besuchsorte: { orderBy: { sortOrder: "asc" } } },
     }),
   ]);
 
@@ -37,26 +37,38 @@ export default async function FahrtenrechnerPage() {
     });
 
     const ownCases = cases.filter((c) => c.assignedEmployeeId === employee.id);
+    let besuchsortCountMissingGeo = 0;
 
-    const caseVMs: CaseVM[] = ownCases
-      .filter((c) => c.client.lat != null && c.client.lng != null)
-      .map((c) => {
-        const clientLat = c.client.lat!.toNumber();
-        const clientLng = c.client.lng!.toNumber();
-        const fahrzeitMinEinzel = estimatedDriveMinutesBetween(referencePoint, { lat: clientLat, lng: clientLng }, durchschnittKmh);
-        return {
-          id: c.id,
-          clientName: `${c.client.lastName}, ${c.client.firstName}`,
-          lat: clientLat,
-          lng: clientLng,
-          besucheProWoche: c.besucheProWoche,
-          geplanteFlsStdWoche: c.geplanteFlsStdWoche?.toNumber() ?? null,
-          fahrzeitMinEinzel,
-          // Hin- und Rückweg × Besuche/Woche
-          fahrzeitWocheMinFall: weeklyDriveMinutes(fahrzeitMinEinzel, c.besucheProWoche),
-        };
-      });
-    const caseCountMissingGeo = ownCases.length - caseVMs.length;
+    const caseVMs: CaseVM[] = ownCases.map((c) => {
+      const besuchsortVMs: BesuchsortVM[] = c.besuchsorte
+        .filter((b) => {
+          const hasGeo = b.lat != null && b.lng != null;
+          if (!hasGeo) besuchsortCountMissingGeo++;
+          return hasGeo;
+        })
+        .map((b) => {
+          const lat = b.lat!.toNumber();
+          const lng = b.lng!.toNumber();
+          const besucheProMonat = b.besucheProMonat.toNumber();
+          const fahrzeitMinEinzel = estimatedDriveMinutesBetween(referencePoint, { lat, lng }, durchschnittKmh);
+          return {
+            id: b.id,
+            bezeichnung: b.bezeichnung,
+            lat,
+            lng,
+            besucheProMonat,
+            fahrzeitMinEinzel,
+            fahrzeitWocheMin: weeklyDriveMinutesFromMonthly(fahrzeitMinEinzel, besucheProMonat),
+          };
+        });
+
+      return {
+        id: c.id,
+        clientName: `${c.client.lastName}, ${c.client.firstName}`,
+        besuchsorte: besuchsortVMs,
+        fahrzeitWocheMinFall: besuchsortVMs.reduce((sum, b) => sum + b.fahrzeitWocheMin, 0),
+      };
+    });
 
     const fahrzeitWocheMin = caseVMs.reduce((sum, c) => sum + c.fahrzeitWocheMinFall, 0);
     const zugeteilteFlsStdWoche = ownCases.reduce((sum, c) => sum + (c.geplanteFlsStdWoche?.toNumber() ?? 0), 0);
@@ -76,7 +88,7 @@ export default async function FahrtenrechnerPage() {
       fahrzeitWocheMin,
       nichtAbrechenbareFahrstundenWoche: nichtAbrechenbareFahrstundenWoche(fahrzeitWocheMin),
       cases: caseVMs,
-      caseCountMissingGeo,
+      besuchsortCountMissingGeo,
     };
   });
 

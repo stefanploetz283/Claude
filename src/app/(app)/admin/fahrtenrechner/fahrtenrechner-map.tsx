@@ -7,7 +7,7 @@ import {
   STANDORTE,
   haversineKm,
   estimatedDriveMinutesBetween,
-  weeklyDriveMinutes,
+  weeklyDriveMinutesFromMonthly,
   resultingFreeCapacity,
   type LatLng,
   type StandortKey,
@@ -16,6 +16,8 @@ import { previewGeocode } from "./actions";
 import type { EmployeeVM } from "./types";
 
 const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-soft)]";
+const inputCls = "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]";
+const BEZEICHNUNG_VORSCHLAEGE_ID = "fahrtenrechner-bezeichnung-vorschlaege";
 
 function caseIcon(color: string): L.DivIcon {
   return L.divIcon({
@@ -67,32 +69,56 @@ const KATEGORIE_CLS: Record<Empfehlungskategorie, string> = {
   UEBERBUCHUNG: "bg-[var(--color-coral-soft)] text-[var(--color-coral)]",
 };
 
+let besuchsortEntwurfCounter = 0;
+function neuerBesuchsortEntwurf(bezeichnung = ""): BesuchsortEntwurf {
+  besuchsortEntwurfCounter++;
+  return {
+    localId: `entwurf-${besuchsortEntwurfCounter}`,
+    bezeichnung,
+    adresse: "",
+    besucheProMonat: "4.33",
+    pin: null,
+    geocoding: false,
+    error: null,
+  };
+}
+
+type BesuchsortEntwurf = {
+  localId: string;
+  bezeichnung: string;
+  adresse: string;
+  besucheProMonat: string;
+  pin: LatLng | null;
+  geocoding: boolean;
+  error: string | null;
+};
+
 export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: EmployeeVM[]; durchschnittKmh: number }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
-  const assistentMarkerRef = useRef<L.Marker | null>(null);
 
   const [tab, setTab] = useState<Tab>("mitarbeiter");
   const [showRadius, setShowRadius] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
-  // Neuzuteilungs-Assistent
-  const [adresse, setAdresse] = useState("");
-  const [geocoding, setGeocoding] = useState(false);
-  const [geocodeError, setGeocodeError] = useState<string | null>(null);
-  const [pin, setPin] = useState<LatLng | null>(null);
-  const [manualPinMode, setManualPinMode] = useState(false);
-  const [besucheProWoche, setBesucheProWoche] = useState(1);
+  // Neuzuteilungs-Assistent: mehrere Besuchsorte statt einer einzelnen Adresse
+  const [besuchsorte, setBesuchsorte] = useState<BesuchsortEntwurf[]>(() => [neuerBesuchsortEntwurf("Zuhause")]);
+  const [manualPinTargetId, setManualPinTargetId] = useState<string | null>(null);
   const [geplanteFlsStdWoche, setGeplanteFlsStdWoche] = useState<string>("");
 
   const selectedEmployee = employees.find((e) => e.id === selectedEmployeeId) ?? null;
+  const geocodedOrte = useMemo(() => besuchsorte.filter((o): o is BesuchsortEntwurf & { pin: LatLng } => o.pin != null), [besuchsorte]);
 
-  // manualPinMode per Ref verfügbar machen, damit der einmalig registrierte click-Handler den aktuellen Wert sieht
-  const manualPinModeRef = useRef(false);
+  function patchBesuchsort(localId: string, patch: Partial<BesuchsortEntwurf>) {
+    setBesuchsorte((prev) => prev.map((o) => (o.localId === localId ? { ...o, ...patch } : o)));
+  }
+
+  // manualPinTargetId per Ref verfügbar machen, damit der einmalig registrierte click-Handler den aktuellen Wert sieht
+  const manualPinTargetIdRef = useRef<string | null>(null);
   useEffect(() => {
-    manualPinModeRef.current = manualPinMode;
-  }, [manualPinMode]);
+    manualPinTargetIdRef.current = manualPinTargetId;
+  }, [manualPinTargetId]);
 
   // Karte einmalig initialisieren
   useEffect(() => {
@@ -106,10 +132,12 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
     mapRef.current = map;
 
     map.on("click", (e: L.LeafletMouseEvent) => {
-      if (!manualPinModeRef.current) return;
-      setPin({ lat: e.latlng.lat, lng: e.latlng.lng });
-      setGeocodeError(null);
-      setManualPinMode(false);
+      const targetId = manualPinTargetIdRef.current;
+      if (!targetId) return;
+      setBesuchsorte((prev) =>
+        prev.map((o) => (o.localId === targetId ? { ...o, pin: { lat: e.latlng.lat, lng: e.latlng.lng }, error: null } : o))
+      );
+      setManualPinTargetId(null);
     });
 
     return () => {
@@ -119,7 +147,7 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
     };
   }, []);
 
-  // Cluster-Marker (Fälle + Mitarbeiter-Referenzpunkte + Standorte) neu zeichnen
+  // Cluster-Marker (Besuchsorte + Mitarbeiter-Referenzpunkte + Standorte) neu zeichnen
   useEffect(() => {
     const map = mapRef.current;
     const group = layerGroupRef.current;
@@ -153,21 +181,24 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
       }
 
       for (const c of employee.cases) {
-        L.marker([c.lat, c.lng], { icon: caseIcon(employee.color) })
-          .bindPopup(
-            `<strong>${c.clientName}</strong><br/>Mitarbeiter: ${employee.name}<br/>` +
-              `Fahrzeit (einfach): ${c.fahrzeitMinEinzel.toFixed(0)} Min.<br/>Besuche/Woche: ${c.besucheProWoche}`
-          )
-          .addTo(group);
+        for (const b of c.besuchsorte) {
+          L.marker([b.lat, b.lng], { icon: caseIcon(employee.color) })
+            .bindPopup(
+              `<strong>${c.clientName}</strong> – ${b.bezeichnung}<br/>Mitarbeiter: ${employee.name}<br/>` +
+                `Fahrzeit (einfach): ${b.fahrzeitMinEinzel.toFixed(0)} Min.<br/>Besuche/Monat: ${b.besucheProMonat}`
+            )
+            .addTo(group);
+        }
       }
     }
 
-    if (pin) {
-      const marker = L.marker([pin.lat, pin.lng], { icon: assistentIcon() }).bindPopup("Neuer Fall (Vorschau)");
-      marker.addTo(group);
-      assistentMarkerRef.current = marker;
+    for (const ort of geocodedOrte) {
+      L.marker([ort.pin.lat, ort.pin.lng], { icon: assistentIcon() })
+        .bindTooltip(ort.bezeichnung || "Neuer Besuchsort", { permanent: true, direction: "top", offset: [0, -10] })
+        .bindPopup(`<strong>${ort.bezeichnung || "Neuer Besuchsort"}</strong><br/>Vorschau – noch nicht gespeichert`)
+        .addTo(group);
     }
-  }, [employees, showRadius, selectedEmployeeId, pin]);
+  }, [employees, showRadius, selectedEmployeeId, geocodedOrte]);
 
   function zentriereAuf(standort: StandortKey | "beide") {
     const map = mapRef.current;
@@ -181,42 +212,51 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
     }
   }
 
-  async function handleGeocode() {
-    if (!adresse.trim()) return;
-    setGeocoding(true);
-    setGeocodeError(null);
+  async function handleGeocode(localId: string) {
+    const ort = besuchsorte.find((o) => o.localId === localId);
+    if (!ort || !ort.adresse.trim()) return;
+    patchBesuchsort(localId, { geocoding: true, error: null });
     try {
-      const result = await previewGeocode(adresse);
+      const result = await previewGeocode(ort.adresse);
       if (!result) {
-        setGeocodeError(
-          "Die Adresse konnte nicht automatisch gefunden werden. Bitte Schreibweise prüfen oder die Koordinaten manuell per Klick auf der Karte setzen."
-        );
+        patchBesuchsort(localId, {
+          geocoding: false,
+          error: "Adresse nicht gefunden. Bitte Schreibweise prüfen oder die Koordinaten manuell per Klick auf der Karte setzen.",
+        });
         return;
       }
-      setPin(result);
+      patchBesuchsort(localId, { geocoding: false, pin: result });
       const map = mapRef.current;
       if (map) map.setView([result.lat, result.lng], 13);
-    } finally {
-      setGeocoding(false);
+    } catch {
+      patchBesuchsort(localId, { geocoding: false, error: "Geocoding fehlgeschlagen. Bitte erneut versuchen." });
     }
   }
 
   const vorschlagsliste = useMemo(() => {
-    if (!pin) return [];
+    if (geocodedOrte.length === 0) return [];
     const geplant = geplanteFlsStdWoche ? Number(geplanteFlsStdWoche.replace(",", ".")) : 0;
+
     const berechnet = employees.map((e) => {
-      const fahrzeitEinzelMin = estimatedDriveMinutesBetween(e.referencePoint, pin, durchschnittKmh);
-      const fahrzeitZuwachsMin = weeklyDriveMinutes(fahrzeitEinzelMin, besucheProWoche);
+      let fahrzeitZuwachsMin = 0;
+      const radiusWarnungen: string[] = [];
+      for (const ort of geocodedOrte) {
+        const fahrzeitEinzelMin = estimatedDriveMinutesBetween(e.referencePoint, ort.pin, durchschnittKmh);
+        const besucheProMonat = Number(ort.besucheProMonat.replace(",", ".")) || 0;
+        fahrzeitZuwachsMin += weeklyDriveMinutesFromMonthly(fahrzeitEinzelMin, besucheProMonat);
+        const luftlinieKm = haversineKm(e.referencePoint, ort.pin);
+        if (luftlinieKm > e.einsatzradiusKm) {
+          radiusWarnungen.push(`${ort.bezeichnung || "Besuchsort"} (${luftlinieKm.toFixed(1)} km)`);
+        }
+      }
       const fahrzeitWocheNachZuteilung = e.fahrzeitWocheMin + fahrzeitZuwachsMin;
-      const luftlinieKm = haversineKm(e.referencePoint, pin);
       const resultingFree = resultingFreeCapacity(e.freieFlsStdWoche, geplant);
       return {
         employee: e,
         fahrzeitZuwachsMin,
         fahrzeitWocheNachZuteilung,
-        luftlinieKm,
+        radiusWarnungen,
         resultingFree,
-        radiusWarning: luftlinieKm > e.einsatzradiusKm,
         kapazitaetsWarning: resultingFree < 0,
       };
     });
@@ -241,10 +281,16 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
       }
       return { ...v, kategorie };
     });
-  }, [employees, pin, besucheProWoche, geplanteFlsStdWoche, durchschnittKmh]);
+  }, [employees, geocodedOrte, geplanteFlsStdWoche, durchschnittKmh]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_380px]">
+      <datalist id={BEZEICHNUNG_VORSCHLAEGE_ID}>
+        <option value="Zuhause" />
+        <option value="Schule" />
+        <option value="Sonstiges" />
+      </datalist>
+
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => zentriereAuf("NITTENDORF")} className={switcherCls}>
@@ -262,9 +308,10 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
           </label>
         </div>
         <div ref={containerRef} className="h-[70vh] w-full rounded-[var(--radius-card)] border border-[var(--color-border)]" />
-        {manualPinMode && (
+        {manualPinTargetId && (
           <p className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-3 py-2 text-sm text-[var(--color-warn-text)]">
-            Manueller Modus aktiv: Klicken Sie auf die Karte, um den Fall-Standort zu setzen.
+            Manueller Modus aktiv: Klicken Sie auf die Karte, um den Standort für „
+            {besuchsorte.find((o) => o.localId === manualPinTargetId)?.bezeichnung || "diesen Besuchsort"}&quot; zu setzen.
           </p>
         )}
       </div>
@@ -310,20 +357,30 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
                 {selectedEmployee.cases.length === 0 ? (
                   <p className="text-sm text-[var(--color-text-muted)]">Keine Fälle mit Geodaten.</p>
                 ) : (
-                  <ul className="flex flex-col gap-2 text-sm">
+                  <ul className="flex flex-col gap-3 text-sm">
                     {selectedEmployee.cases.map((c) => (
-                      <li key={c.id} className="flex justify-between gap-2 border-b border-[var(--color-border)] pb-1.5 last:border-0">
-                        <span className="text-[var(--color-text)]">{c.clientName}</span>
-                        <span className="text-[var(--color-text-muted)]">
-                          {c.fahrzeitMinEinzel.toFixed(0)} Min. × {c.besucheProWoche}/Wo.
-                        </span>
+                      <li key={c.id} className="border-b border-[var(--color-border)] pb-2 last:border-0">
+                        <div className="flex justify-between gap-2">
+                          <span className="font-medium text-[var(--color-text)]">{c.clientName}</span>
+                          <span className="text-[var(--color-text-muted)]">{c.fahrzeitWocheMinFall.toFixed(0)} Min./Wo.</span>
+                        </div>
+                        <ul className="mt-1 flex flex-col gap-0.5 pl-3 text-xs text-[var(--color-text-muted)]">
+                          {c.besuchsorte.map((b) => (
+                            <li key={b.id} className="flex justify-between gap-2">
+                              <span>{b.bezeichnung}</span>
+                              <span>
+                                {b.fahrzeitMinEinzel.toFixed(0)} Min. × {b.besucheProMonat}/Monat
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
                       </li>
                     ))}
                   </ul>
                 )}
-                {selectedEmployee.caseCountMissingGeo > 0 && (
+                {selectedEmployee.besuchsortCountMissingGeo > 0 && (
                   <p className="mt-2 text-xs text-[var(--color-warn-text)]">
-                    {selectedEmployee.caseCountMissingGeo} Fall/Fälle ohne Geodaten (Klientenadresse noch nicht geocodiert).
+                    {selectedEmployee.besuchsortCountMissingGeo} Besuchsort(e) ohne Geodaten (Adresse noch nicht geocodiert).
                   </p>
                 )}
                 <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
@@ -337,68 +394,98 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
         {tab === "neuzuteilung" && (
           <div className="flex flex-col gap-3">
             <div className={cardCls}>
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="text-xs font-medium text-[var(--color-text-muted)]">Adresse des neuen Falls</span>
-                <div className="flex gap-2">
-                  <input
-                    value={adresse}
-                    onChange={(e) => setAdresse(e.target.value)}
-                    placeholder="Straße Hausnr., PLZ Ort"
-                    className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  />
-                  <button
-                    onClick={handleGeocode}
-                    disabled={geocoding || !adresse.trim()}
-                    className="shrink-0 rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-                  >
-                    {geocoding ? "Suche…" : "Suchen"}
-                  </button>
-                </div>
-              </label>
-              {geocodeError && (
-                <div className="mt-2 flex flex-col gap-2">
-                  <p className="text-sm text-[var(--color-coral)]">{geocodeError}</p>
-                  <button
-                    onClick={() => setManualPinMode(true)}
-                    className="self-start rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] hover:border-[var(--color-primary)]"
-                  >
-                    Koordinaten manuell auf der Karte setzen
-                  </button>
-                </div>
-              )}
-              {pin && (
-                <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                  Position: {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}
-                </p>
-              )}
-
-              <div className="mt-3 flex flex-wrap gap-3">
-                <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="text-xs font-medium text-[var(--color-text-muted)]">Besuche/Woche</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={besucheProWoche}
-                    onChange={(e) => setBesucheProWoche(Number(e.target.value))}
-                    className="w-24 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  />
-                </label>
-                <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="text-xs font-medium text-[var(--color-text-muted)]">Geplante FLS-Std./Woche</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={geplanteFlsStdWoche}
-                    onChange={(e) => setGeplanteFlsStdWoche(e.target.value)}
-                    className="w-32 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  />
-                </label>
+              <p className="mb-3 text-xs font-medium text-[var(--color-text-muted)]">Besuchsorte des neuen Falls</p>
+              <div className="flex flex-col gap-3">
+                {besuchsorte.map((ort) => (
+                  <div key={ort.localId} className="rounded-[var(--radius-control)] border border-[var(--color-border)] p-3">
+                    <div className="flex flex-wrap items-end gap-2">
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="text-xs font-medium text-[var(--color-text-muted)]">Bezeichnung</span>
+                        <input
+                          list={BEZEICHNUNG_VORSCHLAEGE_ID}
+                          value={ort.bezeichnung}
+                          onChange={(e) => patchBesuchsort(ort.localId, { bezeichnung: e.target.value })}
+                          className={`w-28 ${inputCls}`}
+                        />
+                      </label>
+                      <label className="flex min-w-[12rem] flex-1 flex-col gap-1.5 text-sm">
+                        <span className="text-xs font-medium text-[var(--color-text-muted)]">Adresse</span>
+                        <div className="flex gap-2">
+                          <input
+                            value={ort.adresse}
+                            onChange={(e) => patchBesuchsort(ort.localId, { adresse: e.target.value, pin: null })}
+                            placeholder="Straße Hausnr., PLZ Ort"
+                            className={`w-full ${inputCls}`}
+                          />
+                          <button
+                            onClick={() => handleGeocode(ort.localId)}
+                            disabled={ort.geocoding || !ort.adresse.trim()}
+                            className="shrink-0 rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                          >
+                            {ort.geocoding ? "Suche…" : "Suchen"}
+                          </button>
+                        </div>
+                      </label>
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="text-xs font-medium text-[var(--color-text-muted)]">Besuche/Monat</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={ort.besucheProMonat}
+                          onChange={(e) => patchBesuchsort(ort.localId, { besucheProMonat: e.target.value })}
+                          className={`w-24 ${inputCls}`}
+                        />
+                      </label>
+                      {besuchsorte.length > 1 && (
+                        <button
+                          onClick={() => setBesuchsorte((prev) => prev.filter((o) => o.localId !== ort.localId))}
+                          className="text-xs font-medium text-[var(--color-coral)] hover:underline"
+                        >
+                          Entfernen
+                        </button>
+                      )}
+                    </div>
+                    {ort.error && (
+                      <div className="mt-2 flex flex-col gap-2">
+                        <p className="text-sm text-[var(--color-coral)]">{ort.error}</p>
+                        <button
+                          onClick={() => setManualPinTargetId(ort.localId)}
+                          className="self-start rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] hover:border-[var(--color-primary)]"
+                        >
+                          Koordinaten manuell auf der Karte setzen
+                        </button>
+                      </div>
+                    )}
+                    {ort.pin && (
+                      <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                        Position: {ort.pin.lat.toFixed(5)}, {ort.pin.lng.toFixed(5)}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
+              <button
+                onClick={() => setBesuchsorte((prev) => [...prev, neuerBesuchsortEntwurf()])}
+                className="mt-3 rounded-[var(--radius-control)] border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-primary)] transition hover:border-[var(--color-primary)]"
+              >
+                Weiteren Besuchsort hinzufügen
+              </button>
+
+              <label className="mt-4 flex max-w-[12rem] flex-col gap-1.5 text-sm">
+                <span className="text-xs font-medium text-[var(--color-text-muted)]">Geplante FLS-Std./Woche</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={geplanteFlsStdWoche}
+                  onChange={(e) => setGeplanteFlsStdWoche(e.target.value)}
+                  className={inputCls}
+                />
+              </label>
             </div>
 
-            {pin && (
+            {vorschlagsliste.length > 0 && (
               <div className="flex flex-col gap-2">
                 {vorschlagsliste.map((v) => (
                   <div
@@ -425,9 +512,9 @@ export function FahrtenrechnerMap({ employees, durchschnittKmh }: { employees: E
                     <span className={v.resultingFree < 0 ? "font-semibold text-[var(--color-coral)]" : "text-[var(--color-text)]"}>
                       Freie Kapazität nach Zuteilung: {v.resultingFree.toFixed(2)} Std./Woche
                     </span>
-                    {v.radiusWarning && (
+                    {v.radiusWarnungen.length > 0 && (
                       <span className="self-start rounded-full bg-[var(--color-warn-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--color-warn-text)]">
-                        ⚠ Außerhalb Einsatzradius ({v.employee.einsatzradiusKm} km, Luftlinie {v.luftlinieKm.toFixed(1)} km)
+                        ⚠ Außerhalb Einsatzradius ({v.employee.einsatzradiusKm} km): {v.radiusWarnungen.join(", ")}
                       </span>
                     )}
                   </div>

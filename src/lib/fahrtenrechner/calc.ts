@@ -9,6 +9,9 @@ export const UMWEGFAKTOR = 1.3;
 export const DURCHSCHNITT_KMH_DEFAULT = 80;
 /** Vorbelegung für den Einsatzradius eines Mitarbeiters, falls noch nicht individuell gesetzt. */
 export const EINSATZRADIUS_KM_DEFAULT = 25;
+/** 52/12 - für die Umrechnung Besuche/Monat -> Besuche/Woche (Besuchsrhythmen wie "2x im Monat" lassen
+ * sich nicht sauber als Wochenwert abbilden, siehe Besuchsort.besucheProMonat). */
+export const WOCHEN_PRO_MONAT = 52 / 12;
 
 export const STANDORTE = {
   NITTENDORF: { name: "Nittendorf", lat: 49.0136, lng: 11.9312 },
@@ -45,9 +48,9 @@ export function estimatedDriveMinutesBetween(a: LatLng, b: LatLng, durchschnittK
   return estimatedDriveMinutes(haversineKm(a, b), durchschnittKmh);
 }
 
-/** Fahrzeit/Woche für einen Fall = Hin- und Rückweg × Besuche/Woche. */
-export function weeklyDriveMinutes(einfacheFahrzeitMin: number, besucheProWoche: number): number {
-  return einfacheFahrzeitMin * 2 * besucheProWoche;
+/** Fahrzeit/Woche für einen Besuchsort = Hin- und Rückweg × Besuche/Monat ÷ Wochen/Monat. */
+export function weeklyDriveMinutesFromMonthly(einfacheFahrzeitMin: number, besucheProMonat: number): number {
+  return (einfacheFahrzeitMin * 2 * besucheProMonat) / WOCHEN_PRO_MONAT;
 }
 
 /** Referenzpunkt eines Mitarbeiters: Wohnort, falls hinterlegt, sonst der primäre Standort. */
