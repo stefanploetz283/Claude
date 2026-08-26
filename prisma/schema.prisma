@@ -641,19 +641,74 @@ model Settings {
   // als eigenen Bestandsschutz-Snapshot (User.fondsBasisAtHire) - kein Mitarbeiter-Wahlrecht.
   aktuelleFondsBasis          Decimal @default(70.28) @db.Decimal(5, 2)
 
-  // Umsatz-Cockpit: hourlyRate (oben) dient bewusst weiter als "Stundensatz Basis" (Vorbelegung für
-  // Case.stundensatz, wie schon für Rechnungen genutzt) statt eines zweiten, leicht divergierenden Feldes.
-  stundensatzVnb               Decimal @default(115) @db.Decimal(7, 2) // mit verhandelter Vor-/Nachbereitungszeit
-  zielFaktor                   Decimal @default(2.2) @db.Decimal(4, 2) // Umsatz ÷ Personalkosten, Zielwert
-  mindestFaktorSteuerberater   Decimal @default(2.1) @db.Decimal(4, 2) // struktureller Mindestwert lt. Steuerberater
-  breakEvenStundensatz         Decimal @default(56) @db.Decimal(7, 2)
-  gesamtkostenJahr             Decimal? @db.Decimal(10, 2) // Personal- + Betriebskosten/Jahr aus der Entgeltkalkulation
-  zahlungsverzugTageJugendamt  Int     @default(45) // Erfahrungswert bis Geldeingang nach Rechnungsstellung
-
   // Fahrten-/Fallrechner: Ø km/h für die Umrechnung Fahrstrecke → Fahrzeit (siehe src/lib/fahrtenrechner/calc.ts)
   fahrtenrechnerDurchschnittskmh Decimal @default(80) @db.Decimal(5, 1)
 
   updatedAt                   DateTime @updatedAt
+}
+
+// ---------- Betriebswirtschaftliches Cockpit ----------
+
+// Referenzwerte aus der eingereichten Entgeltkalkulation - eine aktive Version (jüngste gueltigAb),
+// Historie bleibt bei neuer Einreichung erhalten statt überschrieben zu werden. Die Betriebskosten sind
+// bewusst nach den 4 Kosten_Kategorie-Werten aufgeschlüsselt (nicht nur als eine Summe), damit die
+// Kosten-Soll-Ist-Tabelle pro Kategorie einen echten Planwert hat - GEPLANTE_BETRIEBSKOSTEN_JAHR aus dem
+// Prompt ergibt sich als Summe von Raum-/Verwaltungssachkosten/Sonstige Kosten, GEPLANTE_GESAMTKOSTEN_JAHR
+// als Summe aller vier (siehe praxisKalkulationTotals in src/lib/betriebscockpit.ts).
+model PraxisKalkulation {
+  id                                 String   @id @default(cuid())
+  gueltigAb                          DateTime @db.Date
+  geplantePersonalkostenJahr         Decimal  @db.Decimal(10, 2)
+  geplanteRaumkostenJahr             Decimal  @db.Decimal(10, 2)
+  geplanteVerwaltungssachkostenJahr  Decimal  @db.Decimal(10, 2)
+  geplanteSonstigeKostenAfaJahr      Decimal  @db.Decimal(10, 2)
+
+  zielQuote                          Decimal  @default(0.75) @db.Decimal(4, 3)
+  verfuegbarkeitsquote               Decimal  @default(0.769) @db.Decimal(4, 3) // 200/260 Tage
+  zielFaktor                         Decimal  @default(2.2) @db.Decimal(4, 2)
+  mindestFaktorSteuerberater         Decimal  @default(2.1) @db.Decimal(4, 2)
+  stundensatzBasis                   Decimal  @db.Decimal(7, 2)
+  zielFlsStdJahr                     Decimal  @db.Decimal(8, 2)
+  zahlungsverzugTageJugendamt        Int      @default(45)
+
+  quelle                             String? // Freitext, z.B. "Entgeltkalkulation Kommission 20260901"
+  erstelltAm                         DateTime @default(now())
+
+  @@index([gueltigAb])
+}
+
+enum KostenKategorie {
+  PERSONALKOSTEN
+  RAUMKOSTEN
+  VERWALTUNGSSACHKOSTEN
+  SONSTIGE_KOSTEN_AFA
+}
+
+// Manuelle monatliche Ist-Kosten-Erfassung (Phase 1) - wird in einer späteren Ausbaustufe zusätzlich per
+// Finom-API-Sync befüllt (quelle = "finom" statt "manuell"), siehe Kategorisierungs-Regel im Prompt.
+model IstKostenEintrag {
+  id             String          @id @default(cuid())
+  datum          DateTime        @db.Date
+  kategorie      KostenKategorie
+  unterkategorie String?
+  betrag         Decimal         @db.Decimal(10, 2)
+  belegReferenz  String?
+  quelle         String          @default("manuell") // manuell | finom
+  erstelltAm     DateTime        @default(now())
+
+  @@index([datum])
+  @@index([kategorie])
+}
+
+// Grobe, manuelle Liquiditäts-Momentaufnahme für die Auslastungsrisiko-Kennzahl "Liquiditäts-Reichweite" -
+// kein Bankkonto-Import.
+model LiquiditaetsEintrag {
+  id                       String   @id @default(cuid())
+  datum                    DateTime @db.Date
+  verfuegbareLiquideMittel Decimal  @db.Decimal(10, 2)
+  erstelltAm               DateTime @default(now())
+
+  @@index([datum])
 }
 
 // ---------- Bonus-Cockpit ----------

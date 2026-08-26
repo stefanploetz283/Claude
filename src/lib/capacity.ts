@@ -134,3 +134,36 @@ export function findCapacityWindow(
   }
   return { fromWeek: points[fromIndex].weekStart, toWeek: points[toIndex].weekStart };
 }
+
+/**
+ * Team-weite Auslastung über einen kurzen Horizont (z.B. 8 Wochen), für die Auslastungsvorschau-Kachel im
+ * Betriebswirtschaftlichen Cockpit - reiner Verweis/Verdichtung der bestehenden Simulation, keine eigene
+ * Vorhersage-Logik (siehe Prompt). Summiert `used`/`capacity` je Woche über alle übergebenen Mitarbeiter.
+ */
+export function computeTeamUtilization(
+  employees: User[],
+  casesByEmployeeId: Map<string, CaseWithProfile[]>,
+  billableCapacityFactor: number,
+  horizonWeeks: number,
+  from: Date = new Date()
+): { auslastungProzent: number | null; capacitySumme: number; usedSumme: number } {
+  let capacitySumme = 0;
+  let usedSumme = 0;
+
+  for (const employee of employees) {
+    if (!employee.weeklyContractHours) continue;
+    const points = simulateEmployeeWeeklyBreakdown(
+      employee,
+      casesByEmployeeId.get(employee.id) ?? [],
+      billableCapacityFactor,
+      horizonWeeks,
+      from
+    );
+    for (const p of points) {
+      capacitySumme += p.capacity;
+      usedSumme += p.used;
+    }
+  }
+
+  return { auslastungProzent: capacitySumme > 0 ? (usedSumme / capacitySumme) * 100 : null, capacitySumme, usedSumme };
+}

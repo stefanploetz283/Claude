@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import type { MitarbeiterBeitrag } from "@/lib/umsatz";
 
-type SortKey = "employeeName" | "flsStunden" | "beitragEuro" | "anteilProzent";
+export type MitarbeiterZeile = {
+  employeeId: string;
+  employeeName: string;
+  flsStunden: number;
+  beitragEuro: number;
+  anteilProzent: number;
+  istQuoteProzent: number | null;
+};
+
+type SortKey = "employeeName" | "flsStunden" | "beitragEuro" | "anteilProzent" | "istQuoteProzent";
 
 const COLUMNS: { key: SortKey; label: string; align?: "right" }[] = [
   { key: "employeeName", label: "Mitarbeiter" },
   { key: "flsStunden", label: "FLS-Std.", align: "right" },
   { key: "beitragEuro", label: "Beitrag", align: "right" },
   { key: "anteilProzent", label: "Anteil", align: "right" },
+  { key: "istQuoteProzent", label: "Ist-Quote", align: "right" },
 ];
 
-export function BeitragTable({ beitraege }: { beitraege: MitarbeiterBeitrag[] }) {
+export function MitarbeiterTabelle({ zeilen }: { zeilen: MitarbeiterZeile[] }) {
   const [sortKey, setSortKey] = useState<SortKey>("beitragEuro");
   const [sortDesc, setSortDesc] = useState(true);
 
@@ -24,9 +33,11 @@ export function BeitragTable({ beitraege }: { beitraege: MitarbeiterBeitrag[] })
     }
   }
 
-  const sorted = [...beitraege].sort((a, b) => {
+  const sorted = [...zeilen].sort((a, b) => {
     const av = a[sortKey];
     const bv = b[sortKey];
+    if (av == null) return 1;
+    if (bv == null) return -1;
     const cmp = typeof av === "string" ? av.localeCompare(bv as string) : (av as number) - (bv as number);
     return sortDesc ? -cmp : cmp;
   });
@@ -47,19 +58,22 @@ export function BeitragTable({ beitraege }: { beitraege: MitarbeiterBeitrag[] })
           </tr>
         </thead>
         <tbody>
-          {sorted.map((b) => (
-            <tr key={b.employeeId} className="border-t border-[var(--color-border)]">
-              <td className="px-5 py-3 text-[var(--color-text)]">{b.employeeName}</td>
-              <td className="px-5 py-3 text-right text-[var(--color-text)]">{b.flsStunden.toFixed(1)}</td>
+          {sorted.map((z) => (
+            <tr key={z.employeeId} className="border-t border-[var(--color-border)]">
+              <td className="px-5 py-3 text-[var(--color-text)]">{z.employeeName}</td>
+              <td className="px-5 py-3 text-right text-[var(--color-text)]">{z.flsStunden.toFixed(1)}</td>
               <td className="px-5 py-3 text-right font-semibold text-[var(--color-text)]">
-                {b.beitragEuro.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
+                {z.beitragEuro.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
               </td>
-              <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">{b.anteilProzent.toFixed(1)} %</td>
+              <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">{z.anteilProzent.toFixed(1)} %</td>
+              <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">
+                {z.istQuoteProzent != null ? `${z.istQuoteProzent.toFixed(1)} %` : "–"}
+              </td>
             </tr>
           ))}
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={4} className="px-5 py-8 text-center text-[var(--color-text-muted)]">
+              <td colSpan={5} className="px-5 py-8 text-center text-[var(--color-text-muted)]">
                 Keine dokumentierten FLS-Stunden im gewählten Zeitraum.
               </td>
             </tr>

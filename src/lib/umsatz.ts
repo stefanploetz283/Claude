@@ -1,6 +1,7 @@
 import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { monthDateRange } from "@/lib/date";
+import { getActivePraxisKalkulation, praxisKalkulationTotals } from "@/lib/praxis-kalkulation";
 
 export type PeriodType = "month" | "quarter" | "year";
 export type AmpelStatus = "gruen" | "gelb" | "rot";
@@ -169,6 +170,7 @@ export type UmsatzCockpitResult = {
   arbeitstageBisher: number;
   arbeitstageGesamt: number;
   hochrechnung: number;
+  hochrechnungJahr: number; // Jahres-Hochrechnung, unabhängig vom gewählten periodType (für Faktor/Gewinn)
   zielUmsatzAnteilig: number | null;
   abweichungProzent: number | null;
   ampel: AmpelStatus | null;
@@ -187,8 +189,8 @@ export async function computeUmsatzCockpit(
   const { from, to } = getPeriodBounds(periodType, year, periodIndex);
   const yearBounds = getPeriodBounds("year", year, 1);
 
-  const [settings, betriebsferienRows, entries, entriesYear] = await Promise.all([
-    prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } }),
+  const [kalkulation, betriebsferienRows, entries, entriesYear] = await Promise.all([
+    getActivePraxisKalkulation(),
     prisma.betriebsferienPeriod.findMany({ where: { startDate: { lte: to }, endDate: { gte: from } } }),
     prisma.serviceEntry.findMany({
       where: { date: { gte: from, lte: to } },
@@ -205,10 +207,10 @@ export async function computeUmsatzCockpit(
     }),
   ]);
 
-  const stundensatzBasis = settings.hourlyRate?.toNumber() ?? 110;
-  const gesamtkostenJahr = settings.gesamtkostenJahr?.toNumber() ?? null;
-  const zielFaktor = settings.zielFaktor.toNumber();
-  const mindestFaktor = settings.mindestFaktorSteuerberater.toNumber();
+  const stundensatzBasis = kalkulation?.stundensatzBasis.toNumber() ?? 110;
+  const gesamtkostenJahr = kalkulation ? praxisKalkulationTotals(kalkulation).geplanteGesamtkostenJahr : null;
+  const zielFaktor = kalkulation?.zielFaktor.toNumber() ?? 2.2;
+  const mindestFaktor = kalkulation?.mindestFaktorSteuerberater.toNumber() ?? 2.1;
 
   const betriebsferien: DateRange[] = betriebsferienRows.map((b) => ({ start: b.startDate, end: b.endDate }));
 
@@ -263,6 +265,7 @@ export async function computeUmsatzCockpit(
     arbeitstageBisher,
     arbeitstageGesamt,
     hochrechnung,
+    hochrechnungJahr,
     zielUmsatzAnteilig,
     abweichungProzent,
     ampel,
@@ -285,8 +288,8 @@ async function buildVerlauf(
     where: { date: { gte: from, lte: to } },
     select: { date: true, durationMinutes: true, case: { select: { stundensatz: true } } },
   });
-  const settings = await prisma.settings.findUnique({ where: { id: "singleton" } });
-  const stundensatzBasis = settings?.hourlyRate?.toNumber() ?? 110;
+  const kalkulation = await getActivePraxisKalkulation();
+  const stundensatzBasis = kalkulation?.stundensatzBasis.toNumber() ?? 110;
 
   const byDay = new Map<string, number>();
   for (const e of dailyEntries) {
@@ -320,10 +323,11 @@ async function buildVerlauf(
  * Teil-Umsatzes verwendet, da der Monat zum Zeitpunkt des tatsächlichen Geldeingangs bereits abgeschlossen sein wird.
  */
 export async function computeLiquiditaetsAusblick(monthsAhead: number, now: Date = new Date()): Promise<LiquiditaetsMonat[]> {
-  const settings = await prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
-  const zahlungsverzugTage = settings.zahlungsverzugTageJugendamt;
-  const gesamtkostenJahr = settings.gesamtkostenJahr?.toNumber() ?? null;
+  const kalkulation = await getActivePraxisKalkulation();
+  const zahlungsverzugTage = kalkulation?.zahlungsverzugTageJugendamt ?? 45;
+  const gesamtkostenJahr = kalkulation ? praxisKalkulationTotals(kalkulation).geplanteGesamtkostenJahr : null;
   const erwarteteAusgaben = gesamtkostenJahr != null ? gesamtkostenJahr / 12 : 0;
+  const stundensatzBasisFallback = kalkulation?.stundensatzBasis.toNumber() ?? 110;
 
   const monthLabelFmt = new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" });
 
@@ -341,8 +345,7 @@ export async function computeLiquiditaetsAusblick(monthsAhead: number, now: Date
       where: { date: { gte: from, lte: to } },
       select: { durationMinutes: true, case: { select: { stundensatz: true } } },
     });
-    const stundensatzBasis = settings.hourlyRate?.toNumber() ?? 110;
-    const sourceUmsatz = computeUmsatz(entries.map((e) => ({ durationMinutes: e.durationMinutes, stundensatz: e.case.stundensatz?.toNumber() ?? stundensatzBasis })));
+    const sourceUmsatz = computeUmsatz(entries.map((e) => ({ durationMinutes: e.durationMinutes, stundensatz: e.case.stundensatz?.toNumber() ?? stundensatzBasisFallback })));
 
     let erwarteterGeldeingang = sourceUmsatz;
     if (isCurrentSourceMonth) {

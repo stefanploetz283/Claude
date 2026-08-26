@@ -8,7 +8,7 @@ const TABS = [
   { href: "/finanzen/rechnungen", label: "Rechnungen" },
   { href: "/finanzen/sammel-export", label: "Sammel-Export" },
   { href: "/finanzen/statistik", label: "Statistik" },
-  { href: "/finanzen/umsatz", label: "Umsatz-Cockpit" },
+  { href: "/finanzen/cockpit", label: "Cockpit" },
 ];
 
 export function FinanzenSubnav() {
