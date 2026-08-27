@@ -70,13 +70,17 @@ export function Nav({
       {/* Desktop/Tablet ab md: Zeile 1 Branding & Account, Zeile 2 eigene volle Reiterleiste (keine
           abgeschnittenen Labels mehr, da die Navigation nicht mehr neben Logo/Account-Icons gequetscht wird). */}
       <div className="hidden md:block">
-        <div className="mx-auto flex max-w-[1112px] items-center justify-between gap-6 px-6 py-4">
-          <Link href="/dashboard" className="shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoUrl ?? "/logo-lockup.png"} alt={practiceName} className="h-auto w-[210px] object-contain" />
-          </Link>
+        <div className="flex items-center">
+          {/* Logo-Spalte exakt so breit wie die linke Sidebar (288px), damit Logo und erster Reiter
+              nicht über deren farbiger Fläche schweben, sondern konsistent daneben ausgerichtet sind. */}
+          <div className="flex w-[288px] flex-none items-center justify-center py-4">
+            <Link href="/dashboard" className="shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={logoUrl ?? "/logo-lockup.png"} alt={practiceName} className="h-auto w-[210px] object-contain" />
+            </Link>
+          </div>
 
-          <div className="flex shrink-0 items-center gap-3.5">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3.5 px-6 py-4">
             <Link href="/messages" className="relative text-[var(--color-primary)]" aria-label="Nachrichten">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -120,15 +124,19 @@ export function Nav({
           </div>
         </div>
 
-        {/* Zeile 2: volle, unabgekürzte Reiter - horizontales Scrollen als Fallback für schmalere
-            Tablet-Breiten statt erneutem Abschneiden (echte Mobilbreiten nutzen das Hamburger-Menü unten). */}
-        <nav className="overflow-x-auto border-t border-[var(--color-border)]">
-          <div className="mx-auto flex max-w-[1112px] items-stretch px-6">
-            {rowOne.map((item) => (
-              <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
-                {item.label}
-              </Link>
-            ))}
+        {/* Zeile 2: volle, unabgekürzte Reiter. Gleiche 288px-Spalte wie das Logo darüber, damit der
+            erste Reiter neben statt über der farbigen Sidebar-Fläche beginnt; horizontales Scrollen als
+            Fallback für schmalere Tablet-Breiten statt erneutem Abschneiden. */}
+        <nav className="flex items-stretch border-t border-[var(--color-border)]">
+          <div className="w-[288px] flex-none" />
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            <div className="flex items-stretch">
+              {rowOne.map((item) => (
+                <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </nav>
       </div>
