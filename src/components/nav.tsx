@@ -62,25 +62,43 @@ export function Nav({
     `flex shrink-0 items-center border-b-2 px-3.5 py-3 text-[13.5px] leading-none whitespace-nowrap transition ${
       active
         ? "border-[var(--color-gold)] font-semibold text-[var(--color-primary)]"
-        : "border-transparent font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
+        : "border-transparent font-medium text-[var(--color-text-muted)] hover:bg-[var(--color-primary)] hover:text-white"
     }`;
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--color-surface)] shadow-[0_1px_0_var(--color-border)]">
       {/* Desktop/Tablet ab md: Zeile 1 Branding & Account, Zeile 2 eigene volle Reiterleiste (keine
           abgeschnittenen Labels mehr, da die Navigation nicht mehr neben Logo/Account-Icons gequetscht wird). */}
-      <div className="hidden md:block">
-        <div className="flex items-center">
-          {/* Logo-Spalte exakt so breit wie die linke Sidebar (288px), damit Logo und erster Reiter
-              nicht über deren farbiger Fläche schweben, sondern konsistent daneben ausgerichtet sind. */}
-          <div className="flex w-[288px] flex-none items-center justify-center py-4">
-            <Link href="/dashboard" className="shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logoUrl ?? "/logo-lockup.png"} alt={practiceName} className="h-auto w-[210px] object-contain" />
-            </Link>
-          </div>
+      <div className="hidden items-stretch md:flex">
+        {/* Petrolfarbene Spalte über die volle Header-Höhe (beide Zeilen), exakt so breit wie SidebarShell
+            (288px), damit ein durchgehender petrolfarbener Bereich von ganz oben bis in den Sidebar-Bereich
+            entsteht statt wie zuvor erst darunter zu beginnen. */}
+        <div className="flex w-[288px] flex-none flex-col items-center justify-center bg-[var(--color-primary)] px-[22px] py-4">
+          <Link href="/dashboard" className="shrink-0">
+            {logoUrl ? (
+              // Individuell hochgeladenes Logo: unverändert als eigenständiges Bild anzeigen.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={practiceName} className="h-auto w-[190px] object-contain" />
+            ) : (
+              // Standard-Logo: Kreis-Mark mit weißer Outline (alle drei Kreise, Füllfarben unverändert)
+              // plus Schriftzug in Weiß, exakt derselben Schriftart (Outfit) wie im Rest der App - beides
+              // ausschließlich für Lesbarkeit auf dem petrolfarbenen Hintergrund angepasst.
+              <div className="flex flex-col items-center gap-2 text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-mark-petrol.svg" alt="" className="h-14 w-14" />
+                <div className="leading-tight text-white">
+                  <div className="text-[13px] font-normal">Praxis für</div>
+                  <div className="text-[15px] font-bold tracking-tight uppercase">Systemische Entwicklung</div>
+                  <div className="mx-auto my-1.5 h-px w-16 bg-[var(--color-gold)]" />
+                  <div className="text-[8.5px] font-semibold tracking-[0.14em] uppercase">Beratung · Pädagogik · Therapie</div>
+                </div>
+              </div>
+            )}
+          </Link>
+        </div>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-3.5 px-6 py-4">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center justify-end gap-3.5 px-6 py-4">
             <Link href="/messages" className="relative text-[var(--color-primary)]" aria-label="Nachrichten">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -122,14 +140,10 @@ export function Nav({
               Abmelden
             </button>
           </div>
-        </div>
 
-        {/* Zeile 2: volle, unabgekürzte Reiter. Gleiche 288px-Spalte wie das Logo darüber, damit der
-            erste Reiter neben statt über der farbigen Sidebar-Fläche beginnt; horizontales Scrollen als
-            Fallback für schmalere Tablet-Breiten statt erneutem Abschneiden. */}
-        <nav className="flex items-stretch border-t border-[var(--color-border)]">
-          <div className="w-[288px] flex-none" />
-          <div className="min-w-0 flex-1 overflow-x-auto">
+          {/* Zeile 2: volle, unabgekürzte Reiter, direkt neben der petrolfarbenen Spalte; horizontales
+              Scrollen als Fallback für schmalere Tablet-Breiten statt erneutem Abschneiden. */}
+          <nav className="min-w-0 flex-1 overflow-x-auto border-t border-[var(--color-border)]">
             <div className="flex items-stretch">
               {rowOne.map((item) => (
                 <Link key={item.href} href={item.href} className={tabCls(pathname.startsWith(item.href))}>
@@ -137,8 +151,8 @@ export function Nav({
                 </Link>
               ))}
             </div>
-          </div>
-        </nav>
+          </nav>
+        </div>
       </div>
 
       {/* Mobil: kompakte Kopfzeile mit Logo + Menü-Button, darunter ausklappbares Menü mit denselben Punkten. */}
