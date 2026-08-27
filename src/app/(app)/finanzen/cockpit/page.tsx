@@ -11,6 +11,8 @@ import {
   computeAbweichungUmsatzProzent,
   computeAuslastungsreserve,
   computeTrend,
+  getLetzterFinomImport,
+  countZuKlaerenBuchungen,
   ampelQuote,
   ampelKosten,
   ampelFaktor,
@@ -24,6 +26,9 @@ import { KalkulationForm, type KalkulationWerte } from "./kalkulation-form";
 import { Erfassungsmaske } from "./erfassungsmaske";
 import { SzenarioRechner } from "./szenario-rechner";
 import { MitarbeiterTabelle, type MitarbeiterZeile } from "./mitarbeiter-tabelle";
+import { CsvImport } from "./csv-import";
+import { BitteZuordnenListe, type ZuKlaerenBuchung } from "./bitte-zuordnen-liste";
+import { FinomZuordnungen } from "./finom-zuordnungen";
 
 const MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -68,14 +73,20 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
   const periodIndex = Number(params.index) || defaultIndex;
   const trendReferenzDatum = subMonths(now, 3);
 
-  const [k, kTrend, liquiditaetAusblick, quoteTrendMonatlich, settings, employees] = await Promise.all([
-    computeCockpitKernzahlen(periodType, year, periodIndex, now),
-    computeCockpitKernzahlen(periodType, year, periodIndex, trendReferenzDatum),
-    computeLiquiditaetsAusblick(3, now),
-    computeTeamQuoteTrendMonatlich(12, now),
-    getSettings(),
-    prisma.user.findMany({ where: { role: "EMPLOYEE", active: true } }),
-  ]);
+  const [k, kTrend, liquiditaetAusblick, quoteTrendMonatlich, settings, employees, zuKlaerenRows, empfaengerZuordnungen, kategorieMappings, letzterFinomImport, zuKlaerenCount] =
+    await Promise.all([
+      computeCockpitKernzahlen(periodType, year, periodIndex, now),
+      computeCockpitKernzahlen(periodType, year, periodIndex, trendReferenzDatum),
+      computeLiquiditaetsAusblick(3, now),
+      computeTeamQuoteTrendMonatlich(12, now),
+      getSettings(),
+      prisma.user.findMany({ where: { role: "EMPLOYEE", active: true } }),
+      prisma.finomBuchungRohdaten.findMany({ where: { status: "ZU_KLAEREN" }, orderBy: { datum: "desc" } }),
+      prisma.finomEmpfaengerZuordnung.findMany({ orderBy: { erstelltAm: "desc" } }),
+      prisma.finomKategorieMapping.findMany({ orderBy: { erstelltAm: "desc" } }),
+      getLetzterFinomImport(),
+      countZuKlaerenBuchungen(),
+    ]);
   const { kalkulation, umsatz: umsatzResult, kostenSollIst, teamQuote: teamQuoteResult, letzteLiquiditaet } = k;
   const geplanteTotals = k.geplanteGesamtkostenJahr != null ? { geplanteGesamtkostenJahr: k.geplanteGesamtkostenJahr, geplanteBetriebskostenJahr: k.geplanteBetriebskostenJahr! } : null;
   const hochrechnungUmsatzJahr = umsatzResult.hochrechnungJahr;
@@ -119,11 +130,23 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
       ? computeTrend(auslastungsreservePunkte, computeAuslastungsreserve(kTrend.teamQuote.teamIstQuote, breakEvenQuote))
       : null;
 
-  // Warnregel 6: Erfassungslücke
+  // Warnregel 6: Erfassungslücke (weder manuelle Ist-Kosten noch Liquiditäts-Eintrag noch CSV-Import seit >6 Wochen)
   const sechsWochenVorher = new Date(now.getTime() - 42 * 24 * 60 * 60 * 1000);
   const erfassungsluecke =
     (kostenSollIst?.letzterEintragAm == null || kostenSollIst.letzterEintragAm < sechsWochenVorher) &&
-    (letzteLiquiditaet == null || letzteLiquiditaet.datum < sechsWochenVorher);
+    (letzteLiquiditaet == null || letzteLiquiditaet.datum < sechsWochenVorher) &&
+    (letzterFinomImport == null || letzterFinomImport < sechsWochenVorher);
+
+  // Warnregel 7: "Bitte zuordnen"-Stau
+  const bitteZuordnenStau = zuKlaerenCount > 15;
+
+  const zuKlaerenBuchungen: ZuKlaerenBuchung[] = zuKlaerenRows.map((b) => ({
+    id: b.id,
+    datum: b.datum.toISOString(),
+    betrag: b.betrag.toNumber(),
+    empfaengerName: b.empfaengerName,
+    verwendungszweck: b.verwendungszweck,
+  }));
 
   const mitarbeiterZeilen: MitarbeiterZeile[] = umsatzResult.beitraege.map((b) => {
     const quote = teamQuoteResult.proMitarbeiter.find((m) => m.employeeId === b.employeeId);
@@ -228,7 +251,12 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
       )}
       {erfassungsluecke && kalkulation && (
         <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
-          Seit mehr als 6 Wochen wurden keine Ist-Kosten oder Liquiditäts-Eintrag nachgetragen.
+          Seit mehr als 6 Wochen wurden weder Ist-Kosten noch ein Liquiditäts-Eintrag noch ein CSV-Import nachgetragen.
+        </div>
+      )}
+      {bitteZuordnenStau && (
+        <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
+          {zuKlaerenCount} unkategorisierte Finom-Buchungen warten auf der „Bitte zuordnen&quot;-Liste.
         </div>
       )}
 
@@ -314,6 +342,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
                   <th className="py-2 pr-3 text-right">Geplant/Jahr</th>
                   <th className="py-2 pr-3 text-right">Hochrechnung/Jahr</th>
                   <th className="py-2 pr-3 text-right">Abweichung</th>
+                  <th className="py-2 pr-3 text-right">Zuordnungsquelle</th>
                 </tr>
               </thead>
               <tbody>
@@ -327,14 +356,21 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
                       {eur(z.abweichungEuro)} ({z.abweichungProzent >= 0 ? "+" : ""}
                       {z.abweichungProzent.toFixed(1)} %)
                     </td>
+                    <td className="py-2 pr-3 text-right text-xs text-[var(--color-text-muted)]">
+                      {z.anzahlFinomCsv} automatisch · {z.anzahlManuell} manuell
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-[var(--color-text-muted)]">Zuordnungsquelle: manuell erfasst (Finom-Anbindung folgt in einer späteren Ausbaustufe).</p>
         </div>
       )}
+
+      {/* CSV-Import-Baustein + "Bitte zuordnen"-Liste + Zuordnungsregeln (Phase 2) */}
+      <CsvImport />
+      <BitteZuordnenListe buchungen={zuKlaerenBuchungen} />
+      <FinomZuordnungen empfaengerZuordnungen={empfaengerZuordnungen} kategorieMappings={kategorieMappings} />
 
       {/* 5. Umsatz- und Gewinn-Kachel */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

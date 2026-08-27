@@ -684,8 +684,8 @@ enum KostenKategorie {
   SONSTIGE_KOSTEN_AFA
 }
 
-// Manuelle monatliche Ist-Kosten-Erfassung (Phase 1) - wird in einer späteren Ausbaustufe zusätzlich per
-// Finom-API-Sync befüllt (quelle = "finom" statt "manuell"), siehe Kategorisierungs-Regel im Prompt.
+// Ist-Kosten-Erfassung: manuell (quelle = "manuell") oder automatisch aus dem monatlichen
+// Finom-CSV-Import befüllt (quelle = "finom_csv"), siehe Kategorisierungs-Regel/FinomBuchungRohdaten unten.
 model IstKostenEintrag {
   id             String          @id @default(cuid())
   datum          DateTime        @db.Date
@@ -709,6 +709,84 @@ model LiquiditaetsEintrag {
   erstelltAm               DateTime @default(now())
 
   @@index([datum])
+}
+
+// ---------- Betriebswirtschaftliches Cockpit: Finom-CSV-Import (Phase 2) ----------
+// Bewusst kein Live-Sync (API/Webhook) - monatlicher, admin-angestoßener CSV-Import (siehe Prompt
+// "Nicht Teil dieses Prompts": Live-Automatisierung ist eine mögliche spätere Ausbaustufe).
+
+// Kategorisierungs-Regel Schritt 1: bekannte Empfänger/IBANs -> feste Kategorie. kategorie = null bedeutet
+// "ignorieren" (Gehaltsüberweisungen/private Entnahmen/Kontoumbuchungen, die nicht als Betriebsausgabe
+// zählen sollen) - eine bewusste Ergänzung zum Prompt, der diesen Ausschluss-Fall zwar beschreibt, aber
+// keine eigene Kategorie/keinen eigenen Wert dafür vorsieht.
+model FinomEmpfaengerZuordnung {
+  id                     String           @id @default(cuid())
+  empfaengerNameOderIban String
+  kategorie              KostenKategorie?
+  unterkategorie         String?
+  erstelltAm             DateTime         @default(now())
+
+  @@index([empfaengerNameOderIban])
+}
+
+// Kategorisierungs-Regel Schritt 2: falls die CSV-Export-Spalte eine Finom-eigene Kategorie liefert.
+model FinomKategorieMapping {
+  id                        String          @id @default(cuid())
+  finomKategorieBezeichnung String          @unique
+  praxisKategorie           KostenKategorie
+  erstelltAm                DateTime        @default(now())
+}
+
+enum FinomZuordnungsquelle {
+  IBAN
+  FINOM_KATEGORIE
+  BELEG_FALLBACK
+  MANUELL
+}
+
+enum FinomBuchungStatus {
+  ZUGEORDNET
+  ZU_KLAEREN
+  IGNORIERT
+}
+
+// Rohdaten jeder importierten CSV-Zeile - Zwischenspeicher für Duplikat-Prüfung (Datum+Betrag+Empfänger/
+// Verwendungszweck) und die "Bitte zuordnen"-Liste. istKostenEintragId ist bewusst kein Prisma-Relationsfeld
+// (nur informativer Verweis), damit IstKostenEintrag unabhängig davon bleibt, ob eine Zeile aus dem
+// CSV-Import oder manuell entstanden ist.
+model FinomBuchungRohdaten {
+  id                   String                @id @default(cuid())
+  datum                DateTime              @db.Date
+  betrag               Decimal               @db.Decimal(10, 2)
+  empfaengerName       String?
+  empfaengerIban       String?
+  verwendungszweck     String?
+  finomKategorie       String?
+  hatBeleg             Boolean?
+  zugeordneteKategorie KostenKategorie?
+  zuordnungsquelle     FinomZuordnungsquelle?
+  status               FinomBuchungStatus    @default(ZU_KLAEREN)
+  istKostenEintragId   String?
+  importBatchId        String
+  erstelltAm           DateTime              @default(now())
+
+  @@index([datum])
+  @@index([status])
+  @@index([importBatchId])
+}
+
+// Zuletzt verwendete CSV-Spaltenzuordnung (Singleton) - Finom-Exportformat kann sich ändern, daher
+// admin-konfigurierbar statt hart codierter Spaltennamen; wird beim nächsten Import vorbefüllt.
+model FinomCsvSpaltenzuordnung {
+  id                      String   @id @default("singleton")
+  datumSpalte             String
+  betragSpalte            String
+  empfaengerNameSpalte    String?
+  empfaengerIbanSpalte    String?
+  verwendungszweckSpalte  String?
+  finomKategorieSpalte    String?
+  belegSpalte             String?
+  aktualisiertAm          DateTime @updatedAt
 }
 
 // ---------- Bonus-Cockpit ----------

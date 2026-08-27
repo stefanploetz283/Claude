@@ -251,6 +251,9 @@ export type KostenKategorieZeile = {
   hochrechnungJahr: number;
   abweichungEuro: number;
   abweichungProzent: number;
+  /** Zuordnungsquelle-Kennzeichnung (Modul 3): Anzahl Ist_Kosten_Eintrag-Zeilen je Herkunft in dieser Kategorie. */
+  anzahlManuell: number;
+  anzahlFinomCsv: number;
 };
 
 export type KostenSollIstResult = {
@@ -278,8 +281,12 @@ export async function computeKostenSollIst(year: number, kalkulation: PraxisKalk
   const arbeitstageGesamtJahr = countWorkdays(from, to, betriebsferien);
 
   const istByKategorie = new Map<KostenKategorie, number>();
+  const manuellByKategorie = new Map<KostenKategorie, number>();
+  const finomCsvByKategorie = new Map<KostenKategorie, number>();
   for (const e of eintraege) {
     istByKategorie.set(e.kategorie, (istByKategorie.get(e.kategorie) ?? 0) + e.betrag.toNumber());
+    const zielMap = e.quelle === "finom_csv" ? finomCsvByKategorie : manuellByKategorie;
+    zielMap.set(e.kategorie, (zielMap.get(e.kategorie) ?? 0) + 1);
   }
 
   const planByKategorie: Record<KostenKategorie, number> = {
@@ -295,7 +302,17 @@ export async function computeKostenSollIst(year: number, kalkulation: PraxisKalk
     const geplantJahr = planByKategorie[kategorie];
     const abweichungEuro = hochrechnungJahr - geplantJahr;
     const abweichungProzent = geplantJahr > 0 ? (abweichungEuro / geplantJahr) * 100 : 0;
-    return { kategorie, label: KOSTEN_KATEGORIE_LABEL[kategorie], geplantJahr, istBisherJahr, hochrechnungJahr, abweichungEuro, abweichungProzent };
+    return {
+      kategorie,
+      label: KOSTEN_KATEGORIE_LABEL[kategorie],
+      geplantJahr,
+      istBisherJahr,
+      hochrechnungJahr,
+      abweichungEuro,
+      abweichungProzent,
+      anzahlManuell: manuellByKategorie.get(kategorie) ?? 0,
+      anzahlFinomCsv: finomCsvByKategorie.get(kategorie) ?? 0,
+    };
   }).sort((a, b) => Math.abs(b.abweichungProzent) - Math.abs(a.abweichungProzent));
 
   return {
@@ -351,6 +368,19 @@ export async function getLetzteLiquiditaet(): Promise<{ betrag: number; datum: D
   const letzter = await prisma.liquiditaetsEintrag.findFirst({ orderBy: { datum: "desc" } });
   if (!letzter) return null;
   return { betrag: letzter.verfuegbareLiquideMittel.toNumber(), datum: letzter.datum };
+}
+
+// ---------- Finom-CSV-Import: Kennzahlen für Warnregel 6/7 ----------
+
+/** Letzter CSV-Import (unabhängig vom Zuordnungsstatus der einzelnen Zeilen) - für Warnregel 6 (Erfassungslücke). */
+export async function getLetzterFinomImport(): Promise<Date | null> {
+  const letzte = await prisma.finomBuchungRohdaten.findFirst({ orderBy: { erstelltAm: "desc" } });
+  return letzte?.erstelltAm ?? null;
+}
+
+/** Anzahl offener "Bitte zuordnen"-Buchungen - für Warnregel 7 (Stau-Hinweis ab > 15). */
+export async function countZuKlaerenBuchungen(): Promise<number> {
+  return prisma.finomBuchungRohdaten.count({ where: { status: "ZU_KLAEREN" } });
 }
 
 // ---------- Gesamt-Orchestrierung (von Seite + PDF-Export gemeinsam genutzt) ----------
