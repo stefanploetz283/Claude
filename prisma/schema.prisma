@@ -245,6 +245,11 @@ model Besuchsort {
   @@index([caseId])
 }
 
+enum RechnungStatus {
+  OFFEN
+  BEZAHLT
+}
+
 // Rechnung ans Jugendamt/Kostenträger - fortlaufende, lückenlose Nummerierung pro Jahr (steuerrechtliche Anforderung)
 model Invoice {
   id           String   @id @default(cuid())
@@ -265,9 +270,17 @@ model Invoice {
   issuedById   String
   issuedAt     DateTime @default(now())
 
+  // Forderungsmanagement (Betriebswirtschaftliches Cockpit, Phase 3) - bewusst als Erweiterung dieses
+  // bereits produktiv genutzten Invoice-Modells statt einer separaten "Rechnung_Eintrag"-Tabelle, damit
+  // nicht zwei konkurrierende Rechnungs-Konzepte im System entstehen. Kein automatischer Bankabgleich -
+  // "bezahlt" wird bewusst manuell gesetzt (siehe Prompt).
+  status       RechnungStatus @default(OFFEN)
+  bezahltAm    DateTime?
+
   @@unique([caseId, periodFrom, periodTo])
   @@unique([year, sequence])
   @@index([caseId])
+  @@index([status])
 }
 
 enum WaitlistStatus {
@@ -787,6 +800,77 @@ model FinomCsvSpaltenzuordnung {
   finomKategorieSpalte    String?
   belegSpalte             String?
   aktualisiertAm          DateTime @updatedAt
+}
+
+// ---------- Betriebswirtschaftliches Cockpit: Steuerrücklagenrechner (Phase 3) ----------
+
+enum VorsorgeArt {
+  RUERUP_RENTE
+  KRANKENVERSICHERUNG
+  SONSTIGE
+}
+
+// Vorsorgeaufwendungen mit eigener kleiner Historie je Art statt eines einzigen globalen Werts -
+// Rürup-Rente ändert sich praktisch nie, Krankenversicherung i.d.R. jährlich (siehe Prompt).
+model PraxisVorsorgeaufwandEintrag {
+  id              String      @id @default(cuid())
+  art             VorsorgeArt
+  betragMonatlich Decimal     @db.Decimal(8, 2)
+  gueltigAb       DateTime    @db.Date
+  erstelltAm      DateTime    @default(now())
+
+  @@index([art, gueltigAb])
+}
+
+enum Veranlagungsart {
+  EINZELN
+  ZUSAMMEN
+}
+
+// Singleton: persönlicher Grenzsteuersatz (Steuerrücklagenrechner) + Familien-Veranlagung-Kontext (4b-3) -
+// bewusst zusammengelegt, da beide eng zusammenhängen (Veranlagungsart beeinflusst, wie der Grenzsteuersatz
+// kalibriert werden sollte) und beide reine Admin-Einstellungen ohne eigene Historie sind.
+model PraxisSteuereinstellungen {
+  id                           String          @id @default("singleton")
+  persoenlicherGrenzsteuersatz Decimal         @default(42) @db.Decimal(4, 2) // %
+  veranlagungsart              Veranlagungsart @default(EINZELN)
+  ehepartnerEinkommenJahr       Decimal?        @db.Decimal(9, 2) // rein informativ
+  aktualisiertAm                DateTime        @updatedAt
+}
+
+// ---------- Betriebswirtschaftliches Cockpit: Privater Steuerabzugs-Assistent (Phase 3) ----------
+
+enum PrivaterAbzugKategorie {
+  HANDWERKERLEISTUNGEN
+  HAUSHALTSNAHE_DIENSTLEISTUNGEN
+  HAUSHALTSNAHE_BESCHAEFTIGUNG
+  KINDERBETREUUNG
+  SCHULGELD
+  AUSSERGEWOEHNLICHE_BELASTUNG
+  SONSTIGES
+}
+
+// Admin-editierbare Prozentsatz/Deckel-Konfiguration je Kategorie, damit Gesetzesänderungen ohne
+// Code-Änderung nachgepflegt werden können (siehe Prompt). prozentsatz/deckelJahr = null bei
+// AUSSERGEWOEHNLICHE_BELASTUNG/SONSTIGES - dort gibt es bewusst keine feste Formel.
+model PrivaterAbzugKonfiguration {
+  id          String                 @id @default(cuid())
+  kategorie   PrivaterAbzugKategorie @unique
+  prozentsatz Decimal?               @db.Decimal(5, 2) // %, z.B. 20.00 oder 66.67 (2/3)
+  deckelJahr  Decimal?               @db.Decimal(8, 2) // €/Jahr
+  erstelltAm  DateTime               @default(now())
+}
+
+model PraxisPrivaterAbzugEintrag {
+  id                 String                 @id @default(cuid())
+  kategorie          PrivaterAbzugKategorie
+  jahr               Int
+  eingegebenerBetrag Decimal                @db.Decimal(8, 2)
+  berechneterAbzug   Decimal?               @db.Decimal(8, 2) // null bei Kategorien ohne feste Formel
+  notiz              String?
+  erstelltAm         DateTime               @default(now())
+
+  @@index([jahr])
 }
 
 // ---------- Bonus-Cockpit ----------

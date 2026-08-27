@@ -1,7 +1,9 @@
 import { readFileSync } from "fs";
 import path from "path";
+import { prisma } from "@/lib/prisma";
 import { renderHtmlTemplateToPdf } from "./html-pdf";
 import { computeCockpitKernzahlen, ampelLiquiditaet, type PeriodType } from "@/lib/betriebscockpit";
+import { computeSteuerruecklage } from "@/lib/steuerrechner";
 
 const TEMPLATE_PATH = path.join(process.cwd(), "src", "lib", "export", "templates", "steuerberater-report.html");
 
@@ -19,11 +21,15 @@ function periodLabel(type: PeriodType, year: number, index: number): string {
   return `${year}`;
 }
 
-/** Steuerberater-Report-PDF: bündelt Quote, Kosten-Soll-Ist, Umsatz/Faktor/Gewinn und Auslastungsrisiko
- * für das nächste Steuerberater-Meeting. Steuerrücklagen-Schätzung folgt in einer späteren Ausbaustufe
- * (siehe Phasenplan) - Hinweistext markiert das im PDF transparent statt eine leere Zeile zu zeigen. */
+/** Steuerberater-Report-PDF: bündelt Quote, Kosten-Soll-Ist, Umsatz/Faktor/Gewinn, Auslastungsrisiko,
+ * Steuerrücklagen-Schätzung und offene Forderungen für das nächste Steuerberater-Meeting. */
 export async function buildSteuerberaterReportPdf(periodType: PeriodType, year: number, periodIndex: number, now: Date = new Date()): Promise<Buffer> {
-  const k = await computeCockpitKernzahlen(periodType, year, periodIndex, now);
+  const [k, offeneRechnungen] = await Promise.all([
+    computeCockpitKernzahlen(periodType, year, periodIndex, now),
+    prisma.invoice.findMany({ where: { status: "OFFEN" }, select: { issuedAt: true } }),
+  ]);
+  const steuerruecklage = await computeSteuerruecklage(k.hochrechnungGewinnJahr ?? 0, year, now);
+  const ueberfaellige = offeneRechnungen.filter((r) => Math.floor((now.getTime() - r.issuedAt.getTime()) / (24 * 60 * 60 * 1000)) > 60).length;
 
   const kostenRows = (k.kostenSollIst?.zeilen ?? [])
     .map(
@@ -38,7 +44,7 @@ export async function buildSteuerberaterReportPdf(periodType: PeriodType, year: 
 
   const hinweisTeile = [
     "Hochrechnungen basieren auf dem bisherigen Jahresverlauf (Ist ÷ bisherige Arbeitstage × Gesamt-Arbeitstage), Betriebsferien ausgeklammert.",
-    "Steuerrücklagen-Schätzung ist in dieser Version des Cockpits noch nicht enthalten und folgt in einer späteren Ausbaustufe.",
+    "Steuerrücklagen-Schätzung ist eine Näherung, kein exaktes Finanzamts-Ergebnis (progressive Stufen, Freibeträge, Kirchensteuer, Gewerbesteuer-Anrechnung nicht vollständig abgebildet) und ersetzt nicht die Abstimmung mit dem Steuerberater.",
     "Dieser Report ersetzt keine Buchhaltung oder Steuerberatung.",
   ];
 
@@ -57,6 +63,10 @@ export async function buildSteuerberaterReportPdf(periodType: PeriodType, year: 
         k.liquiditaetsReichweiteMonate != null
           ? `${k.liquiditaetsReichweiteMonate.toFixed(1)} Monate (${AMPEL_LABEL[ampelLiquiditaet(k.liquiditaetsReichweiteMonate)]})`
           : "–",
+      steuerruecklage: eur(steuerruecklage.empfohleneSteuerruecklage),
+      freier_gewinn_nach_ruecklage: eur(steuerruecklage.freierGewinnNachRuecklage),
+      offene_rechnungen: String(offeneRechnungen.length),
+      ueberfaellige_rechnungen: String(ueberfaellige),
       hinweis_text: hinweisTeile.join(" "),
       footer_text: `Praxis für Systemische Entwicklung · Steuerberater-Report · Seite 1 von 1`,
     },

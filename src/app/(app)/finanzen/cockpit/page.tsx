@@ -22,6 +22,7 @@ import {
 } from "@/lib/betriebscockpit";
 import { computeTeamUtilization, type CaseWithProfile } from "@/lib/capacity";
 import type { AmpelStatus } from "@/lib/umsatz";
+import { computeSteuerruecklage, getSteuereinstellungen } from "@/lib/steuerrechner";
 import { KalkulationForm, type KalkulationWerte } from "./kalkulation-form";
 import { Erfassungsmaske } from "./erfassungsmaske";
 import { SzenarioRechner } from "./szenario-rechner";
@@ -29,6 +30,9 @@ import { MitarbeiterTabelle, type MitarbeiterZeile } from "./mitarbeiter-tabelle
 import { CsvImport } from "./csv-import";
 import { BitteZuordnenListe, type ZuKlaerenBuchung } from "./bitte-zuordnen-liste";
 import { FinomZuordnungen } from "./finom-zuordnungen";
+import { SteuereinstellungenForm, type VorsorgeEintragRow } from "./steuereinstellungen-form";
+import { PrivaterAbzugAssistent, type PrivaterAbzugKonfigurationRow, type PrivaterAbzugEintragRow } from "./privater-abzug-assistent";
+import { Forderungsmanagement, type OffeneRechnung } from "./forderungsmanagement";
 
 const MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -113,6 +117,49 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
   );
   const casesByEmployeeId = new Map(employees.map((e, i) => [e.id, employeeCases[i] as CaseWithProfile[]]));
   const teamUtilization = computeTeamUtilization(employees, casesByEmployeeId, settings.billableCapacityFactor.toNumber(), 8, now);
+
+  // Phase 3: Steuerrücklagenrechner + Privater Steuerabzugs-Assistent + Familien-Veranlagung + Forderungsmanagement
+  const [steuerruecklage, vorsorgeEintraegeRows, steuereinstellungen, konfigurationenRows, privaterAbzugRows, offeneRechnungenRows] = await Promise.all([
+    computeSteuerruecklage(hochrechnungGewinnJahr ?? 0, year, now),
+    prisma.praxisVorsorgeaufwandEintrag.findMany({ orderBy: { gueltigAb: "desc" } }),
+    getSteuereinstellungen(),
+    prisma.privaterAbzugKonfiguration.findMany(),
+    prisma.praxisPrivaterAbzugEintrag.findMany({ where: { jahr: year }, orderBy: { erstelltAm: "desc" } }),
+    prisma.invoice.findMany({ where: { status: "OFFEN" }, include: { case: { include: { client: true } } }, orderBy: { issuedAt: "asc" } }),
+  ]);
+
+  const vorsorgeEintraege: VorsorgeEintragRow[] = vorsorgeEintraegeRows.map((e) => ({
+    id: e.id,
+    art: e.art,
+    betragMonatlich: e.betragMonatlich.toNumber(),
+    gueltigAb: e.gueltigAb.toISOString(),
+  }));
+  const konfigurationen: PrivaterAbzugKonfigurationRow[] = konfigurationenRows.map((k) => ({
+    kategorie: k.kategorie,
+    prozentsatz: k.prozentsatz?.toNumber() ?? null,
+    deckelJahr: k.deckelJahr?.toNumber() ?? null,
+  }));
+  const privaterAbzugEintraege: PrivaterAbzugEintragRow[] = privaterAbzugRows.map((e) => ({
+    id: e.id,
+    kategorie: e.kategorie,
+    eingegebenerBetrag: e.eingegebenerBetrag.toNumber(),
+    berechneterAbzug: e.berechneterAbzug?.toNumber() ?? null,
+    notiz: e.notiz,
+  }));
+
+  const offeneRechnungen: OffeneRechnung[] = offeneRechnungenRows
+    .map((r) => ({
+      id: r.id,
+      number: r.number,
+      clientName: `${r.case.client.lastName}, ${r.case.client.firstName}`,
+      totalAmount: r.totalAmount.toNumber(),
+      issuedAt: r.issuedAt.toISOString(),
+      tageOffen: Math.floor((now.getTime() - r.issuedAt.getTime()) / (24 * 60 * 60 * 1000)),
+    }))
+    .sort((a, b) => b.tageOffen - a.tageOffen);
+  // Warnregel 8: überfällige Rechnung (Tage_offen > 60) - rote Markierung in der Tabelle (Forderungsmanagement-
+  // Komponente) zusätzlich einmalig als Hinweis in der Kopfzeile.
+  const ueberfaelligeRechnungVorhanden = offeneRechnungen.some((r) => r.tageOffen > 60);
 
   // Trends: Vergleich aktueller Stand vs. Stand vor 3 Monaten (vereinfachte Näherung des "Durchschnitts
   // der letzten 3 Monate" aus dem Prompt - siehe Zusammenfassung).
@@ -259,6 +306,11 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
           {zuKlaerenCount} unkategorisierte Finom-Buchungen warten auf der „Bitte zuordnen&quot;-Liste.
         </div>
       )}
+      {ueberfaelligeRechnungVorhanden && (
+        <div className="rounded-[var(--radius-control)] bg-[#FBE4E1] px-4 py-3 text-sm font-semibold text-[#B23B2E]">
+          Mindestens eine Rechnung ist seit über 60 Tagen offen — siehe Forderungsmanagement weiter unten.
+        </div>
+      )}
 
       {/* 1. Ampel-Kopfzeile mit Trendpfeilen */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -395,6 +447,46 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
         </div>
       </div>
 
+      {/* 6. Steuerrücklagen-Kachel */}
+      <div className={cardCls}>
+        <h3 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Steuerrücklage ({year})</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-medium text-[var(--color-text-muted)]">Empfohlene Steuerrücklage</p>
+            <p className="text-2xl font-bold text-[var(--color-text)]">{eur(steuerruecklage.empfohleneSteuerruecklage)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-[var(--color-text-muted)]">Freier Gewinn nach Rücklage</p>
+            <p className={`text-2xl font-bold ${steuerruecklage.freierGewinnNachRuecklage < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-text)]"}`}>
+              {eur(steuerruecklage.freierGewinnNachRuecklage)}
+            </p>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-[var(--color-text-muted)]">
+          Zu versteuerndes Einkommen (geschätzt): {eur(steuerruecklage.zuVersteuerndesEinkommen)} · Einkommensteuer: {eur(steuerruecklage.einkommensteuer)} · Soli:{" "}
+          {eur(steuerruecklage.soli)}
+        </p>
+        <p className="mt-2 rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text-muted)]">
+          Dies ist eine Näherung, kein exaktes Finanzamts-Ergebnis — das deutsche Einkommensteuerrecht hat progressive Stufen,
+          Freibeträge, ggf. Kirchensteuer und Gewerbesteuer-Anrechnung, die diese vereinfachte Rechnung nicht vollständig abbildet.
+          Ersetzt nicht die Abstimmung mit dem Steuerberater.
+        </p>
+      </div>
+      <SteuereinstellungenForm
+        vorsorgeEintraege={vorsorgeEintraege}
+        persoenlicherGrenzsteuersatz={steuereinstellungen.persoenlicherGrenzsteuersatz.toNumber()}
+        veranlagungsart={steuereinstellungen.veranlagungsart}
+        ehepartnerEinkommenJahr={steuereinstellungen.ehepartnerEinkommenJahr?.toNumber() ?? null}
+      />
+
+      {/* 7b. Privater Steuerabzugs-Assistent */}
+      <PrivaterAbzugAssistent
+        jahr={year}
+        konfigurationen={konfigurationen}
+        eintraege={privaterAbzugEintraege}
+        summePrivaterAbzuegeJahr={steuerruecklage.summePrivaterAbzuegeJahr}
+      />
+
       {/* 7. Auslastungsrisiko-Modul */}
       {kalkulation && geplanteTotals && (
         <div className={cardCls}>
@@ -451,6 +543,9 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
           </Link>
         </div>
       </div>
+
+      {/* 9. Forderungsmanagement */}
+      <Forderungsmanagement rechnungen={offeneRechnungen} />
 
       {/* 10. Beitrag pro Mitarbeiter + Ist-Quote */}
       <div>
