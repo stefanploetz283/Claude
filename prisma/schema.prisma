@@ -50,6 +50,9 @@ model User {
   reviewedApprovals  MonthlyApproval[] @relation("ApprovalReviewedBy")
   lastEditedApprovals MonthlyApproval[] @relation("ApprovalLastEditedBy")
   serviceEntryChangeLogs ServiceEntryChangeLog[]
+  // KI-gestütztes Abschlussberichtswesen (siehe Berichtsbaustein)
+  faelleAlsFallfuehrendeFachkraft Case[]              @relation("FallfuehrendeFachkraft")
+  berichtsbausteine               Berichtsbaustein[]
   gutscheinAuswahlen GutscheinAuswahl[]
   bonusPayouts       QuarterlyBonusPayout[]
   paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
@@ -205,6 +208,13 @@ model Case {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
+  // KI-gestütztes Abschlussberichtswesen: die für den Fall relevante systemische Dreier-Konstellation
+  // (z.B. Kind/Eltern/Schule, siehe PROS-Fachkonzept) und die Fachkraft, aus deren Ich-Perspektive der
+  // Abschlussbericht geschrieben wird (i.d.R., aber nicht zwingend, identisch zu assignedEmployee).
+  triade                     String[]  @default([])
+  fallfuehrendeFachkraft     User?     @relation("FallfuehrendeFachkraft", fields: [fallfuehrendeFachkraftId], references: [id])
+  fallfuehrendeFachkraftId   String?
+
   statusHistory        CaseStatusHistory[]
   serviceEntries       ServiceEntry[]
   timeEntries          TimeEntry[]
@@ -215,6 +225,7 @@ model Case {
   monthlyApprovals     MonthlyApproval[]
   invoices             Invoice[]
   waitlistOrigin       WaitlistEntry?
+  berichtsbausteine    Berichtsbaustein[]
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
@@ -437,6 +448,65 @@ model ServiceEntryChangeLog {
 
   @@index([entryId])
   @@index([changedAt])
+}
+
+// ---------- KI-gestütztes Abschlussberichtswesen (Phase 1: Datenmodell & Erfassung) ----------
+//
+// Die acht "Kapitel-Blätter" des Berichtsmanuals (Ausgangslage, die fünf Schritte des
+// Entwicklungsprozesses, Regulation & Passung, Perspektive) - siehe Prompt "KI-gestütztes
+// Abschlussberichtswesen", Teil 2/3 Punkt 9. Das versionierte, admin-editierbare Berichtsmanual selbst
+// folgt erst in Phase 2 - bis dahin dient dieser Enum als stabile Kategorien-Klammer für die vorläufige
+// Einordnung bei der Erfassung.
+enum BerichtsKapitel {
+  AUSGANGSLAGE
+  VERSTEHEN
+  ERKENNEN
+  VERSTAENDIGEN
+  VERAENDERN
+  STABILISIEREN
+  REGULATION_PASSUNG
+  PERSPEKTIVE
+}
+
+enum BerichtsbausteinStatus {
+  GESAMMELT
+  IM_BERICHT_VERARBEITET
+}
+
+// Gezielt während des Hilfeverlaufs gesammelte inhaltliche Bausteine für den späteren KI-gestützten
+// Abschlussbericht (Mikrofon-Diktat oder Freitext) - bewusst getrennt vom ServiceEntry-Modell der
+// regulären Leistungsdokumentation, da ein Baustein nicht an einen konkreten Termin gebunden ist (kein
+// Beginn/Ende/Dauer). originaltext darf nach dem Erfassen inhaltlich nie verändert werden (bleibt als
+// Beleg bestehen) - die App bietet dafür bewusst keine Bearbeiten-Funktion an.
+model Berichtsbaustein {
+  id                  String                 @id @default(cuid())
+  case                Case                   @relation(fields: [caseId], references: [id])
+  caseId              String
+  ersteller           User                   @relation(fields: [erstellerId], references: [id])
+  erstellerId         String
+  erfassungszeitpunkt DateTime               @default(now())
+
+  originaltext        String
+
+  vorlaeufigeKategorie BerichtsKapitel?
+
+  // "Bezieht sich auf...": bildet z.B. die im Manual geforderte Kette Erkenntnis → Veränderung → Wirkung
+  // ab (Kapitel "Verändern"). Einfaches Referenz-Feld statt komplexer Verlinkungsoberfläche.
+  bezugBaustein        Berichtsbaustein?      @relation("BausteinBezug", fields: [bezugBausteinId], references: [id], onDelete: SetNull)
+  bezugBausteinId      String?
+  bezugVon             Berichtsbaustein[]     @relation("BausteinBezug")
+
+  // Teilmenge von Case.triade - welche(s) der fallspezifischen Systeme dieser Baustein betrifft.
+  triadeZuordnung      String[]               @default([])
+
+  status               BerichtsbausteinStatus @default(GESAMMELT)
+
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@index([caseId])
+  @@index([erstellerId])
+  @@index([bezugBausteinId])
 }
 
 // ---------- Interne Zeiterfassung ----------

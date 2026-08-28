@@ -13,6 +13,7 @@ import { CapacityPlanningForm } from "./capacity-planning-form";
 import { BesuchsorteEditor } from "./besuchsorte-editor";
 import { AuthorityAddressForm } from "./authority-address-form";
 import { StundensatzForm } from "./stundensatz-form";
+import { TriadeFallfuehrendForm } from "./triade-fallfuehrend-form";
 import { getSettings } from "@/lib/settings";
 import { differenceInCalendarDays, addMonths, format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -36,6 +37,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
       helpType: true,
       assignedEmployee: true,
       substituteEmployee: true,
+      fallfuehrendeFachkraft: true,
       statusHistory: { include: { changedBy: true }, orderBy: { changedAt: "desc" } },
     },
   });
@@ -76,6 +78,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
 
   const clientAddress = resolveClientAddress(caseRecord.client);
   const settings = user.role === "ADMIN" ? await getSettings() : null;
+  const employees = await prisma.user.findMany({ where: { active: true }, orderBy: { name: "asc" } });
 
   return (
     <div className="flex flex-col gap-6">
@@ -206,6 +209,20 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             besucheProMonat: b.besucheProMonat.toNumber(),
           }))}
           geplanteFlsStdWoche={caseRecord.geplanteFlsStdWoche?.toNumber() ?? null}
+        />
+      </div>
+
+      <div className={cardCls}>
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Abschlussbericht</h2>
+        <p className="mb-3 text-sm text-[var(--color-text-muted)]">
+          Triade-Systeme und fallführende Fachkraft für das KI-gestützte Abschlussberichtswesen - die eigentlichen Bausteine werden im
+          Reiter „Abschlussbericht&quot; erfasst.
+        </p>
+        <TriadeFallfuehrendForm
+          caseId={caseRecord.id}
+          triade={caseRecord.triade}
+          fallfuehrendeFachkraftId={caseRecord.fallfuehrendeFachkraftId}
+          employees={employees.map((e) => ({ id: e.id, name: e.name }))}
         />
       </div>
 

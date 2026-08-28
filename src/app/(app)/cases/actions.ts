@@ -41,6 +41,11 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
   const extensionDeadline = String(formData.get("extensionDeadline") ?? "").trim();
   const reminderLeadDays = Number(formData.get("reminderLeadDays") ?? 14);
   const geplanteFlsStdWocheStr = String(formData.get("geplanteFlsStdWoche") ?? "").trim();
+  const triade = formData
+    .getAll("triade")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  const fallfuehrendeFachkraftId = String(formData.get("fallfuehrendeFachkraftId") ?? "").trim() || assignedEmployeeId;
 
   if (!authority || !helpTypeId || !assignedEmployeeId || !hoursContingent) {
     return { error: "Bitte alle Pflichtfelder ausfüllen." };
@@ -118,6 +123,8 @@ export async function createCase(_prev: ActionState, formData: FormData): Promis
       hoursContingent,
       contingentPeriodMonths,
       geplanteFlsStdWoche,
+      triade,
+      fallfuehrendeFachkraftId,
       startDate: startDate ? new Date(startDate) : new Date(),
       expectedEndDate: expectedEndDate ? new Date(expectedEndDate) : null,
       phaseOutWeeks: phaseOutWeeksStr ? Number(phaseOutWeeksStr) : null,
@@ -303,6 +310,23 @@ export async function updateCaseAuthorityFields(_prev: ActionState, formData: Fo
   });
 
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Kostenträger/Rechnungsadresse geändert" });
+  revalidatePath(`/cases/${caseId}`);
+  return undefined;
+}
+
+/** KI-gestütztes Abschlussberichtswesen: Triade-Systeme + fallführende Fachkraft - für Bestandsfälle
+ * nachträglich pflegbar (neue Felder ab dieser Migration, bei Neuanlage bereits in createCase gesetzt). */
+export async function updateCaseTriadeFallfuehrend(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const caseId = String(formData.get("caseId") ?? "");
+  const triade = formData
+    .getAll("triade")
+    .map((v) => String(v).trim())
+    .filter(Boolean);
+  const fallfuehrendeFachkraftId = String(formData.get("fallfuehrendeFachkraftId") ?? "").trim() || null;
+
+  await prisma.case.update({ where: { id: caseId }, data: { triade, fallfuehrendeFachkraftId } });
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Case", entityId: caseId, details: "Triade/Fallführende Fachkraft geändert" });
   revalidatePath(`/cases/${caseId}`);
   return undefined;
 }

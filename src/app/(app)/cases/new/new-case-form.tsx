@@ -218,6 +218,34 @@ export function NewCaseForm({
         </p>
       </section>
 
+      <section className={cardCls}>
+        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Abschlussbericht</h2>
+        <p className="mb-4 text-sm text-[var(--color-text-muted)]">
+          Für das spätere KI-gestützte Abschlussberichtswesen - beides lässt sich im Fall jederzeit nachträglich ändern.
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Triade-System 1 (z.B. Kind)">
+            <input name="triade" placeholder="z.B. Kind" className={inputCls} />
+          </Field>
+          <Field label="Triade-System 2 (z.B. Eltern)">
+            <input name="triade" placeholder="z.B. Eltern" className={inputCls} />
+          </Field>
+          <Field label="Triade-System 3 (z.B. Schule)">
+            <input name="triade" placeholder="z.B. Schule" className={inputCls} />
+          </Field>
+          <Field label="Fallführende Fachkraft (Ich-Perspektive im Bericht)">
+            <select name="fallfuehrendeFachkraftId" defaultValue="" className={inputCls}>
+              <option value="">– identisch zum zuständigen Mitarbeiter –</option>
+              {employees.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </section>
+
       {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
 
       <div>

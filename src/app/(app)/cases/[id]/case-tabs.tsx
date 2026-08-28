@@ -10,6 +10,7 @@ export function CaseTabs({ caseId }: { caseId: string }) {
     { href: `/cases/${caseId}/service-entries`, label: "Leistungsdokumentation" },
     { href: `/cases/${caseId}/appointments`, label: "Termine" },
     { href: `/cases/${caseId}/documents`, label: "Dokumente" },
+    { href: `/cases/${caseId}/berichtsbausteine`, label: "Abschlussbericht" },
   ];
 
   return (
