@@ -6,9 +6,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { CaseTabs } from "../case-tabs";
 import { BerichtsbausteinCapture } from "./berichtsbaustein-capture";
-import { BERICHTS_KAPITEL_INFO } from "@/lib/berichtsbausteine/manual";
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { EntwicklungsspurView, type BausteinAnsicht } from "./entwicklungsspur-view";
 
 export default async function BerichtsbausteinePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: caseId } = await params;
@@ -34,6 +32,16 @@ export default async function BerichtsbausteinePage({ params }: { params: Promis
     kurzbezeichnung: `${format(b.erfassungszeitpunkt, "dd.MM.yyyy", { locale: de })} - ${b.originaltext.slice(0, 60)}${b.originaltext.length > 60 ? "…" : ""}`,
   }));
 
+  const bausteineAnsicht: BausteinAnsicht[] = bausteine.map((b) => ({
+    id: b.id,
+    erfassungszeitpunkt: b.erfassungszeitpunkt.toISOString(),
+    originaltext: b.originaltext,
+    erstellerName: b.ersteller.name,
+    vorlaeufigeKategorie: b.vorlaeufigeKategorie,
+    triadeZuordnung: b.triadeZuordnung,
+    bezugDatum: b.bezugBaustein ? b.bezugBaustein.erfassungszeitpunkt.toISOString() : null,
+  }));
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -49,37 +57,7 @@ export default async function BerichtsbausteinePage({ params }: { params: Promis
 
       <BerichtsbausteinCapture caseId={caseId} triadeOptionen={caseRecord.triade} letzteBausteine={letzteBausteine} />
 
-      <div className="flex flex-col gap-3">
-        {bausteine.map((b) => (
-          <div key={b.id} className={cardCls}>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-                <span>{format(b.erfassungszeitpunkt, "dd.MM.yyyy HH:mm", { locale: de })}</span>
-                <span>· {b.ersteller.name}</span>
-                {b.vorlaeufigeKategorie && (
-                  <span className="rounded-full bg-[var(--color-primary-soft)] px-2.5 py-0.5 font-semibold text-[var(--color-primary)]">
-                    {BERICHTS_KAPITEL_INFO[b.vorlaeufigeKategorie].label}
-                  </span>
-                )}
-                {b.triadeZuordnung.map((t) => (
-                  <span key={t} className="rounded-full bg-[var(--color-bg)] px-2.5 py-0.5 font-medium text-[var(--color-text)]">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <p className="mt-2 text-sm whitespace-pre-wrap text-[var(--color-text)]">{b.originaltext}</p>
-            {b.bezugBaustein && (
-              <p className="mt-2 text-xs text-[var(--color-text-muted)]">
-                ↳ verknüpft mit {format(b.bezugBaustein.erfassungszeitpunkt, "dd.MM.yyyy", { locale: de })}
-              </p>
-            )}
-          </div>
-        ))}
-        {bausteine.length === 0 && (
-          <p className={`${cardCls} text-sm text-[var(--color-text-muted)]`}>Noch keine Bausteine erfasst.</p>
-        )}
-      </div>
+      <EntwicklungsspurView bausteine={bausteineAnsicht} />
     </div>
   );
 }

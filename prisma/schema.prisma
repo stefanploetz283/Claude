@@ -53,6 +53,8 @@ model User {
   // KI-gestütztes Abschlussberichtswesen (siehe Berichtsbaustein)
   faelleAlsFallfuehrendeFachkraft Case[]              @relation("FallfuehrendeFachkraft")
   berichtsbausteine               Berichtsbaustein[]
+  berichtsManualVersionen         BerichtsManualVersion[]
+  referenzberichte                Referenzbericht[]
   gutscheinAuswahlen GutscheinAuswahl[]
   bonusPayouts       QuarterlyBonusPayout[]
   paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
@@ -112,6 +114,7 @@ model HelpType {
   activityProfiles HelpTypeActivityProfile[]
   allowedForEmployees User[] @relation("EmployeeAllowedHelpTypes")
   waitlistEntries  WaitlistEntry[]
+  berichtsManualVersionen BerichtsManualVersion[]
 }
 
 // Wochenprofil einer Hilfeart: einzelne Tätigkeitskategorien mit Wochenstunden-Referenzwert.
@@ -509,6 +512,60 @@ model Berichtsbaustein {
   @@index([bezugBausteinId])
 }
 
+// ---------- KI-gestütztes Abschlussberichtswesen (Phase 2: Verwaltungsbereiche) ----------
+
+// Versioniertes Berichtsmanual je Hilfeart. "Angebotstyp" aus dem Prompt entspricht dem bereits
+// bestehenden HelpType-Modell (siehe Prompt-Rückmeldung) - keine parallele Taxonomie. Jede Bearbeitung
+// legt eine NEUE Version an (Zeitstempel = Versionskennung), bestehende Versionen werden nie nachträglich
+// verändert: ein einmal generierter Bericht vermerkt die zu diesem Zeitpunkt gültige (= jüngste) Version,
+// die dafür dauerhaft unverändert nachvollziehbar bleiben muss.
+model BerichtsManualVersion {
+  id            String   @id @default(cuid())
+  helpType      HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId    String
+  text          String
+  erstelltVon   User     @relation(fields: [erstelltVonId], references: [id])
+  erstelltVonId String
+  createdAt     DateTime @default(now())
+
+  @@index([helpTypeId, createdAt])
+}
+
+// Praxisweite fachliche Konzeption (Singleton) - anders als das Manual ohne eigene, pro Bericht
+// vermerkte Versionshistorie gefordert, daher schlicht in-place editierbar wie PraxisSteuereinstellungen.
+model PraxisFachlicheKonzeption {
+  id        String   @id @default("singleton")
+  text      String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+// Begriffsglossar (PROS-Fachkonzept) - editierbare Liste statt Freitext, damit einzelne Begriffe gepflegt
+// werden können, ohne den gesamten Block zu überschreiben.
+model PraxisGlossarBegriff {
+  id         String   @id @default(cuid())
+  begriff    String   @unique
+  definition String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Referenzberichte-Bibliothek - text ist bereits die pseudonymisierte Fassung, das Original wird nie
+// gespeichert (siehe Prompt-Rückmeldung zur Pseudonymisierungs-Frage). Nur freigegebene Berichte fließen
+// in die Generierung ein, begrenzt auf Settings.berichtReferenzberichteMaxAnzahl (die zuletzt freigegebenen).
+model Referenzbericht {
+  id            String   @id @default(cuid())
+  titel         String
+  text          String
+  freigegeben   Boolean  @default(false)
+  erstelltVon   User     @relation(fields: [erstelltVonId], references: [id])
+  erstelltVonId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([freigegeben, createdAt])
+}
+
 // ---------- Interne Zeiterfassung ----------
 
 enum TimeEntrySource {
@@ -726,6 +783,11 @@ model Settings {
 
   // Fahrten-/Fallrechner: Ø km/h für die Umrechnung Fahrstrecke → Fahrzeit (siehe src/lib/fahrtenrechner/calc.ts)
   fahrtenrechnerDurchschnittskmh Decimal @default(80) @db.Decimal(5, 1)
+
+  // KI-gestütztes Abschlussberichtswesen: Obergrenze gleichzeitig genutzter Referenzberichte im
+  // Generierungs-Prompt (Prompt Teil 2/3 Punkt 8, gegen Kontext-Sprengung bei wachsender Bibliothek) -
+  // angewendet als "die N zuletzt freigegebenen Referenzberichte".
+  berichtReferenzberichteMaxAnzahl Int @default(3)
 
   updatedAt                   DateTime @updatedAt
 }

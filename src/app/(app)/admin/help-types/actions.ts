@@ -97,3 +97,18 @@ export async function deleteActivityProfileRow(id: string) {
   await logAccess({ userId: admin.id, action: "DELETE", entityType: "HelpTypeActivityProfile", entityId: id });
   revalidatePath("/admin/help-types");
 }
+
+/** Berichtsmanual (KI-gestütztes Abschlussberichtswesen): legt IMMER eine neue Version an, bestehende
+ * Versionen bleiben unverändert - ein bereits generierter Bericht muss dauerhaut nachvollziehen können,
+ * welche Fassung zugrunde lag. */
+export async function saveBerichtsManualVersion(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireAdmin();
+  const helpTypeId = String(formData.get("helpTypeId") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+
+  if (!text) return { error: "Bitte einen Manual-Text angeben." };
+
+  await prisma.berichtsManualVersion.create({ data: { helpTypeId, text, erstelltVonId: admin.id } });
+  await logAccess({ userId: admin.id, action: "CREATE", entityType: "BerichtsManualVersion", entityId: helpTypeId });
+  revalidatePath("/admin/help-types");
+}

@@ -2,12 +2,16 @@ import { requireAdmin } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { NewHelpTypeForm, ArchiveHelpTypeButton } from "./help-type-controls";
 import { ActivityProfilePanel } from "./activity-profile-panel";
+import { BerichtsManualPanel } from "./berichtsmanual-panel";
 
 export default async function HelpTypesPage() {
   await requireAdmin();
   const helpTypes = await prisma.helpType.findMany({
     orderBy: { name: "asc" },
-    include: { activityProfiles: { orderBy: { sortOrder: "asc" } } },
+    include: {
+      activityProfiles: { orderBy: { sortOrder: "asc" } },
+      berichtsManualVersionen: { orderBy: { createdAt: "desc" }, include: { erstelltVon: true } },
+    },
   });
 
   return (
@@ -48,6 +52,15 @@ export default async function HelpTypesPage() {
                       id: p.id,
                       activityLabel: p.activityLabel,
                       hoursPerWeek: p.hoursPerWeek?.toString() ?? null,
+                    }))}
+                  />
+                  <BerichtsManualPanel
+                    helpTypeId={h.id}
+                    versionen={h.berichtsManualVersionen.map((v) => ({
+                      id: v.id,
+                      text: v.text,
+                      createdAt: v.createdAt.toISOString(),
+                      erstelltVonName: v.erstelltVon.name,
                     }))}
                   />
                 </td>

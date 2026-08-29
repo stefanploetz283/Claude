@@ -11,6 +11,7 @@ const SIDEBAR_ROUTES = [
   "/admin/fahrtenrechner",
   "/admin/approvals",
   "/admin/help-types",
+  "/admin/abschlussbericht",
   "/admin/access-log",
   "/admin/settings",
 ];
@@ -54,6 +55,14 @@ const ICON_PROTOKOLL = (
     <path d="M12 22c-6-2-9-6-9-12V5l9-3 9 3v5c0 6-3 10-9 12Z" />
   </svg>
 );
+const ICON_ABSCHLUSSBERICHT = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+    <path d="M14 2v6h6" />
+    <line x1="9" y1="13" x2="15" y2="13" />
+    <line x1="9" y1="17" x2="15" y2="17" />
+  </svg>
+);
 const ICON_EINSTELLUNGEN = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3" />
@@ -74,6 +83,7 @@ const SIDEBAR_GROUPS: SidebarGroup[] = [
     items: [
       { href: "/admin/approvals", label: "Freigaben", icon: ICON_FREIGABEN },
       { href: "/admin/help-types", label: "Angebotskatalog", icon: ICON_KATALOG },
+      { href: "/admin/abschlussbericht", label: "Abschlussbericht", icon: ICON_ABSCHLUSSBERICHT },
       { href: "/admin/access-log", label: "Zugriffsprotokoll", icon: ICON_PROTOKOLL },
       { href: "/admin/settings", label: "Einstellungen", icon: ICON_EINSTELLUNGEN },
     ],
