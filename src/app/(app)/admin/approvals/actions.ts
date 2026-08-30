@@ -157,6 +157,44 @@ export async function adminUpdateServiceEntry(_prev: ActionState, formData: Form
   return undefined;
 }
 
+// ---------- Abschlussbericht-Freigabe (KI-gestütztes Abschlussberichtswesen, Phase 3) ----------
+
+export async function approveAbschlussbericht(caseId: string) {
+  const user = await requireAdmin();
+
+  await prisma.abschlussberichtEntwurf.update({
+    where: { caseId },
+    data: { status: "FREIGEGEBEN", reviewedById: user.id, reviewedAt: new Date(), correctionNote: null },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "AbschlussberichtEntwurf", entityId: caseId, details: "Freigegeben" });
+  revalidatePath("/admin/approvals");
+  revalidatePath(`/cases/${caseId}/berichtsbausteine`);
+}
+
+export async function requestAbschlussberichtCorrection(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const caseId = String(formData.get("caseId") ?? "");
+  const comment = String(formData.get("comment") ?? "").trim();
+  if (!comment) return { error: "Bitte einen Korrekturhinweis angeben." };
+
+  const user = await requireAdmin();
+
+  await prisma.abschlussberichtEntwurf.update({
+    where: { caseId },
+    data: { status: "KORREKTUR_ANGEFORDERT", reviewedById: user.id, reviewedAt: new Date(), correctionNote: comment },
+  });
+
+  await logAccess({
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "AbschlussberichtEntwurf",
+    entityId: caseId,
+    details: "Korrektur angefordert",
+  });
+  revalidatePath("/admin/approvals");
+  revalidatePath(`/cases/${caseId}/berichtsbausteine`);
+}
+
 export type ChangeHistoryEntry = {
   id: string;
   changedAt: string;

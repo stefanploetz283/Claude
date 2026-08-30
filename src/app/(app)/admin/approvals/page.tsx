@@ -4,9 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
 import { monthDateRange, toDateInputValue } from "@/lib/date";
 import { ApprovalReviewCard } from "./review-card";
+import { AbschlussberichtReviewCard } from "./abschlussbericht-review-card";
 
 export default async function ApprovalsPage() {
   await requireAdmin();
+
+  const pendingBerichte = await prisma.abschlussberichtEntwurf.findMany({
+    where: { status: "WARTET_AUF_FREIGABE" },
+    include: { case: { include: { client: true, helpType: true, assignedEmployee: true, fallfuehrendeFachkraft: true } } },
+    orderBy: { submittedAt: "asc" },
+  });
 
   const pending = await prisma.monthlyApproval.findMany({
     where: { status: "WARTET_AUF_FREIGABE" },
@@ -69,6 +76,29 @@ export default async function ApprovalsPage() {
         {cards.length === 0 && (
           <p className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
             Aktuell liegen keine Leistungsdokumentationen zur Freigabe vor.
+          </p>
+        )}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight text-[var(--color-primary)]">Abschlussberichte</h2>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">Zur Freigabe eingereichte Abschlussbericht-Entwürfe.</p>
+      </div>
+      <div className="flex flex-col gap-4">
+        {pendingBerichte.map((b) => (
+          <AbschlussberichtReviewCard
+            key={b.id}
+            caseId={b.caseId}
+            clientName={`${b.case.client.lastName}, ${b.case.client.firstName}`}
+            helpTypeName={b.case.helpType.name}
+            fallfuehrendeFachkraftName={b.case.fallfuehrendeFachkraft?.name ?? b.case.assignedEmployee.name}
+            submittedAt={b.submittedAt ? format(b.submittedAt, "dd.MM.yyyy HH:mm", { locale: de }) : "–"}
+            text={b.text}
+          />
+        ))}
+        {pendingBerichte.length === 0 && (
+          <p className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
+            Aktuell liegen keine Abschlussberichte zur Freigabe vor.
           </p>
         )}
       </div>

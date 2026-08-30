@@ -55,6 +55,10 @@ model User {
   berichtsbausteine               Berichtsbaustein[]
   berichtsManualVersionen         BerichtsManualVersion[]
   referenzberichte                Referenzbericht[]
+  generierteBerichtsentwuerfe     AbschlussberichtEntwurf[] @relation("BerichtGeneriertVon")
+  eingereichteBerichtsentwuerfe   AbschlussberichtEntwurf[] @relation("BerichtSubmittedBy")
+  geprueteBerichtsentwuerfe       AbschlussberichtEntwurf[] @relation("BerichtReviewedBy")
+  zuletztBearbeiteteBerichtsentwuerfe AbschlussberichtEntwurf[] @relation("BerichtLastEditedBy")
   gutscheinAuswahlen GutscheinAuswahl[]
   bonusPayouts       QuarterlyBonusPayout[]
   paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
@@ -229,6 +233,7 @@ model Case {
   invoices             Invoice[]
   waitlistOrigin       WaitlistEntry?
   berichtsbausteine    Berichtsbaustein[]
+  abschlussberichtEntwurf AbschlussberichtEntwurf?
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
@@ -528,6 +533,8 @@ model BerichtsManualVersion {
   erstelltVonId String
   createdAt     DateTime @default(now())
 
+  abschlussberichtEntwuerfe AbschlussberichtEntwurf[]
+
   @@index([helpTypeId, createdAt])
 }
 
@@ -564,6 +571,51 @@ model Referenzbericht {
   updatedAt     DateTime @updatedAt
 
   @@index([freigegeben, createdAt])
+}
+
+// ---------- KI-gestütztes Abschlussberichtswesen (Phase 3: Generierung & Freigabe) ----------
+
+// Ein Entwurf pro Fall (Singleton je Case - eine erneute Generierung überschreibt den bisherigen Text,
+// keine eigene Versionshistorie wie beim Manual, da hier kein Bericht referenziert werden muss). Nutzt
+// bewusst denselben ApprovalStatus-Enum und dasselbe Freigabe-Interaktionsmuster wie MonthlyApproval
+// (Entwurf → Prüfung/Korrektur → Freigabe), aber als eigenständiges Modell: MonthlyApproval ist an
+// Fall+Jahr+Monat gebunden, ein Abschlussbericht ist dagegen ein einmaliges Dokument pro Fall und passt
+// strukturell nicht in dieselbe Tabelle (siehe Prompt-Rückmeldung).
+model AbschlussberichtEntwurf {
+  id     String @id @default(cuid())
+  case   Case   @relation(fields: [caseId], references: [id])
+  caseId String @unique
+
+  text String // vollständig frei editierbar bis zur Freigabe
+
+  // Welche Manual-Version bei der Generierung galt - für Nachvollziehbarkeit dauerhaft vermerkt.
+  manualVersion   BerichtsManualVersion @relation(fields: [manualVersionId], references: [id])
+  manualVersionId String
+
+  status ApprovalStatus @default(IN_BEARBEITUNG)
+
+  generiertAm    DateTime
+  generiertVon   User     @relation("BerichtGeneriertVon", fields: [generiertVonId], references: [id])
+  generiertVonId String
+
+  submittedBy   User?     @relation("BerichtSubmittedBy", fields: [submittedById], references: [id])
+  submittedById String?
+  submittedAt   DateTime?
+
+  reviewedBy   User?     @relation("BerichtReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  correctionNote String?
+
+  lastEditedBy   User?     @relation("BerichtLastEditedBy", fields: [lastEditedById], references: [id])
+  lastEditedById String?
+  lastEditedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 // ---------- Interne Zeiterfassung ----------
@@ -788,6 +840,9 @@ model Settings {
   // Generierungs-Prompt (Prompt Teil 2/3 Punkt 8, gegen Kontext-Sprengung bei wachsender Bibliothek) -
   // angewendet als "die N zuletzt freigegebenen Referenzberichte".
   berichtReferenzberichteMaxAnzahl Int @default(3)
+  // Vollständigkeitsprüfung (Prompt Teil 3/3 Punkt 10b): ab wie vielen dokumentierten Terminen in einem
+  // Monat OHNE jeden Berichtsbaustein ein Hinweis erscheint - konfigurierbar statt hart codiert.
+  berichtLeistungsnachweisSchwellenwert Int @default(3)
 
   updatedAt                   DateTime @updatedAt
 }

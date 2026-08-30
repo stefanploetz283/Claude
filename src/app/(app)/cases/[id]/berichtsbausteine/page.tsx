@@ -7,6 +7,7 @@ import { de } from "date-fns/locale";
 import { CaseTabs } from "../case-tabs";
 import { BerichtsbausteinCapture } from "./berichtsbaustein-capture";
 import { EntwicklungsspurView, type BausteinAnsicht } from "./entwicklungsspur-view";
+import { BerichtsentwurfPanel } from "./berichtsentwurf-panel";
 
 export default async function BerichtsbausteinePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: caseId } = await params;
@@ -31,6 +32,8 @@ export default async function BerichtsbausteinePage({ params }: { params: Promis
     id: b.id,
     kurzbezeichnung: `${format(b.erfassungszeitpunkt, "dd.MM.yyyy", { locale: de })} - ${b.originaltext.slice(0, 60)}${b.originaltext.length > 60 ? "…" : ""}`,
   }));
+
+  const entwurf = await prisma.abschlussberichtEntwurf.findUnique({ where: { caseId } });
 
   const bausteineAnsicht: BausteinAnsicht[] = bausteine.map((b) => ({
     id: b.id,
@@ -58,6 +61,20 @@ export default async function BerichtsbausteinePage({ params }: { params: Promis
       <BerichtsbausteinCapture caseId={caseId} triadeOptionen={caseRecord.triade} letzteBausteine={letzteBausteine} />
 
       <EntwicklungsspurView bausteine={bausteineAnsicht} />
+
+      <BerichtsentwurfPanel
+        caseId={caseId}
+        entwurf={
+          entwurf
+            ? {
+                text: entwurf.text,
+                status: entwurf.status,
+                generiertAmLabel: format(entwurf.generiertAm, "dd.MM.yyyy HH:mm", { locale: de }),
+                correctionNote: entwurf.correctionNote,
+              }
+            : null
+        }
+      />
     </div>
   );
 }
