@@ -94,7 +94,7 @@ function EntryRow({
         <td className="px-5 py-3 text-right whitespace-nowrap">
           <button
             onClick={() => setEditing(true)}
-            className="text-xs font-medium text-[var(--color-primary)] opacity-0 transition group-hover:opacity-100 hover:underline"
+            className="text-xs font-medium text-[var(--color-primary)] hover:underline"
           >
             Bearbeiten
           </button>
