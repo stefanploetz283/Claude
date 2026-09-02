@@ -142,6 +142,39 @@ export async function createInterimEntry(_prev: ActionState, formData: FormData)
   return undefined;
 }
 
+/** Nachträgliche Korrektur eines per Diktat erzeugten Eintrags - das Diktat liefert nur einen ersten
+ * Entwurf, der vor der Abrechnung von Hand korrigiert werden können muss. */
+export async function updateInterimEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await requireInterimAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const caseId = String(formData.get("caseId") ?? "");
+  const date = String(formData.get("date") ?? "");
+  const startTimeStr = String(formData.get("startTime") ?? "");
+  const endTimeStr = String(formData.get("endTime") ?? "");
+  const content = String(formData.get("content") ?? "").trim();
+
+  if (!date || !startTimeStr || !endTimeStr || !content) {
+    return { error: "Bitte alle Felder ausfüllen." };
+  }
+
+  const startTime = combineDateTime(date, startTimeStr);
+  const endTime = combineDateTime(date, endTimeStr);
+  if (endTime.getTime() <= startTime.getTime()) {
+    return { error: "Die Endzeit muss nach der Startzeit liegen." };
+  }
+
+  await prisma.interimEntry.update({
+    where: { id },
+    data: { date: new Date(date), startTime, endTime, content },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "InterimEntry", entityId: id });
+  revalidatePath(`/interim/${caseId}`);
+  revalidatePath("/interim");
+  return undefined;
+}
+
 export async function deleteInterimEntry(id: string, caseId: string) {
   const user = await requireInterimAdmin();
   await prisma.interimEntry.delete({ where: { id } });

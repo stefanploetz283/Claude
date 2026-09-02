@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
+import { toDateInputValue } from "@/lib/date";
 import { requireInterimAdmin } from "@/lib/rbac";
 import { InterimDictateWidget } from "./interim-dictate-widget";
 import { InterimEntriesList } from "./interim-entries-list";
@@ -30,7 +31,10 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
   const entryRows = entries.map((e) => ({
     id: e.id,
     date: format(e.date, "dd.MM.yyyy"),
+    dateISO: toDateInputValue(e.date),
     timeLabel: `${format(e.startTime, "HH:mm")} – ${format(e.endTime, "HH:mm")}`,
+    startTime: format(e.startTime, "HH:mm"),
+    endTime: format(e.endTime, "HH:mm"),
     content: e.content,
   }));
 
