@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { extractInterimEntryFromVoice } from "@/lib/interim/extraction";
-import { createInterimEntry } from "../actions";
+import { createInterimEntry, type Ueberschneidung } from "../actions";
 
 type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
@@ -27,7 +27,7 @@ function getSpeechRecognition(): (new () => RecognitionLike) | null {
 // "no-speech"/"aborted" treten bei Sprechpausen regelmäßig auf und sind keine echten Fehler.
 const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
-type Stage = "idle" | "recording" | "processing" | "review" | "saving" | "done";
+type Stage = "idle" | "recording" | "processing" | "review" | "conflict" | "saving" | "done";
 type ReviewData = { date: string; startTime: string; endTime: string; content: string };
 
 const inputCls =
@@ -40,6 +40,7 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
   const [interim, setInterim] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<ReviewData | null>(null);
+  const [conflicts, setConflicts] = useState<Ueberschneidung[]>([]);
 
   const recognitionRef = useRef<RecognitionLike | null>(null);
   const stopRequestedRef = useRef(false);
@@ -132,9 +133,10 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
     setInterim("");
     setError(null);
     setReview(null);
+    setConflicts([]);
   }
 
-  async function confirmSave() {
+  async function confirmSave(bestaetigt = false) {
     if (!review) return;
     setStage("saving");
     const fd = new FormData();
@@ -143,7 +145,13 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
     fd.set("startTime", review.startTime);
     fd.set("endTime", review.endTime);
     fd.set("content", review.content);
+    if (bestaetigt) fd.set("bestaetigt", "true");
     const result = await createInterimEntry(undefined, fd);
+    if (result?.conflicts) {
+      setConflicts(result.conflicts);
+      setStage("conflict");
+      return;
+    }
     if (result?.error) {
       setError(result.error);
       setStage("review");
@@ -223,13 +231,42 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
           {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
           <div className="flex gap-2">
             <button
-              onClick={confirmSave}
+              onClick={() => confirmSave(false)}
               className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
             >
               Übernehmen
             </button>
             <button onClick={resetAll} className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-5 py-2.5 text-sm font-medium text-[var(--color-text)]">
               Verwerfen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {stage === "conflict" && review && (
+        <div className="flex flex-col gap-3">
+          <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-4">
+            <p className="mb-2 text-sm font-semibold text-[var(--color-warn-text)]">⚠ Zeitüberschneidung erkannt</p>
+            <ul className="flex flex-col gap-1 text-sm text-[var(--color-warn-text)]">
+              {conflicts.map((c, i) => (
+                <li key={i}>
+                  {c.ueberlappungMinuten} Minuten Überschneidung mit Fall {c.andererFallName}, {c.andererZeitraumLabel}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => confirmSave(true)}
+              className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90"
+            >
+              Trotzdem speichern
+            </button>
+            <button
+              onClick={() => setStage("review")}
+              className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-5 py-2.5 text-sm font-medium text-[var(--color-text)]"
+            >
+              Zurück und korrigieren
             </button>
           </div>
         </div>

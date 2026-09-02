@@ -57,12 +57,26 @@ export default async function InterimPage() {
             Übergangslösung bis zur Praxiseröffnung am 1.11. — technisch getrennt vom künftigen Fallsystem.
           </p>
         </div>
-        <Link
-          href="/interim/new"
-          className="rounded-[var(--radius-control)] bg-[var(--color-gold)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90"
-        >
-          + Neuen Fall anlegen
-        </Link>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/interim/tagesansicht"
+            className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
+          >
+            Tagesansicht
+          </Link>
+          <Link
+            href="/interim/ueberschneidungen"
+            className="rounded-[var(--radius-control)] border border-[var(--color-coral)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-coral)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
+          >
+            Zeitüberschneidungen prüfen
+          </Link>
+          <Link
+            href="/interim/new"
+            className="rounded-[var(--radius-control)] bg-[var(--color-gold)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90"
+          >
+            + Neuen Fall anlegen
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">

@@ -1210,6 +1210,12 @@ model InterimEntry {
   content   String
   createdAt DateTime    @default(now())
 
+  // Zeitüberschneidungs-Prüfung: gesetzt, wenn beim Speichern eine fallübergreifende Überschneidung
+  // erkannt und von der Fachkraft bewusst bestätigt wurde ("trotzdem speichern") - bleibt als dauerhaft
+  // sichtbarer Hinweis bestehen, bis der Eintrag korrigiert (Überschneidung dadurch aufgelöst) oder die
+  // Markierung manuell entfernt wird.
+  ueberschneidungBestaetigt Boolean @default(false)
+
   @@index([caseId])
   @@index([date])
 }

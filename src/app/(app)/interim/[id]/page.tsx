@@ -36,6 +36,7 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
     startTime: format(e.startTime, "HH:mm"),
     endTime: format(e.endTime, "HH:mm"),
     content: e.content,
+    ueberschneidungBestaetigt: e.ueberschneidungBestaetigt,
   }));
 
   return (
