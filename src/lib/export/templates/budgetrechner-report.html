@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Budgetrechner-Bericht</title>
+<style>
+  :root{
+    --petrol:#204D4B;
+    --sage:#9FA47E;
+    --gold:#D2AD69;
+    --cream:#F5F0E8;
+    --ink:#2E3330;
+    --ink-soft:#5C635E;
+    --line:#E2D9C8;
+    --coral:#B23B2E;
+  }
+  *{box-sizing:border-box}
+  body{ margin:0; background:var(--cream); font-family:'Outfit', Arial, sans-serif; color:var(--ink); }
+  .page{ position:relative; width:794px; min-height:1123px; margin:0 auto; padding:56px 64px 96px; background:var(--cream); }
+  .logo-img{ width:200px; display:block; }
+  .logorule{ height:1.5px; background:var(--gold); width:100%; margin:18px 0 0; }
+  h1.doc{ font-weight:700; color:var(--petrol); font-size:26px; margin:36px 0 4px; }
+  .sub{ color:var(--ink-soft); font-size:13px; margin-bottom:28px; }
+  h2.section{ font-size:14px; color:var(--petrol); margin:26px 0 8px; }
+  .kachel-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:6px; }
+  .kachel{ border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+  .kachel .k{ font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em; }
+  .kachel .v{ font-size:18px; font-weight:700; color:var(--petrol); margin-top:4px; }
+  table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+  thead td{ background:var(--sage); color:#fff; font-weight:600; font-size:10.5px; letter-spacing:0.05em; padding:8px 10px; }
+  tbody td{ padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tfoot td{ padding:8px 10px; font-weight:700; color:var(--petrol); border-top:2px solid var(--sage); }
+  td.right{ text-align:right; }
+  .amp{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .hinweis{ font-size:11px; color:var(--ink-soft); background:#fff; border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-top:14px; }
+  .footer{ position:absolute; bottom:40px; left:64px; right:64px; font-size:10px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <img class="logo-img" src="logo-lockup.png" alt="Logo">
+    <div class="logorule"></div>
+    <h1 class="doc">Budgetrechner – Weitere Betriebskosten + AfA</h1>
+    <p class="sub" data-field="untertitel"></p>
+
+    <h2 class="section">Überblick</h2>
+    <div class="kachel-row">
+      <div class="kachel"><div class="k">Summe Jahresbudget</div><div class="v" data-field="summe_budget"></div></div>
+      <div class="kachel"><div class="k">Verbraucht</div><div class="v" data-field="summe_verbraucht"></div></div>
+      <div class="kachel"><div class="k">Nicht eingeplante Kosten</div><div class="v" data-field="summe_nicht_eingeplant"></div></div>
+    </div>
+
+    <h2 class="section">Budget-Ist-Vergleich je Position</h2>
+    <table>
+      <thead><tr><td>Position</td><td class="right">Jahresbudget</td><td class="right">Verbraucht</td><td class="right">Rest</td><td class="right">Auslastung</td></tr></thead>
+      <tbody data-html-field="budget_zeilen"></tbody>
+      <tfoot data-html-field="budget_summe"></tfoot>
+    </table>
+
+    <h2 class="section">Nicht eingeplante Kosten (Beleg für ReKo-Nachverhandlung)</h2>
+    <table>
+      <thead><tr><td>Datum</td><td>Beschreibung</td><td>Herkunft</td><td class="right">Betrag</td></tr></thead>
+      <tbody data-html-field="nicht_eingeplant_zeilen"></tbody>
+      <tfoot data-html-field="nicht_eingeplant_summe"></tfoot>
+    </table>
+
+    <div class="hinweis" data-field="hinweis_text"></div>
+    <div class="footer" data-field="footer_text"></div>
+  </div>
+</body>
+</html>

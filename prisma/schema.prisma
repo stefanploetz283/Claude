@@ -1219,3 +1219,60 @@ model InterimEntry {
   @@index([caseId])
   @@index([date])
 }
+
+// ==========================================================================
+// BUDGETRECHNER - "Weitere Betriebskosten + AfA" aus der ReKo-Entgeltkalkulation
+//
+// Eigenständiges Modul unter src/app/(app)/finanzen/budgetrechner/ und
+// src/lib/budgetrechner/ - bewusst getrennt vom Betriebswirtschaftlichen Cockpit
+// (KostenKategorie-Enum, IstKostenEintrag), das mit 4 festen Kategorien und
+// Hochrechnung für Steuerberater-Meetings arbeitet. Der Budgetrechner braucht
+// dagegen beliebig viele, frei benannte Positionen mit je einem Jahresbudget,
+// um unterjährig Verbrauch/Rest je Position und - für ReKo-Nachverhandlungen -
+// nicht eingeplante Kosten zu belegen. Nur ADMIN/VERWALTUNG (requireAdminOrVerwaltung).
+// ==========================================================================
+
+model BudgetKategorie {
+  id           String   @id @default(cuid())
+  name         String
+  jahr         Int
+  jahresbudget Decimal  @db.Decimal(10, 2)
+  quelle       String // "excel_import" | "manuell"
+  // Für das Keyword-Matching beim Finom-CSV-Import zusätzlich zum Namen pflegbar
+  // (z.B. Kategorie "Bürobedarf" -> Stichwort "amazon"). Siehe src/lib/budgetrechner/finom.ts.
+  stichwoerter String[] @default([])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ausgaben BudgetAusgabe[]
+
+  // Ein erneuter Excel-Import aktualisiert eine bestehende Position (name+jahr) statt sie zu duplizieren.
+  @@unique([name, jahr])
+  @@index([jahr])
+}
+
+model BudgetAusgabe {
+  id           String   @id @default(cuid())
+  betrag       Decimal  @db.Decimal(10, 2)
+  datum        DateTime @db.Date
+  beschreibung String
+  quelle       String // "manuell" | "finom_import"
+
+  // Real entstandene, aber nicht kalkulatorisch relevante Ausgaben (z.B. privat getragen, nur steuerlich
+  // relevant) auf false setzen: zählen dann nicht gegen ein Budget und erscheinen nicht in der Liste
+  // "nicht eingeplante Kosten". Standard: true.
+  reKoBudgetRelevant Boolean @default(true)
+
+  // null = "nicht eingeplante Kosten" (kein passendes Budget) - der Beleg-Zweck für ReKo-Gespräche.
+  kategorieId String?
+  kategorie   BudgetKategorie? @relation(fields: [kategorieId], references: [id], onDelete: SetNull)
+
+  importBatchId String? // gesetzt bei Herkunft finom_import - Nachvollziehbarkeit des Import-Laufs
+  dedupKey      String? @unique // Datum|Betrag|Empfänger - verhindert Doppel-Import derselben Buchung
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([datum])
+  @@index([kategorieId])
+}

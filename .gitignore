@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Lokale Design-Referenz zum Selbst-Abgleich (nicht Teil der App)
 design-ref-tmp/
+
+# Lokale Beispieldateien (z.B. Entgeltkalkulation für Parser-Kalibrierung) - nie ins Repo
+local/

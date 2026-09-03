@@ -30,6 +30,7 @@ const ADMIN_EXTRA_ITEMS: NavItem[] = [
 // Verwaltung sieht bewusst keine fachliche Dokumentation - eigener, reduzierter Navigationsumfang.
 const VERWALTUNG_ITEMS: NavItem[] = [
   { href: "/finanzen/rechnungen", label: "Rechnungen" },
+  { href: "/finanzen/budgetrechner", label: "Budgetrechner" },
   { href: "/zeit-kapazitaet/kapazitaet", label: "Kapazität" },
 ];
 
