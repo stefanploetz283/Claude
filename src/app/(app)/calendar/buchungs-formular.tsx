@@ -147,8 +147,16 @@ export function BuchungsFormular({
       )}
 
       <label className="flex flex-col gap-1">
-        <span className={labelCls}>Kurzbezeichnung{kategorie === "FALL_TERMIN" ? " (optional)" : " *"}</span>
-        <input name="titel" required={kategorie !== "FALL_TERMIN"} placeholder={kategorie === "INTERNER_TERMIN" ? "z.B. Teambesprechung" : undefined} className={inputCls} />
+        <span className={labelCls}>Terminname{kategorie === "INTERNER_TERMIN" ? " *" : " (optional)"}</span>
+        <input
+          name="terminname"
+          required={kategorie === "INTERNER_TERMIN"}
+          placeholder={kategorie === "INTERNER_TERMIN" ? "z.B. Teambesprechung" : "z.B. Elterngespräch Trennungssituation"}
+          className={inputCls}
+        />
+        {kategorie === "FALL_TERMIN" && (
+          <span className="text-[11px] text-[var(--color-text-muted)]">Wird im Kalender als Überschrift angezeigt (sonst die Terminart).</span>
+        )}
       </label>
 
       <label className="flex flex-col gap-1">

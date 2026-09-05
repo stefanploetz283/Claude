@@ -19,11 +19,9 @@ export type KalenderBlock = {
   slotVorlageRaumId: string | null;
   termin: {
     id: string;
-    titel: string;
-    kategorieLabel: string;
-    terminArtLabel: string | null;
+    heading: string;
+    subline: string;
     raumName: string | null;
-    clientName: string | null;
   } | null;
 };
 
@@ -162,15 +160,16 @@ export function Tageskalender({
                       return (
                         <button
                           key={b.key}
-                          onClick={() => b.termin && setModal({ type: "ausfall", terminId: b.termin.id, titel: b.termin.titel })}
+                          onClick={() => b.termin && setModal({ type: "ausfall", terminId: b.termin.id, titel: b.termin.heading })}
                           style={{ top, height, background: `${m.color}22`, borderColor: m.color }}
                           className="absolute right-1 left-1 overflow-hidden rounded-[6px] border-l-4 px-1.5 py-0.5 text-left text-[11px] text-[var(--color-text)] shadow-sm transition hover:opacity-90"
                         >
-                          <div className="truncate font-semibold">{b.termin?.titel}</div>
-                          <div className="truncate text-[10px] text-[var(--color-text-muted)]">
-                            {b.termin?.terminArtLabel ?? b.termin?.kategorieLabel}
-                            {b.termin?.raumName && ` · ${b.termin.raumName}`}
-                          </div>
+                          <div className="truncate font-semibold">{b.termin?.heading}</div>
+                          {(b.termin?.subline || b.termin?.raumName) && (
+                            <div className="truncate text-[10px] text-[var(--color-text-muted)]">
+                              {[b.termin?.subline, b.termin?.raumName].filter(Boolean).join(" · ")}
+                            </div>
+                          )}
                         </button>
                       );
                     })}

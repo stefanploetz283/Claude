@@ -22,6 +22,7 @@ export async function serieAnlegen(_prev: SerieErgebnis | undefined, formData: F
   const caseId = String(formData.get("caseId") ?? "").trim();
   const terminArt = String(formData.get("terminArt") ?? "").trim() as TerminArt;
   const titel = String(formData.get("titel") ?? "").trim();
+  const terminname = String(formData.get("terminname") ?? "").trim() || null;
   const raumId = String(formData.get("raumId") ?? "").trim() || null;
   const note = String(formData.get("note") ?? "").trim() || null;
   const startDate = String(formData.get("startDate") ?? "");
@@ -60,7 +61,8 @@ export async function serieAnlegen(_prev: SerieErgebnis | undefined, formData: F
     const eingabe: BuchungsEingabe = {
       kategorie: "FALL_TERMIN",
       terminArt,
-      titel: titel || terminArt,
+      titel: titel || terminname || terminArt,
+      terminname,
       caseId,
       einzelmassnahmeBezeichnung: null,
       employeeId,

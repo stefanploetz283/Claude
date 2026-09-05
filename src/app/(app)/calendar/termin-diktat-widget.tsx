@@ -32,7 +32,7 @@ type Stage = "idle" | "recording" | "processing" | "review" | "saving" | "done";
 type Review = {
   kategorie: TerminKategorie;
   terminArt: TerminArt | null;
-  titel: string;
+  terminname: string;
   einzelmassnahmeBezeichnung: string | null;
   date: string;
   startTime: string;
@@ -131,7 +131,7 @@ export function TerminDiktatWidget({
     setReview({
       kategorie: result.kategorie,
       terminArt: result.terminArt,
-      titel: result.titel,
+      terminname: result.terminname,
       einzelmassnahmeBezeichnung: result.einzelmassnahmeBezeichnung,
       date: result.date,
       startTime: result.startTime,
@@ -163,6 +163,10 @@ export function TerminDiktatWidget({
       setError("Bitte einen Fall auswählen.");
       return;
     }
+    if (review.kategorie === "INTERNER_TERMIN" && !review.terminname.trim()) {
+      setError("Bitte einen Terminnamen angeben.");
+      return;
+    }
     setStage("saving");
     const fd = new FormData();
     fd.set("employeeId", employeeId);
@@ -170,7 +174,7 @@ export function TerminDiktatWidget({
     if (review.terminArt) fd.set("terminArt", review.terminArt);
     if (review.caseId) fd.set("caseId", review.caseId);
     if (review.einzelmassnahmeBezeichnung) fd.set("einzelmassnahmeBezeichnung", review.einzelmassnahmeBezeichnung);
-    fd.set("titel", review.titel);
+    if (review.terminname.trim()) fd.set("terminname", review.terminname.trim());
     fd.set("date", review.date);
     fd.set("startTime", review.startTime);
     fd.set("endTime", review.endTime);
@@ -294,8 +298,13 @@ export function TerminDiktatWidget({
             </label>
           )}
           <label className="flex flex-col gap-1">
-            <span className={labelCls}>Kurzbezeichnung</span>
-            <input value={review.titel} onChange={(e) => setReview({ ...review, titel: e.target.value })} className={inputCls} />
+            <span className={labelCls}>Terminname{review.kategorie === "INTERNER_TERMIN" ? "" : " (optional)"}</span>
+            <input
+              value={review.terminname}
+              onChange={(e) => setReview({ ...review, terminname: e.target.value })}
+              placeholder="z.B. Elterngespräch Trennungssituation"
+              className={inputCls}
+            />
           </label>
           <div className="flex gap-3">
             <label className="flex flex-1 flex-col gap-1">

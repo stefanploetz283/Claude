@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
 import { sorgeFuerSlotAbdeckung } from "@/lib/termine/slot-generierung";
 import { employeeColor } from "@/lib/fahrtenrechner/employee-colors";
-import { KATEGORIE_LABEL, TERMINART_LABEL, STANDORT_LABEL } from "@/lib/termine/labels";
+import { STANDORT_LABEL, terminHeading, terminSubline } from "@/lib/termine/labels";
 import { Tageskalender, type KalenderBlock, type KalenderMitarbeiterin } from "./tageskalender";
 import { Wochenuebersicht, type WochenTermin } from "./wochenuebersicht";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, TerminKategorie, TerminArt } from "@prisma/client";
 
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await requireUser();
@@ -68,14 +68,29 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     }),
   ]);
 
-  function terminZuBlockDaten(t: { id: string; titel: string; kategorie: string; terminArt: string | null; raum: { name: string } | null; case: { client: { lastName: string; firstName: string } } | null }) {
+  function terminZuBlockDaten(t: {
+    id: string;
+    titel: string;
+    terminname: string | null;
+    kategorie: TerminKategorie;
+    terminArt: TerminArt | null;
+    einzelmassnahmeBezeichnung: string | null;
+    raum: { name: string } | null;
+    case: { client: { lastName: string; firstName: string } } | null;
+  }) {
+    const felder = {
+      terminname: t.terminname,
+      terminArt: t.terminArt,
+      kategorie: t.kategorie,
+      titel: t.titel,
+      fallName: t.case ? t.case.client.lastName : null,
+      einzelmassnahmeBezeichnung: t.einzelmassnahmeBezeichnung,
+    };
     return {
       id: t.id,
-      titel: t.titel,
-      kategorieLabel: KATEGORIE_LABEL[t.kategorie as keyof typeof KATEGORIE_LABEL],
-      terminArtLabel: t.terminArt ? TERMINART_LABEL[t.terminArt as keyof typeof TERMINART_LABEL] : null,
+      heading: terminHeading(felder),
+      subline: terminSubline(felder),
       raumName: t.raum?.name ?? null,
-      clientName: t.case ? `${t.case.client.lastName}, ${t.case.client.firstName}` : null,
     };
   }
 
@@ -149,10 +164,9 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         endMinute: b.endMinute,
         mitarbeiterinName: m.name,
         mitarbeiterinColor: m.color,
-        titel: b.termin!.titel,
-        kategorieLabel: b.termin!.kategorieLabel,
+        heading: b.termin!.heading,
+        subline: b.termin!.subline,
         raumName: b.termin!.raumName,
-        clientName: b.termin!.clientName,
       };
     });
 

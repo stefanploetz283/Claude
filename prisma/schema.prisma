@@ -1410,7 +1410,12 @@ model Termin {
   id        String          @id @default(cuid())
   kategorie TerminKategorie
   terminArt TerminArt? // Pflicht nur bei FALL_TERMIN (Validierung in der Action, nicht im Schema)
-  titel     String // Kurzbezeichnung, v.a. für INTERNER_TERMIN/EINZELMASSNAHME
+  titel     String // interne Kurzbezeichnung/Fallback - für die Anzeige siehe terminname + terminArt
+
+  // Optionaler Freitextname des Termins ("Terminname"). Ist er gesetzt, wird er in den Kalenderblöcken
+  // als Überschrift angezeigt, mit Terminart + Fallname als Zusatzzeile darunter; sonst dient die
+  // Terminart (bzw. bei internen Terminen der titel) als Überschrift. Siehe src/lib/termine/labels.ts.
+  terminname String?
 
   case                       Case?   @relation(fields: [caseId], references: [id])
   caseId                     String? // Pflicht bei FALL_TERMIN

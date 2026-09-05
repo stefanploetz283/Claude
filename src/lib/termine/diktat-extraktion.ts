@@ -17,7 +17,7 @@ export type TerminVoiceResult =
       ok: true;
       kategorie: TerminKategorie;
       terminArt: TerminArt | null;
-      titel: string;
+      terminname: string;
       einzelmassnahmeBezeichnung: string | null;
       date: string;
       startTime: string;
@@ -71,7 +71,11 @@ export async function extractTerminFromVoice(transcript: string): Promise<Termin
                 description: "Nur bei FALL_TERMIN relevant - die Art des Fall-Termins.",
               },
               clientName: { type: "string", description: "Name des Klienten/Falls, falls kategorie FALL_TERMIN ist, sonst leerer String." },
-              titel: { type: "string", description: "Kurzbezeichnung des Termins, z.B. 'Teambesprechung' oder 'Elternberatung'." },
+              terminname: {
+                type: "string",
+                description:
+                  "Optionaler freier Name des Termins, wenn er im Diktat über die Terminart hinaus konkret benannt wird (z.B. 'Elterngespräch Trennungssituation', 'Teambesprechung'). Sonst leerer String.",
+              },
               einzelmassnahmeBezeichnung: {
                 type: "string",
                 description: "Nur bei EINZELMASSNAHME: freier Name/Aktenzeichen, sonst leerer String.",
@@ -80,7 +84,7 @@ export async function extractTerminFromVoice(transcript: string): Promise<Termin
               startTime: { type: "string", description: "Startzeit im 24h-Format HH:mm." },
               endTime: { type: "string", description: "Endzeit im 24h-Format HH:mm." },
             },
-            required: ["kategorie", "terminArt", "clientName", "titel", "einzelmassnahmeBezeichnung", "date", "startTime", "endTime"],
+            required: ["kategorie", "terminArt", "clientName", "terminname", "einzelmassnahmeBezeichnung", "date", "startTime", "endTime"],
             additionalProperties: false,
           },
           strict: true,
@@ -104,7 +108,7 @@ export async function extractTerminFromVoice(transcript: string): Promise<Termin
     kategorie: string;
     terminArt: string;
     clientName: string;
-    titel: string;
+    terminname: string;
     einzelmassnahmeBezeichnung: string;
     date: string;
     startTime: string;
@@ -139,7 +143,7 @@ export async function extractTerminFromVoice(transcript: string): Promise<Termin
     ok: true,
     kategorie,
     terminArt,
-    titel: extracted.titel.trim() || (kategorie === "FALL_TERMIN" ? (terminArt ?? "Termin") : "Termin"),
+    terminname: extracted.terminname.trim(),
     einzelmassnahmeBezeichnung: kategorie === "EINZELMASSNAHME" ? extracted.einzelmassnahmeBezeichnung.trim() || null : null,
     date: extracted.date,
     startTime: extracted.startTime,

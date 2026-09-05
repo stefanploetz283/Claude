@@ -96,8 +96,8 @@ export function SerieFormular({
         </select>
       </label>
       <label className="flex flex-col gap-1">
-        <span className={labelCls}>Kurzbezeichnung (optional)</span>
-        <input name="titel" className={inputCls} />
+        <span className={labelCls}>Terminname (optional)</span>
+        <input name="terminname" placeholder="z.B. Elterngespräch Trennungssituation" className={inputCls} />
       </label>
 
       <div className="flex gap-3">

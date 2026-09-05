@@ -37,3 +37,32 @@ export const WOCHENTAG_LABEL: Record<number, string> = {
   6: "Samstag",
   7: "Sonntag",
 };
+
+// ---------- Anzeige eines Termins (Kalenderblock, Wochenliste, Fallakte) ----------
+// Eine Quelle der Wahrheit für "Überschrift" + "Zusatzzeile", damit alle Ansichten identisch rendern.
+
+export type TerminAnzeigeFelder = {
+  terminname: string | null;
+  terminArt: TerminArt | null;
+  kategorie: TerminKategorie;
+  titel: string;
+  fallName: string | null; // Nachname des verknüpften Falls (nur FALL_TERMIN)
+  einzelmassnahmeBezeichnung: string | null;
+};
+
+/** Überschrift: freier Terminname, sonst Terminart, sonst interne Kurzbezeichnung. */
+export function terminHeading(t: Pick<TerminAnzeigeFelder, "terminname" | "terminArt" | "kategorie" | "titel">): string {
+  if (t.terminname?.trim()) return t.terminname.trim();
+  if (t.terminArt) return TERMINART_LABEL[t.terminArt];
+  return t.titel.trim() || KATEGORIE_LABEL[t.kategorie];
+}
+
+/** Zusatzzeile: Terminart (nur wenn der Terminname die Überschrift belegt) · "Fall: Nachname" bzw.
+ * Aktenzeichen bei Einzelmaßnahmen. Raum wird bewusst NICHT hier angehängt - das macht der Aufrufer. */
+export function terminSubline(t: TerminAnzeigeFelder): string {
+  const teile: string[] = [];
+  if (t.terminname?.trim() && t.terminArt) teile.push(TERMINART_LABEL[t.terminArt]);
+  if (t.fallName) teile.push(`Fall: ${t.fallName}`);
+  else if (t.kategorie === "EINZELMASSNAHME" && t.einzelmassnahmeBezeichnung?.trim()) teile.push(t.einzelmassnahmeBezeichnung.trim());
+  return teile.join(" · ");
+}

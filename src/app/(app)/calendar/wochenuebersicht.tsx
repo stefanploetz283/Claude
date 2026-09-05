@@ -9,10 +9,9 @@ export type WochenTermin = {
   endMinute: number;
   mitarbeiterinName: string;
   mitarbeiterinColor: string;
-  titel: string;
-  kategorieLabel: string;
+  heading: string;
+  subline: string;
   raumName: string | null;
-  clientName: string | null;
 };
 
 function formatMinute(m: number): string {
@@ -39,11 +38,11 @@ export function Wochenuebersicht({ tage, termine }: { tage: { iso: string; label
                   <span className="font-semibold text-[var(--color-text)]">
                     {formatMinute(t.startMinute)}–{formatMinute(t.endMinute)}
                   </span>
-                  <span className="text-[var(--color-text)]">{t.titel}</span>
+                  <span className="text-[var(--color-text)]">{t.heading}</span>
                   <span className="text-[var(--color-text-muted)]">
-                    · {t.mitarbeiterinName} · {t.kategorieLabel}
+                    · {t.mitarbeiterinName}
+                    {t.subline && ` · ${t.subline}`}
                     {t.raumName && ` · ${t.raumName}`}
-                    {t.clientName && ` · ${t.clientName}`}
                   </span>
                 </li>
               ))}

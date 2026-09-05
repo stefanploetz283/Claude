@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
 import { requireUser, canAccessCase } from "@/lib/rbac";
-import { KATEGORIE_LABEL, TERMINART_LABEL } from "@/lib/termine/labels";
+import { TERMINART_LABEL, terminHeading } from "@/lib/termine/labels";
 import { CaseTabs } from "../case-tabs";
 import { AusfallButton } from "../../../calendar/ausfall-button";
 import { CaseAppointmentForm } from "./case-appointment-form";
@@ -39,7 +39,7 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
             <tr>
-              <th className="px-4 py-2.5">Terminart</th>
+              <th className="px-4 py-2.5">Termin</th>
               <th className="px-4 py-2.5">Datum</th>
               <th className="px-4 py-2.5">Zeit</th>
               <th className="px-4 py-2.5">Raum</th>
@@ -51,8 +51,9 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
           <tbody>
             {termine.map((t) => (
               <tr key={t.id} className={`border-t border-[var(--color-border)] ${t.status === "AUSGEFALLEN" ? "opacity-50" : ""}`}>
-                <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">
-                  {t.terminArt ? TERMINART_LABEL[t.terminArt] : KATEGORIE_LABEL[t.kategorie]}
+                <td className="px-4 py-2.5 text-[var(--color-text)]">
+                  <div className="font-medium">{terminHeading(t)}</div>
+                  {t.terminname && t.terminArt && <div className="text-xs text-[var(--color-text-muted)]">{TERMINART_LABEL[t.terminArt]}</div>}
                 </td>
                 <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{format(t.startsAt, "dd.MM.yyyy", { locale: de })}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-[var(--color-text-muted)]">

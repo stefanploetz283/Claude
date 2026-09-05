@@ -4,11 +4,13 @@
 import { prisma } from "@/lib/prisma";
 import type { TerminKategorie, TerminArt } from "@prisma/client";
 import { findeRaumKonflikt, findeMitarbeiterinKonflikt, type TerminKonflikt } from "./konflikte";
+import { KATEGORIE_LABEL, TERMINART_LABEL } from "./labels";
 
 export type BuchungsEingabe = {
   kategorie: TerminKategorie;
   terminArt: TerminArt | null;
   titel: string;
+  terminname: string | null;
   caseId: string | null;
   einzelmassnahmeBezeichnung: string | null;
   employeeId: string;
@@ -36,7 +38,9 @@ export { istFehler as istBuchungsFehler, istKonflikt as istBuchungsKonflikt };
 
 /** Pflichtfeld-Regeln je Terminkategorie (siehe Prompt Punkt 3). */
 function pruefePflichtfelder(eingabe: BuchungsEingabe): string | null {
-  if (!eingabe.titel.trim() && eingabe.kategorie !== "FALL_TERMIN") return "Bitte eine Kurzbezeichnung angeben.";
+  if (eingabe.kategorie === "INTERNER_TERMIN" && !eingabe.terminname?.trim() && !eingabe.titel.trim()) {
+    return 'Bitte einen Terminnamen angeben (z.B. "Teambesprechung").';
+  }
   if (eingabe.kategorie === "FALL_TERMIN") {
     if (!eingabe.caseId) return "Ein Fall-Termin muss mit einem Fall verknüpft sein.";
     if (!eingabe.terminArt) return "Bitte die Terminart auswählen.";
@@ -84,7 +88,13 @@ export async function validiereUndBuche(
       data: {
         kategorie: eingabe.kategorie,
         terminArt: eingabe.terminArt,
-        titel: eingabe.titel.trim() || (eingabe.terminArt ?? "Termin"),
+        // interner Fallback-Titel - nie das rohe Enum speichern; die Anzeige läuft ohnehin über
+        // terminHeading()/terminSubline() aus terminname + terminArt + Fall.
+        titel:
+          eingabe.titel.trim() ||
+          eingabe.terminname?.trim() ||
+          (eingabe.terminArt ? TERMINART_LABEL[eingabe.terminArt] : KATEGORIE_LABEL[eingabe.kategorie]),
+        terminname: eingabe.terminname?.trim() || null,
         caseId: eingabe.caseId,
         einzelmassnahmeBezeichnung: eingabe.einzelmassnahmeBezeichnung,
         employeeId: eingabe.employeeId,

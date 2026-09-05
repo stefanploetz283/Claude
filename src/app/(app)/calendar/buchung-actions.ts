@@ -24,11 +24,12 @@ function leseFormFelder(formData: FormData) {
   const caseId = String(formData.get("caseId") ?? "").trim() || null;
   const einzelmassnahmeBezeichnung = String(formData.get("einzelmassnahmeBezeichnung") ?? "").trim() || null;
   const titel = String(formData.get("titel") ?? "").trim();
+  const terminname = String(formData.get("terminname") ?? "").trim() || null;
   const raumId = String(formData.get("raumId") ?? "").trim() || null;
   const note = String(formData.get("note") ?? "").trim() || null;
   const reminderMinutesBefore = formData.get("reminderMinutesBefore") ? Number(formData.get("reminderMinutesBefore")) : 60;
   const override = formData.get("override") != null;
-  return { kategorie, terminArt, caseId, einzelmassnahmeBezeichnung, titel, raumId, note, reminderMinutesBefore, override };
+  return { kategorie, terminArt, caseId, einzelmassnahmeBezeichnung, titel, terminname, raumId, note, reminderMinutesBefore, override };
 }
 
 export type BuchungActionState = { error?: string; konflikte?: TerminKonflikt[] } | undefined;
@@ -53,6 +54,7 @@ export async function buchenUeberSlot(_prev: BuchungActionState, formData: FormD
     kategorie: felder.kategorie,
     terminArt: felder.terminArt,
     titel: felder.titel,
+    terminname: felder.terminname,
     caseId: felder.caseId,
     einzelmassnahmeBezeichnung: felder.einzelmassnahmeBezeichnung,
     employeeId: slot.employeeId,
@@ -99,6 +101,7 @@ export async function buchenAdHoc(_prev: BuchungActionState, formData: FormData)
     kategorie: felder.kategorie,
     terminArt: felder.terminArt,
     titel: felder.titel,
+    terminname: felder.terminname,
     caseId: felder.caseId,
     einzelmassnahmeBezeichnung: felder.einzelmassnahmeBezeichnung,
     employeeId,
