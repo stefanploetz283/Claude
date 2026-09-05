@@ -389,15 +389,15 @@ export async function deleteCase(caseId: string): Promise<{ error?: string } | u
   const caseRecord = await prisma.case.findUnique({ where: { id: caseId } });
   if (!caseRecord) return { error: "Fall nicht gefunden." };
 
-  const [serviceEntryCount, appointmentCount, documentCount, messageCount, timeEntryCount] = await Promise.all([
+  const [serviceEntryCount, terminCount, documentCount, messageCount, timeEntryCount] = await Promise.all([
     prisma.serviceEntry.count({ where: { caseId } }),
-    prisma.appointment.count({ where: { caseId } }),
+    prisma.termin.count({ where: { caseId } }),
     prisma.document.count({ where: { caseId } }),
     prisma.message.count({ where: { caseId } }),
     prisma.timeEntry.count({ where: { caseId } }),
   ]);
 
-  const totalEntries = serviceEntryCount + appointmentCount + documentCount + messageCount + timeEntryCount;
+  const totalEntries = serviceEntryCount + terminCount + documentCount + messageCount + timeEntryCount;
   if (totalEntries > 0) {
     return {
       error: `Diese Hilfe kann nicht gelöscht werden, da bereits ${totalEntries} zugehörige Einträge vorhanden sind (Leistungsdokumentation, Termine, Dokumente, Nachrichten oder Zeiterfassung). Bitte stattdessen archivieren.`,

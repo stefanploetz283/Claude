@@ -92,6 +92,14 @@ model User {
   // Vorbelegung, bis der Stundenmodell-Rechner direkt angebunden ist (siehe Fahrten-/Fallrechner-Prompt).
   zielFlsStdWocheManuell Decimal?        @db.Decimal(5, 2)
 
+  // Terminbuchung: feste Kalenderfarbe für die Mitarbeiterinnen-Spalte im Tages-/Wochenraster - null
+  // heißt "kein Override", dann greift die deterministische Standard-Palette (employeeColor(index)).
+  calendarColor String?
+  terminWochenvorlagen   TerminWochenvorlage[]
+  terminSlots            TerminSlot[]
+  termineAlsMitarbeiterin Termin[] @relation("TerminEmployee")
+  termineGebuchtVon       Termin[] @relation("TerminBookedBy")
+
   @@index([role])
 }
 
@@ -234,6 +242,7 @@ model Case {
   waitlistOrigin       WaitlistEntry?
   berichtsbausteine    Berichtsbaustein[]
   abschlussberichtEntwurf AbschlussberichtEntwurf?
+  termine              Termin[]
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
@@ -676,7 +685,12 @@ model Absence {
   @@index([employeeId])
 }
 
-// ---------- Terminkalender ----------
+// ---------- Terminkalender (ALT) ----------
+//
+// Abgelöst durch das Terminbuchungssystem weiter unten (Raum/TerminWochenvorlage/TerminSlot/Termin).
+// Bestehende Zeilen wurden in der Migration 1:1 nach Termin kopiert; diese Tabelle wird von der App
+// nicht mehr gelesen/geschrieben und bleibt vorerst nur als Sicherheitsnetz bestehen (Aufräumen folgt
+// in einer separaten Migration, sobald bestätigt ist, dass nichts fehlt).
 
 model Appointment {
   id                   String   @id @default(cuid())
@@ -1275,4 +1289,165 @@ model BudgetAusgabe {
 
   @@index([datum])
   @@index([kategorieId])
+}
+
+// ==========================================================================
+// TERMINBUCHUNG - Praxis-Terminvergabe wie eine Arztpraxis-Software: feste
+// wiederkehrende Zeitfenster je Mitarbeiterin (TerminWochenvorlage), daraus
+// generierte buchbare Einheiten (TerminSlot), Raumbelegung (Raum) und die
+// eigentliche Buchung (Termin, in einer von drei Kategorien). Löst das
+// einfache Appointment-Modell ab (siehe Kommentar dort) - bewusst getrennt
+// von der fachlichen Dokumentation (ServiceEntry): Buchung und tatsächlich
+// erbrachte Fachleistungsstunde sind zwei unabhängige Schritte.
+// ==========================================================================
+
+model Raum {
+  id        String           @id @default(cuid())
+  name      String
+  standort  PrimaerStandort?
+  aktiv     Boolean          @default(true) // deaktivieren statt löschen (Historie bleibt erhalten)
+  createdAt DateTime         @default(now())
+
+  vorlagen TerminWochenvorlage[]
+  termine  Termin[]
+
+  @@index([standort])
+}
+
+// Feste, wiederkehrende Buchungsfenster einer Mitarbeiterin (z.B. "Donnerstag 13:30-18:00
+// Praxisnachmittag"), aus denen TerminSlot-Zeilen generiert werden. Eigene Tabellenzeilen statt eines
+// JSON-Wochenplans (wie bei MitarbeiterPlan.wochenplan), weil jedes Zeitfenster einzeln
+// bearbeitet/deaktiviert werden muss, ohne die übrigen zu berühren.
+model TerminWochenvorlage {
+  id               String   @id @default(cuid())
+  employee         User     @relation(fields: [employeeId], references: [id])
+  employeeId       String
+  label            String? // z.B. "Praxisnachmittag"
+  wochentag        Int // 1=Montag ... 7=Sonntag
+  startZeit        String // "HH:mm"
+  endZeit          String // "HH:mm"
+  slotDauerMinuten Int // 60 | 90 | 120
+
+  raum   Raum?   @relation(fields: [raumId], references: [id])
+  raumId String? // Standard-Raum für generierte Slots, beim Buchen änderbar
+
+  // Deaktivieren statt löschen: bereits erzeugte Slots (auch freie) bleiben unangetastet bestehen.
+  // Eine inhaltliche Änderung (Wochentag/Zeit/Dauer) baut nur die davon erzeugten, noch FREIEN
+  // Zukunfts-Slots neu auf (siehe src/lib/termine/slot-generierung.ts) - gebuchte bleiben immer erhalten.
+  aktiv     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slots TerminSlot[]
+
+  @@index([employeeId, aktiv])
+}
+
+enum TerminSlotStatus {
+  FREI
+  GEBUCHT
+  STORNIERT // bewusst aus dem Angebot genommen (z.B. Admin-Sperre), ohne dass je gebucht wurde
+}
+
+// Konkrete, buchbare Zeiteinheit - rollierend für die kommenden Wochen aus TerminWochenvorlage generiert
+// (siehe src/lib/termine/slot-generierung.ts), unter Auslassung von Abwesenheitszeiträumen (Absence) der
+// Mitarbeiterin. status ist die serverseitige Wahrheit; ob ein Slot aktuell belegt ist, ergibt sich NICHT
+// aus einer 1:1-Relation zu Termin (siehe dort), sondern allein aus diesem Feld.
+model TerminSlot {
+  id         String               @id @default(cuid())
+  employee   User                 @relation(fields: [employeeId], references: [id])
+  employeeId String
+  vorlage    TerminWochenvorlage? @relation(fields: [vorlageId], references: [id])
+  vorlageId  String? // Herkunft - null bei künftig frei/manuell angelegten Slots
+  datum      DateTime             @db.Date
+  startZeit  DateTime
+  endZeit    DateTime
+  status     TerminSlotStatus     @default(FREI)
+  createdAt  DateTime             @default(now())
+
+  // Historie über die Zeit: Ausfall setzt den Slot auf FREI zurück, ein späteres Rebooking legt eine NEUE
+  // Termin-Zeile mit demselben slotId an - deshalb keine unique-Bindung, "aktuell belegt durch" ergibt
+  // sich aus status=GEBUCHT + Termin mit diesem slotId und status=GEPLANT.
+  termine Termin[]
+
+  @@unique([employeeId, startZeit])
+  @@index([employeeId, datum])
+  @@index([status])
+}
+
+enum TerminKategorie {
+  FALL_TERMIN // zwingend mit einem Fall verknüpft
+  INTERNER_TERMIN // ohne Fallbezug, z.B. Teambesprechung
+  EINZELMASSNAHME // keinem laufenden Fall zuordenbar, z.B. Gesprächsweisung Jugendgerichtshilfe
+}
+
+enum TerminArt {
+  KIND_BERATUNG
+  ELTERN_BERATUNG
+  SCHULHOSPITATION
+  ELTERNKONTAKT
+  SCHULKONTAKT
+  SONSTIGES
+}
+
+enum TerminStatus {
+  GEPLANT
+  AUSGEFALLEN // Historie bleibt erhalten (Auslastungsauswertung) - Slot wird dadurch wieder frei
+}
+
+// Wiederkehrende Fall-Termin-Serie ("jeden zweiten Donnerstag bis ..."). Erzeugt bei Anlage direkt N
+// Termin+TerminSlot-Paare; jeder Einzeltermin ist danach unabhängig bearbeitbar/ausfallbar.
+model TerminSerie {
+  id           String   @id @default(cuid())
+  rhythmusTage Int // 7 = wöchentlich, 14 = alle zwei Wochen, ...
+  bisDatum     DateTime @db.Date
+  createdAt    DateTime @default(now())
+
+  termine Termin[]
+}
+
+model Termin {
+  id        String          @id @default(cuid())
+  kategorie TerminKategorie
+  terminArt TerminArt? // Pflicht nur bei FALL_TERMIN (Validierung in der Action, nicht im Schema)
+  titel     String // Kurzbezeichnung, v.a. für INTERNER_TERMIN/EINZELMASSNAHME
+
+  case                       Case?   @relation(fields: [caseId], references: [id])
+  caseId                     String? // Pflicht bei FALL_TERMIN
+  einzelmassnahmeBezeichnung String? // Pflicht bei EINZELMASSNAHME (freier Name/Aktenzeichen)
+
+  // Für wen der Termin ist (Kalenderspalte) vs. wer die Buchung vorgenommen hat (Verwaltung kann für
+  // andere Mitarbeiterinnen buchen - hier nachvollziehbar, siehe Prompt "Buchungsrechte").
+  employee   User   @relation("TerminEmployee", fields: [employeeId], references: [id])
+  employeeId String
+  bookedBy   User   @relation("TerminBookedBy", fields: [bookedById], references: [id])
+  bookedById String
+
+  slot   TerminSlot? @relation(fields: [slotId], references: [id])
+  slotId String? // gesetzt bei Buchung über einen generierten Slot; null bei freier Ad-hoc-Zeiteingabe
+
+  raum   Raum?   @relation(fields: [raumId], references: [id])
+  raumId String?
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  status       TerminStatus @default(GEPLANT)
+  ausfallNotiz String? // optionaler Freitext, z.B. Grund/Nachbesetzung
+
+  serie   TerminSerie? @relation(fields: [serieId], references: [id])
+  serieId String?
+
+  note                  String?
+  reminderMinutesBefore Int?    @default(60)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId, startsAt])
+  @@index([caseId])
+  @@index([raumId, startsAt])
+  @@index([slotId])
+  @@index([serieId])
+  @@index([status])
 }

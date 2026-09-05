@@ -3,8 +3,9 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
 import { requireUser, canAccessCase } from "@/lib/rbac";
+import { KATEGORIE_LABEL, TERMINART_LABEL } from "@/lib/termine/labels";
 import { CaseTabs } from "../case-tabs";
-import { DeleteAppointmentButton } from "../../../calendar/delete-button";
+import { AusfallButton } from "../../../calendar/ausfall-button";
 import { CaseAppointmentForm } from "./case-appointment-form";
 
 export default async function CaseAppointmentsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,9 +16,9 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
   if (!caseRecord) notFound();
   if (!canAccessCase(user, caseRecord)) notFound();
 
-  const appointments = await prisma.appointment.findMany({
+  const termine = await prisma.termin.findMany({
     where: { caseId: id },
-    include: { organizer: true },
+    include: { employee: true, raum: true, bookedBy: true },
     orderBy: { startsAt: "asc" },
   });
 
@@ -32,38 +33,40 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
 
       <CaseTabs caseId={id} />
 
-      <CaseAppointmentForm caseId={id} defaultDate={format(new Date(), "yyyy-MM-dd")} />
+      <CaseAppointmentForm caseId={id} employeeId={caseRecord.assignedEmployeeId} defaultDate={format(new Date(), "yyyy-MM-dd")} />
 
       <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
             <tr>
-              <th className="px-4 py-2.5">Titel</th>
+              <th className="px-4 py-2.5">Terminart</th>
               <th className="px-4 py-2.5">Datum</th>
               <th className="px-4 py-2.5">Zeit</th>
-              <th className="px-4 py-2.5">Ort</th>
-              <th className="px-4 py-2.5">Organisiert von</th>
+              <th className="px-4 py-2.5">Raum</th>
+              <th className="px-4 py-2.5">Mitarbeiterin</th>
+              <th className="px-4 py-2.5">Status</th>
               <th className="px-4 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
-            {appointments.map((a) => (
-              <tr key={a.id} className="border-t border-[var(--color-border)]">
-                <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{a.title}</td>
-                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{format(a.startsAt, "dd.MM.yyyy", { locale: de })}</td>
+            {termine.map((t) => (
+              <tr key={t.id} className={`border-t border-[var(--color-border)] ${t.status === "AUSGEFALLEN" ? "opacity-50" : ""}`}>
+                <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">
+                  {t.terminArt ? TERMINART_LABEL[t.terminArt] : KATEGORIE_LABEL[t.kategorie]}
+                </td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{format(t.startsAt, "dd.MM.yyyy", { locale: de })}</td>
                 <td className="px-4 py-2.5 whitespace-nowrap text-[var(--color-text-muted)]">
-                  {format(a.startsAt, "HH:mm")}–{format(a.endsAt, "HH:mm")}
+                  {format(t.startsAt, "HH:mm")}–{format(t.endsAt, "HH:mm")}
                 </td>
-                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{a.location ?? "–"}</td>
-                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{a.organizer.name}</td>
-                <td className="px-4 py-2.5 text-right">
-                  <DeleteAppointmentButton id={a.id} />
-                </td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{t.raum?.name ?? "–"}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{t.employee.name}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{t.status === "AUSGEFALLEN" ? "Ausgefallen" : "Geplant"}</td>
+                <td className="px-4 py-2.5 text-right">{t.status === "GEPLANT" && <AusfallButton terminId={t.id} />}</td>
               </tr>
             ))}
-            {appointments.length === 0 && (
+            {termine.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-[var(--color-text-muted)]">
+                <td colSpan={7} className="px-4 py-6 text-center text-[var(--color-text-muted)]">
                   Noch keine Termine für diesen Fall.
                 </td>
               </tr>

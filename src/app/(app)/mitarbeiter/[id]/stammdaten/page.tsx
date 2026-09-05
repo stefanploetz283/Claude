@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
+import { employeeColor } from "@/lib/fahrtenrechner/employee-colors";
 import { AccountActions } from "./account-actions";
 import { StammdatenForm } from "./stammdaten-form";
 
@@ -13,6 +14,12 @@ export default async function StammdatenPage({ params }: { params: Promise<{ id:
 
   const employee = await prisma.user.findUnique({ where: { id } });
   if (!employee) notFound();
+
+  // Gleiche Reihenfolge wie die Kalender-Mitarbeiterinnen-Spalten (/calendar), damit der angezeigte
+  // Standardwert exakt der tatsächlich verwendeten Fallback-Farbe entspricht.
+  const kalenderMitarbeiterinnen = await prisma.user.findMany({ where: { role: { in: ["EMPLOYEE", "ADMIN"] }, active: true }, orderBy: { name: "asc" }, select: { id: true } });
+  const index = kalenderMitarbeiterinnen.findIndex((m) => m.id === employee.id);
+  const calendarColorDefault = employeeColor(index >= 0 ? index : 0);
 
   // Sensible Personaldaten - jeder Aufruf des Mitarbeiter-Bereichs wird protokolliert.
   await logAccess({ userId: admin.id, action: "VIEW", entityType: "User", entityId: employee.id, details: "Personalakte geöffnet" });
@@ -49,6 +56,8 @@ export default async function StammdatenPage({ params }: { params: Promise<{ id:
           address={employee.address}
           birthday={employee.birthday ? employee.birthday.toISOString().slice(0, 10) : ""}
           emergencyContact={employee.emergencyContact}
+          calendarColor={employee.calendarColor}
+          calendarColorDefault={calendarColorDefault}
         />
       </div>
     </div>

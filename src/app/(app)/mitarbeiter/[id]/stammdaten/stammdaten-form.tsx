@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { saveStammdaten, type ActionState } from "../../actions";
 
 const inputCls =
@@ -11,13 +11,21 @@ export function StammdatenForm({
   address,
   birthday,
   emergencyContact,
+  calendarColor,
+  calendarColorDefault,
 }: {
   userId: string;
   address: string | null;
   birthday: string;
   emergencyContact: string | null;
+  calendarColor: string | null;
+  calendarColorDefault: string;
 }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(saveStammdaten, undefined);
+  // "Automatisch" hält calendarColor bewusst auf null, statt beim nächsten Speichern (egal welches Feld)
+  // versehentlich einen festen Hex-Wert einzufrieren - <input type="color"> liefert selbst nie einen
+  // leeren Wert, deshalb steuert dieser separate Schalter, ob der Wert überhaupt mitgesendet wird.
+  const [automatisch, setAutomatisch] = useState(calendarColor == null);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -34,6 +42,22 @@ export function StammdatenForm({
         <label className="flex flex-col gap-1.5 sm:col-span-2">
           <span className="text-xs font-medium text-[var(--color-text-muted)]">Notfallkontakt</span>
           <input name="emergencyContact" defaultValue={emergencyContact ?? ""} placeholder="Name, Telefonnummer" className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-[var(--color-text-muted)]">Kalenderfarbe (Terminkalender-Spalte)</span>
+          <div className="flex items-center gap-2">
+            <input
+              name="calendarColor"
+              type="color"
+              disabled={automatisch}
+              defaultValue={calendarColor ?? calendarColorDefault}
+              className="h-10 w-14 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-1 disabled:opacity-50"
+            />
+            <label className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+              <input type="checkbox" checked={automatisch} onChange={(e) => setAutomatisch(e.target.checked)} />
+              Automatisch ({calendarColorDefault})
+            </label>
+          </div>
         </label>
       </div>
       <button

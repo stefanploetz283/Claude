@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar, shouldShowSidebar } from "./sidebar";
 import { MitarbeiterSubnav } from "./mitarbeiter-subnav";
 import { FinanzenSubnav } from "./finanzen-subnav";
+import { CalendarSubnav } from "./calendar-subnav";
 
 export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG"; children: React.ReactNode }) {
   const pathname = usePathname();
@@ -11,7 +12,11 @@ export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERW
 
   const mitarbeiterMatch = isAdmin ? pathname.match(/^\/mitarbeiter\/([^/]+)/) : null;
   const inFinanzen = isAdmin && pathname.startsWith("/finanzen");
-  const withSidebar = isAdmin && (mitarbeiterMatch != null || inFinanzen || shouldShowSidebar(pathname));
+  // Nur die Verwaltungs-Unterseiten (Wochenvorlagen/Räume) bekommen die Subnav - die eigentliche
+  // Kalenderansicht (/calendar selbst) bleibt für alle Rollen ohne Sidebar, damit das Tages-/Wochenraster
+  // die volle Breite nutzen kann.
+  const inCalendarVerwaltung = isAdmin && (pathname.startsWith("/calendar/wochenvorlagen") || pathname.startsWith("/calendar/raeume"));
+  const withSidebar = isAdmin && (mitarbeiterMatch != null || inFinanzen || inCalendarVerwaltung || shouldShowSidebar(pathname));
 
   if (!withSidebar) {
     return (
@@ -27,6 +32,8 @@ export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERW
         <MitarbeiterSubnav employeeId={mitarbeiterMatch[1]} />
       ) : inFinanzen ? (
         <FinanzenSubnav />
+      ) : inCalendarVerwaltung ? (
+        <CalendarSubnav />
       ) : (
         <Sidebar role={role} />
       )}

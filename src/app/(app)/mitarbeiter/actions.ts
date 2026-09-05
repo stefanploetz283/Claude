@@ -85,12 +85,14 @@ export async function saveStammdaten(_prev: ActionState, formData: FormData): Pr
   const address = String(formData.get("address") ?? "").trim() || null;
   const birthdayStr = String(formData.get("birthday") ?? "").trim();
   const emergencyContact = String(formData.get("emergencyContact") ?? "").trim() || null;
+  const calendarColor = String(formData.get("calendarColor") ?? "").trim() || null;
 
   if (!userId) return { error: "Mitarbeiter nicht gefunden." };
+  if (calendarColor && !/^#[0-9a-fA-F]{6}$/.test(calendarColor)) return { error: "Bitte eine gültige Farbe wählen." };
 
   await prisma.user.update({
     where: { id: userId },
-    data: { address, birthday: birthdayStr ? new Date(birthdayStr) : null, emergencyContact },
+    data: { address, birthday: birthdayStr ? new Date(birthdayStr) : null, emergencyContact, calendarColor },
   });
 
   await logAccess({ userId: admin.id, action: "UPDATE", entityType: "User", entityId: userId, details: "Stammdaten geändert" });

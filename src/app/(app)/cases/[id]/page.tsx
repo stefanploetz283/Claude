@@ -52,14 +52,14 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
     caseRecord.hoursContingent
   );
 
-  const [serviceEntryCount, appointmentCount, documentCount, messageCount, timeEntryCount] = await Promise.all([
+  const [serviceEntryCount, terminCount, documentCount, messageCount, timeEntryCount] = await Promise.all([
     prisma.serviceEntry.count({ where: { caseId: id } }),
-    prisma.appointment.count({ where: { caseId: id } }),
+    prisma.termin.count({ where: { caseId: id } }),
     prisma.document.count({ where: { caseId: id } }),
     prisma.message.count({ where: { caseId: id } }),
     prisma.timeEntry.count({ where: { caseId: id } }),
   ]);
-  const relatedEntryCount = serviceEntryCount + appointmentCount + documentCount + messageCount + timeEntryCount;
+  const relatedEntryCount = serviceEntryCount + terminCount + documentCount + messageCount + timeEntryCount;
 
   const contingentDeadline = caseRecord.contingentPeriodMonths
     ? addMonths(caseRecord.startDate, caseRecord.contingentPeriodMonths)
