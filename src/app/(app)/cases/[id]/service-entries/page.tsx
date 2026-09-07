@@ -46,7 +46,9 @@ export default async function ServiceEntriesPage({
   const entries = await prisma.serviceEntry.findMany({
     where: { caseId: id },
     include: { employee: true, activityProfile: true },
-    orderBy: { date: "desc" },
+    // Neueste Tage zuerst, innerhalb eines Tages aber chronologisch nach Uhrzeit
+    // (mehrere Leistungen am selben Tag sonst in undefinierter Reihenfolge).
+    orderBy: [{ date: "desc" }, { startTime: "asc" }],
   });
 
   const activityOptions = caseRecord.helpType.activityProfiles.map((p) => ({ id: p.id, label: p.activityLabel }));

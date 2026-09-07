@@ -30,7 +30,7 @@ export default async function ApprovalsPage() {
       const { from, to } = monthDateRange(a.year, a.month);
       const entries = await prisma.serviceEntry.findMany({
         where: { caseId: a.caseId, date: { gte: from, lte: to } },
-        orderBy: { date: "asc" },
+        orderBy: [{ date: "asc" }, { startTime: "asc" }],
       });
       const totalHours = entries.reduce((sum, e) => sum + e.durationMinutes / 60, 0);
 

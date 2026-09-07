@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       const entries = await prisma.serviceEntry.findMany({
         where: { caseId: c.id, date: { gte: from, lte: to } },
         include: { employee: true },
-        orderBy: { date: "asc" },
+        orderBy: [{ date: "asc" }, { startTime: "asc" }],
       });
       const clientAddress = resolveClientAddress(c.client);
       return {

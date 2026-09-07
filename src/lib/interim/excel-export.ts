@@ -32,7 +32,7 @@ export async function buildInterimMonthlyExcel(caseId: string, year: number, mon
 
   const entries = await prisma.interimEntry.findMany({
     where: { caseId, date: { gte: from, lte: to } },
-    orderBy: { date: "asc" },
+    orderBy: [{ date: "asc" }, { startTime: "asc" }],
   });
 
   if (entries.length > MAX_ROWS) {

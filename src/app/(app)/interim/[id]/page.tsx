@@ -25,7 +25,8 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
 
   const entries = await prisma.interimEntry.findMany({
     where: { caseId: id },
-    orderBy: { date: "desc" },
+    // Neueste Tage zuerst, innerhalb eines Tages chronologisch nach Uhrzeit.
+    orderBy: [{ date: "desc" }, { startTime: "asc" }],
   });
 
   const entryRows = entries.map((e) => ({

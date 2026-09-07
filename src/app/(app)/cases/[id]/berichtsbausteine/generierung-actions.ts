@@ -120,7 +120,7 @@ export async function generateAbschlussbericht(caseId: string): Promise<Generier
     }),
     prisma.praxisFachlicheKonzeption.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } }),
     prisma.praxisGlossarBegriff.findMany({ orderBy: { sortOrder: "asc" } }),
-    prisma.serviceEntry.findMany({ where: { caseId }, orderBy: { date: "asc" } }),
+    prisma.serviceEntry.findMany({ where: { caseId }, orderBy: [{ date: "asc" }, { startTime: "asc" }] }),
     getSettings(),
   ]);
 

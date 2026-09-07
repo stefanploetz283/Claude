@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     prisma.serviceEntry.findMany({
       where: { caseId: id, date: { gte: from, lte: to } },
       include: { employee: true },
-      orderBy: { date: "asc" },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
     getPracticeForExport(),
   ]);
