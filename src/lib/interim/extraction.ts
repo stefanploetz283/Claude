@@ -1,8 +1,10 @@
 "use server";
 
 import { anthropic } from "@/lib/anthropic";
+import { prisma } from "@/lib/prisma";
 import { toDateInputValue } from "@/lib/date";
 import { requireInterimAdmin } from "@/lib/rbac";
+import { buildDokumentationsStilPrompt } from "@/lib/dokumentation-stil";
 
 // Eigenständige, vereinfachte Extraktion für den Interimsmodus - bewusst NICHT die bestehende
 // extractServiceEntryFromVoice aus voice-actions.ts, da diese an das Case-Fuzzy-Matching des
@@ -23,12 +25,21 @@ export async function extractInterimEntryFromVoice(transcript: string): Promise<
 
   const today = toDateInputValue(new Date());
 
+  const [glossar, konzeption] = await Promise.all([
+    prisma.praxisGlossarBegriff.findMany({ orderBy: { sortOrder: "asc" }, select: { begriff: true, definition: true } }),
+    prisma.praxisFachlicheKonzeption.findUnique({ where: { id: "singleton" }, select: { text: true } }),
+  ]);
+
   let response;
   try {
     response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: `Du extrahierst strukturierte Daten aus dem Diktat einer sozialpädagogischen Fachkraft (Einzelselbstständig, Erziehungsbeistandschaft/PROS) für eine Monatsabrechnung. Heutiges Datum (Referenz für relative Angaben wie "heute"): ${today}. Formuliere den Inhaltstext fachlich sauber und sachlich in ganzen Sätzen, auf Basis des Diktats - erfinde keine Inhalte hinzu. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.`,
+      model: "claude-sonnet-5",
+      max_tokens: 1500,
+      // Bewusst ohne Reasoning - klar spezifizierte Umformulierungs-Aufgabe, interaktiver Schritt (Latenz).
+      thinking: { type: "disabled" },
+      system: `Du extrahierst aus dem Diktat einer sozialpädagogischen Fachkraft (einzelselbstständig, Erziehungsbeistandschaft/PROS) die strukturierten Felder eines Leistungseintrags für die Monatsabrechnung und formulierst den Inhaltstext aus. Heutiges Datum (Referenz für relative Angaben wie "heute"): ${today}. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.
+
+${buildDokumentationsStilPrompt({ glossar, fachlicheKonzeption: konzeption?.text ?? null })}`,
       tool_choice: { type: "tool", name: "extract_interim_entry" },
       tools: [
         {
@@ -42,7 +53,8 @@ export async function extractInterimEntryFromVoice(transcript: string): Promise<
               endTime: { type: "string", description: "Endzeit im 24h-Format HH:mm." },
               content: {
                 type: "string",
-                description: "Fachlich sauber formulierter Text (Maßnahmen/Inhalte/Vereinbarungen/Besonderes) basierend auf dem Diktat, in ganzen Sätzen.",
+                description:
+                  "Der Inhaltstext (Maßnahmen/Inhalte/Vereinbarungen/Besonderes), streng nach den Formulierungsregeln im System-Prompt: durchgängig Ich-Form, sinngemäß verdichtet statt wörtlich, Fachsprache der Kinder- und Jugendhilfe, nichts hinzuerfinden.",
               },
             },
             required: ["date", "startTime", "endTime", "content"],

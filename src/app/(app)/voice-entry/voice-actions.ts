@@ -5,6 +5,16 @@ import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
 import { anthropic } from "@/lib/anthropic";
 import { bestMatches } from "@/lib/fuzzy-match";
 import { toDateInputValue } from "@/lib/date";
+import { buildDokumentationsStilPrompt } from "@/lib/dokumentation-stil";
+
+/** Praxis-Glossar + fachliche Konzeption für die fachsprachliche Formulierung im Diktat (siehe dokumentation-stil.ts). */
+async function ladeFachlichenKontext() {
+  const [glossar, konzeption] = await Promise.all([
+    prisma.praxisGlossarBegriff.findMany({ orderBy: { sortOrder: "asc" }, select: { begriff: true, definition: true } }),
+    prisma.praxisFachlicheKonzeption.findUnique({ where: { id: "singleton" }, select: { text: true } }),
+  ]);
+  return { glossar, fachlicheKonzeption: konzeption?.text ?? null };
+}
 
 export type VoiceCaseCandidate = {
   caseId: string;
@@ -41,19 +51,27 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
 
   const user = await requireUser();
 
-  const cases = await prisma.case.findMany({
-    where: { ...caseVisibilityWhere(user), status: { not: "COMPLETED" } },
-    include: { client: true, helpType: true },
-  });
+  const [cases, fachlicherKontext] = await Promise.all([
+    prisma.case.findMany({
+      where: { ...caseVisibilityWhere(user), status: { not: "COMPLETED" } },
+      include: { client: true, helpType: true },
+    }),
+    ladeFachlichenKontext(),
+  ]);
 
   const today = toDateInputValue(new Date());
 
   let response;
   try {
     response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: `Du extrahierst strukturierte Daten aus dem Diktat einer sozialpädagogischen Fachkraft für eine Leistungsdokumentation. Heutiges Datum (Referenz für relative Angaben wie "heute" oder unvollständige Daten ohne Jahr): ${today}. Formuliere den Bemerkungstext fachlich sauber und sachlich in ganzen Sätzen, auf Basis des Diktats - erfinde keine Inhalte hinzu, die nicht genannt wurden. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.`,
+      model: "claude-sonnet-5",
+      max_tokens: 1500,
+      // Bewusst ohne Reasoning: die Aufgabe (gegebenen Text in vorgegebenem Stil umformulieren) ist klar
+      // spezifiziert, und das Diktat ist ein interaktiver Schritt - Latenz zählt.
+      thinking: { type: "disabled" },
+      system: `Du extrahierst aus dem Diktat einer sozialpädagogischen Fachkraft die strukturierten Felder einer Leistungsdokumentation und formulierst den Bemerkungstext aus. Heutiges Datum (Referenz für relative Angaben wie "heute" oder unvollständige Daten ohne Jahr): ${today}. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.
+
+${buildDokumentationsStilPrompt(fachlicherKontext)}`,
       tool_choice: { type: "tool", name: "extract_service_entry" },
       tools: [
         {
@@ -74,7 +92,8 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
               endTime: { type: "string", description: "Endzeit im 24h-Format HH:mm." },
               remarks: {
                 type: "string",
-                description: "Fachlich sauber formulierter Bemerkungstext basierend auf dem Diktat, in ganzen Sätzen.",
+                description:
+                  "Der Bemerkungstext, streng nach den Formulierungsregeln im System-Prompt: durchgängig Ich-Form, sinngemäß verdichtet statt wörtlich, Fachsprache der Kinder- und Jugendhilfe, nichts hinzuerfinden.",
               },
             },
             required: ["clientName", "date", "startTime", "endTime", "remarks"],
@@ -183,7 +202,7 @@ export async function extractTimeEntryFromVoice(transcript: string): Promise<Voi
     response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
-      system: `Du extrahierst strukturierte Daten aus dem Diktat einer sozialpädagogischen Fachkraft für ihre interne Zeiterfassung (Arbeitszeit, nicht für das Jugendamt bestimmt). Heutiges Datum (Referenz für relative Angaben wie "heute"): ${today}. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.`,
+      system: `Du extrahierst strukturierte Daten aus dem Diktat einer sozialpädagogischen Fachkraft für ihre interne Zeiterfassung (Arbeitszeit, nicht für das Jugendamt bestimmt). Heutiges Datum (Referenz für relative Angaben wie "heute"): ${today}. Formuliere die Notiz knapp und sachlich in der Ich-Form. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.`,
       tool_choice: { type: "tool", name: "extract_time_entry" },
       tools: [
         {
