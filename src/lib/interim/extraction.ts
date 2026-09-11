@@ -14,7 +14,7 @@ export type InterimVoiceExtractionResult =
   | { ok: true; date: string; startTime: string; endTime: string; content: string }
   | { ok: false; error: string };
 
-export async function extractInterimEntryFromVoice(transcript: string): Promise<InterimVoiceExtractionResult> {
+export async function extractInterimEntryFromVoice(transcript: string, caseId: string): Promise<InterimVoiceExtractionResult> {
   await requireInterimAdmin();
 
   const trimmed = transcript.trim();
@@ -25,10 +25,18 @@ export async function extractInterimEntryFromVoice(transcript: string): Promise<
 
   const today = toDateInputValue(new Date());
 
-  const [glossar, konzeption] = await Promise.all([
+  const [glossar, konzeption, interimCase] = await Promise.all([
     prisma.praxisGlossarBegriff.findMany({ orderBy: { sortOrder: "asc" }, select: { begriff: true, definition: true } }),
     prisma.praxisFachlicheKonzeption.findUnique({ where: { id: "singleton" }, select: { text: true } }),
+    prisma.interimCase.findUnique({ where: { id: caseId }, select: { vorname: true, familienname: true } }),
   ]);
+
+  // Die Spracherkennung verschriftet Namen phonetisch und trifft die tatsächliche Schreibweise oft
+  // nicht (z.B. "Gottsmann" -> "Gotzmann") - der Fall ist im Interimsmodus schon vor dem Diktat gewählt,
+  // die korrekte Schreibweise steht also bereits in den Falldaten und wird hier verbindlich vorgegeben.
+  const namensHinweis = interimCase
+    ? `\n\nDer Klient dieses Falls heißt korrekt geschrieben "${interimCase.vorname} ${interimCase.familienname}". Wird im Diktat ein ähnlich klingender Name genannt (auch bei abweichender Schreibweise durch die Spracherkennung), verwende im Inhaltstext IMMER exakt diese korrekte Schreibweise aus den Falldaten, nicht die möglicherweise fehlerhafte Worterkennung.`
+    : "";
 
   let response;
   try {
@@ -39,7 +47,7 @@ export async function extractInterimEntryFromVoice(transcript: string): Promise<
       thinking: { type: "disabled" },
       system: `Du extrahierst aus dem Diktat einer sozialpädagogischen Fachkraft (einzelselbstständig, Erziehungsbeistandschaft/PROS) die strukturierten Felder eines Leistungseintrags für die Monatsabrechnung und formulierst den Inhaltstext aus. Heutiges Datum (Referenz für relative Angaben wie "heute"): ${today}. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.
 
-${buildDokumentationsStilPrompt({ glossar, fachlicheKonzeption: konzeption?.text ?? null })}`,
+${buildDokumentationsStilPrompt({ glossar, fachlicheKonzeption: konzeption?.text ?? null })}${namensHinweis}`,
       tool_choice: { type: "tool", name: "extract_interim_entry" },
       tools: [
         {

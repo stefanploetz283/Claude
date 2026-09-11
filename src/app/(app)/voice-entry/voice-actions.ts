@@ -61,6 +61,17 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
 
   const today = toDateInputValue(new Date());
 
+  // Die Spracherkennung verschriftet Namen phonetisch und trifft die tatsächliche Schreibweise oft nicht
+  // (z.B. "Gottsmann" -> "Gotzmann") - die korrekten Schreibweisen stehen bereits in den Falldaten und
+  // werden hier als verbindliche Referenz mitgegeben, damit der Bemerkungstext sie korrekt übernimmt. Das
+  // Feld clientName bleibt bewusst unkorrigiert (siehe dessen Tool-Beschreibung) - es dient dem
+  // Fuzzy-Matching auf Basis des tatsächlich Gehörten, nicht der Textformulierung.
+  const bekannteNamen = cases.map((c) => `${c.client.firstName} ${c.client.lastName}`);
+  const namensHinweis =
+    bekannteNamen.length > 0
+      ? `\n\nBekannte Klienten-Namen aus den Falldaten (korrekte Schreibweise): ${bekannteNamen.join(", ")}. Wird im Diktat ein ähnlich klingender Name genannt (auch bei abweichender Schreibweise durch die Spracherkennung), verwende im Bemerkungstext IMMER exakt die hier hinterlegte korrekte Schreibweise.`
+      : "";
+
   let response;
   try {
     response = await anthropic.messages.create({
@@ -71,7 +82,7 @@ export async function extractServiceEntryFromVoice(transcript: string): Promise<
       thinking: { type: "disabled" },
       system: `Du extrahierst aus dem Diktat einer sozialpädagogischen Fachkraft die strukturierten Felder einer Leistungsdokumentation und formulierst den Bemerkungstext aus. Heutiges Datum (Referenz für relative Angaben wie "heute" oder unvollständige Daten ohne Jahr): ${today}. Antworte ausschließlich über den bereitgestellten Tool-Aufruf.
 
-${buildDokumentationsStilPrompt(fachlicherKontext)}`,
+${buildDokumentationsStilPrompt(fachlicherKontext)}${namensHinweis}`,
       tool_choice: { type: "tool", name: "extract_service_entry" },
       tools: [
         {

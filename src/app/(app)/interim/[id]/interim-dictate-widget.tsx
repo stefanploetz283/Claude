@@ -100,7 +100,7 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
   async function runExtraction(text: string) {
     setStage("processing");
     setError(null);
-    const result = await extractInterimEntryFromVoice(text);
+    const result = await extractInterimEntryFromVoice(text, caseId);
     if (!result.ok) {
       setError(result.error);
       setStage("idle");
