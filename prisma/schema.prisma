@@ -59,6 +59,8 @@ model User {
   eingereichteBerichtsentwuerfe   AbschlussberichtEntwurf[] @relation("BerichtSubmittedBy")
   geprueteBerichtsentwuerfe       AbschlussberichtEntwurf[] @relation("BerichtReviewedBy")
   zuletztBearbeiteteBerichtsentwuerfe AbschlussberichtEntwurf[] @relation("BerichtLastEditedBy")
+  monatsabschluesseAbgeschlossen      Monatsabschluss[] @relation("MonatsabschlussAbgeschlossenVon")
+  monatsabschluesseWiederGeoeffnet    Monatsabschluss[] @relation("MonatsabschlussWiederGeoeffnetVon")
   gutscheinAuswahlen GutscheinAuswahl[]
   bonusPayouts       QuarterlyBonusPayout[]
   paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
@@ -1232,6 +1234,37 @@ model InterimEntry {
 
   @@index([caseId])
   @@index([date])
+}
+
+enum MonatsabschlussStatus {
+  OFFEN
+  ABGESCHLOSSEN
+}
+
+// Monatsabschluss im Interimsmodus: bewusst GLOBAL geführt (nicht pro Fachkraft) - der Interimsmodus
+// kennt aktuell keine Mehrbenutzer-Dimension (weder InterimCase noch InterimEntry haben ein
+// Fachkraft-/User-Feld), er bildet ausschließlich Stefans Solo-Fallführung ab (siehe requireInterimAdmin).
+// Eine Zeile existiert nur für Monate, die mindestens einmal abgeschlossen wurden - ein Monat ohne Zeile
+// gilt als offen. Wiederöffnen löscht die Zeile nicht (keine harte Löschung der Abschluss-Historie),
+// sondern setzt status zurück auf OFFEN und vermerkt das Wiederöffnen als einfaches Audit-Feld.
+model Monatsabschluss {
+  id     String                @id @default(cuid())
+  jahr   Int
+  monat  Int // 1-12
+  status MonatsabschlussStatus @default(ABGESCHLOSSEN)
+
+  abgeschlossenAm    DateTime
+  abgeschlossenVon   User     @relation("MonatsabschlussAbgeschlossenVon", fields: [abgeschlossenVonId], references: [id])
+  abgeschlossenVonId String
+
+  wiederGeoeffnetAm    DateTime?
+  wiederGeoeffnetVon   User?     @relation("MonatsabschlussWiederGeoeffnetVon", fields: [wiederGeoeffnetVonId], references: [id])
+  wiederGeoeffnetVonId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jahr, monat])
 }
 
 // ==========================================================================

@@ -8,6 +8,8 @@ import { InterimDictateWidget } from "./interim-dictate-widget";
 import { InterimEntriesList } from "./interim-entries-list";
 import { ExportControls } from "./export-controls";
 import { CaseDetailsCard } from "./case-details-card";
+import { ladeGeschlosseneMonateListe } from "../actions";
+import { istMonatGeschlossen } from "@/lib/interim/monatsabschluss";
 
 const ANGEBOTSART_LABELS: Record<string, string> = {
   ERZIEHUNGSBEISTANDSCHAFT: "Erziehungsbeistandschaft",
@@ -23,11 +25,15 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
   const interimCase = await prisma.interimCase.findUnique({ where: { id } });
   if (!interimCase) notFound();
 
-  const entries = await prisma.interimEntry.findMany({
-    where: { caseId: id },
-    // Neueste Tage zuerst, innerhalb eines Tages chronologisch nach Uhrzeit.
-    orderBy: [{ date: "desc" }, { startTime: "asc" }],
-  });
+  const [entries, geschlosseneMonateListe] = await Promise.all([
+    prisma.interimEntry.findMany({
+      where: { caseId: id },
+      // Neueste Tage zuerst, innerhalb eines Tages chronologisch nach Uhrzeit.
+      orderBy: [{ date: "desc" }, { startTime: "asc" }],
+    }),
+    ladeGeschlosseneMonateListe(),
+  ]);
+  const geschlosseneMonate = new Set(geschlosseneMonateListe);
 
   const entryRows = entries.map((e) => ({
     id: e.id,
@@ -38,6 +44,7 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
     endTime: format(e.endTime, "HH:mm"),
     content: e.content,
     ueberschneidungBestaetigt: e.ueberschneidungBestaetigt,
+    readOnly: istMonatGeschlossen(e.date.getFullYear(), e.date.getMonth() + 1, geschlosseneMonate),
   }));
 
   return (

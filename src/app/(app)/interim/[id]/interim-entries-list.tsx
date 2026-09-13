@@ -12,6 +12,7 @@ export type InterimEntryRow = {
   endTime: string;
   content: string;
   ueberschneidungBestaetigt: boolean;
+  readOnly: boolean;
 };
 
 const inputCls =
@@ -19,37 +20,46 @@ const inputCls =
 
 export function InterimEntriesList({ caseId, entries }: { caseId: string; entries: InterimEntryRow[] }) {
   const [rowPending, startRowTransition] = useTransition();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
-        <tr>
-          <th className="px-5 py-3">Datum</th>
-          <th className="px-5 py-3">Zeit</th>
-          <th className="px-5 py-3">Inhalt</th>
-          <th className="px-5 py-3"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.map((e) => (
-          <EntryRow
-            key={e.id}
-            caseId={caseId}
-            entry={e}
-            rowPending={rowPending}
-            onDelete={() => startRowTransition(() => deleteInterimEntry(e.id, caseId))}
-            onClearMarkierung={() => startRowTransition(() => clearUeberschneidungMarkierung(e.id, caseId))}
-          />
-        ))}
-        {entries.length === 0 && (
+    <div>
+      {deleteError && <p className="border-b border-[var(--color-border)] px-5 py-2.5 text-xs text-[var(--color-coral)]">{deleteError}</p>}
+      <table className="w-full text-left text-sm">
+        <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
           <tr>
-            <td colSpan={4} className="px-4 py-10 text-center text-[var(--color-text-muted)]">
-              Noch keine Einträge für diesen Fall.
-            </td>
+            <th className="px-5 py-3">Datum</th>
+            <th className="px-5 py-3">Zeit</th>
+            <th className="px-5 py-3">Inhalt</th>
+            <th className="px-5 py-3"></th>
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {entries.map((e) => (
+            <EntryRow
+              key={e.id}
+              caseId={caseId}
+              entry={e}
+              rowPending={rowPending}
+              onDelete={() =>
+                startRowTransition(async () => {
+                  const result = await deleteInterimEntry(e.id, caseId);
+                  setDeleteError(result?.error ?? null);
+                })
+              }
+              onClearMarkierung={() => startRowTransition(() => clearUeberschneidungMarkierung(e.id, caseId))}
+            />
+          ))}
+          {entries.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-4 py-10 text-center text-[var(--color-text-muted)]">
+                Noch keine Einträge für diesen Fall.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -127,27 +137,35 @@ function EntryRow({
           {entry.content}
         </td>
         <td className="px-5 py-3 text-right whitespace-nowrap">
-          {entry.ueberschneidungBestaetigt && (
-            <button
-              disabled={rowPending}
-              onClick={onClearMarkierung}
-              className="mr-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
-            >
-              Markierung entfernen
-            </button>
+          {entry.readOnly ? (
+            <span title="Der Monat dieses Eintrags ist abgeschlossen - erst nach Wieder-öffnen bearbeitbar." className="text-xs font-medium text-[var(--color-text-muted)]">
+              🔒 Monat abgeschlossen
+            </span>
+          ) : (
+            <>
+              {entry.ueberschneidungBestaetigt && (
+                <button
+                  disabled={rowPending}
+                  onClick={onClearMarkierung}
+                  className="mr-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+                >
+                  Markierung entfernen
+                </button>
+              )}
+              <button onClick={() => setEditing(true)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
+                Bearbeiten
+              </button>
+              <button
+                disabled={rowPending}
+                onClick={() => {
+                  if (confirm("Eintrag wirklich löschen?")) onDelete();
+                }}
+                className="ml-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+              >
+                Löschen
+              </button>
+            </>
           )}
-          <button onClick={() => setEditing(true)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
-            Bearbeiten
-          </button>
-          <button
-            disabled={rowPending}
-            onClick={() => {
-              if (confirm("Eintrag wirklich löschen?")) onDelete();
-            }}
-            className="ml-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
-          >
-            Löschen
-          </button>
         </td>
       </tr>
     );

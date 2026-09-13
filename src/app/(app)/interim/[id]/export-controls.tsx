@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { pruefeMonatsUeberschneidungen, type UeberschneidungsKonflikt } from "../actions";
+import { pruefeMonatsUeberschneidungen, istMonatBereitsAbgeschlossen, type UeberschneidungsKonflikt } from "../actions";
+import { MonatAbschliessenControl } from "../monat-abschliessen-control";
 
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -19,6 +20,7 @@ export function ExportControls({ caseId }: { caseId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [konflikte, setKonflikte] = useState<UeberschneidungsKonflikt[] | null>(null);
+  const [exportierterMonat, setExportierterMonat] = useState<{ jahr: number; monat: number; label: string } | null>(null);
 
   async function handleExportClick() {
     setError(null);
@@ -38,6 +40,7 @@ export function ExportControls({ caseId }: { caseId: string }) {
   async function downloadExport() {
     setPending(true);
     setError(null);
+    setExportierterMonat(null);
     try {
       const res = await fetch(`/api/interim/${caseId}/export?year=${year}&month=${month}`);
       if (!res.ok) {
@@ -55,6 +58,14 @@ export function ExportControls({ caseId }: { caseId: string }) {
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
+
+      // "Monat abschließen"-Hinweis nur anbieten, wenn dieser Monat noch nicht abgeschlossen ist - ein
+      // erneuter Export eines bereits abgeschlossenen Monats (z.B. für die eigene Ablage) löst keinen
+      // erneuten Abschluss-Workflow aus (Prompt Punkt 5).
+      const bereitsAbgeschlossen = await istMonatBereitsAbgeschlossen(year, month);
+      if (!bereitsAbgeschlossen) {
+        setExportierterMonat({ jahr: year, monat: month, label: `${MONTH_NAMES[month - 1]} ${year}` });
+      }
     } catch {
       setError("Export fehlgeschlagen. Bitte erneut versuchen.");
     } finally {
@@ -122,6 +133,10 @@ export function ExportControls({ caseId }: { caseId: string }) {
             </button>
           </div>
         </div>
+      )}
+
+      {exportierterMonat && (
+        <MonatAbschliessenControl jahr={exportierterMonat.jahr} monat={exportierterMonat.monat} label={exportierterMonat.label} />
       )}
 
       {error && (

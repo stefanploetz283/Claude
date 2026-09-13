@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireInterimAdmin } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 import { berechneUeberlappungMinuten } from "@/lib/interim/ueberschneidung";
+import { ermittleOffenenMonat, monatSchluessel, istMonatGeschlossen } from "@/lib/interim/monatsabschluss";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import type { InterimAngebotsart } from "@prisma/client";
@@ -15,6 +16,29 @@ export type ActionState = { error?: string; conflicts?: Ueberschneidung[] } | un
 
 function combineDateTime(dateStr: string, timeStr: string) {
   return new Date(`${dateStr}T${timeStr}:00`);
+}
+
+/** Alle jemals abgeschlossenen (aktuell noch geschlossenen) Monatsschlüssel als Array (Set ist über eine
+ * "use server"-Grenze nicht ohne Weiteres serialisierbar) - für ermittleOffenenMonat und die Read-only-
+ * Prüfung einzelner Einträge. Exportiert, damit Server Components (z.B. die Fall-Detailseite) denselben
+ * geschlossenen-Monate-Stand für die Read-only-Darstellung nutzen können. */
+export async function ladeGeschlosseneMonateListe(): Promise<string[]> {
+  const rows = await prisma.monatsabschluss.findMany({ where: { status: "ABGESCHLOSSEN" }, select: { jahr: true, monat: true } });
+  return rows.map((r) => monatSchluessel(r.jahr, r.monat));
+}
+
+async function ladeGeschlosseneMonate(): Promise<Set<string>> {
+  return new Set(await ladeGeschlosseneMonateListe());
+}
+
+/** Blockiert Schreibzugriffe (Anlegen/Bearbeiten/Löschen) auf Einträge in einem bereits abgeschlossenen
+ * Monat - serverseitig durchgesetzt, nicht nur in der UI verborgen. */
+async function pruefeMonatOffenFuerSchreibzugriff(date: Date): Promise<string | null> {
+  const geschlosseneMonate = await ladeGeschlosseneMonate();
+  if (istMonatGeschlossen(date.getFullYear(), date.getMonth() + 1, geschlosseneMonate)) {
+    return "Dieser Monat ist bereits abgeschlossen und schreibgeschützt. Bitte zuerst über \"Wieder öffnen\" freigeben.";
+  }
+  return null;
 }
 
 /**
@@ -168,6 +192,9 @@ export async function createInterimEntry(_prev: ActionState, formData: FormData)
     return { error: "Die Endzeit muss nach der Startzeit liegen." };
   }
 
+  const monatsFehler = await pruefeMonatOffenFuerSchreibzugriff(new Date(date));
+  if (monatsFehler) return { error: monatsFehler };
+
   const konflikte = await findeUeberschneidungen(new Date(date), startTime, endTime, null);
   if (konflikte.length > 0 && !bestaetigt) {
     return { conflicts: konflikte };
@@ -205,6 +232,20 @@ export async function updateInterimEntry(_prev: ActionState, formData: FormData)
   const endTime = combineDateTime(date, endTimeStr);
   if (endTime.getTime() <= startTime.getTime()) {
     return { error: "Die Endzeit muss nach der Startzeit liegen." };
+  }
+
+  const bestehenderEintrag = await prisma.interimEntry.findUnique({ where: { id }, select: { date: true } });
+  if (!bestehenderEintrag) return { error: "Eintrag nicht gefunden." };
+
+  // Sowohl der bisherige als auch ein ggf. neu gewählter Monat müssen offen sein - ein Eintrag in einem
+  // abgeschlossenen Monat darf weder bearbeitet noch durch Datumsänderung "herausgeschoben" werden.
+  const geschlosseneMonate = await ladeGeschlosseneMonate();
+  const neuesDatum = new Date(date);
+  if (
+    istMonatGeschlossen(bestehenderEintrag.date.getFullYear(), bestehenderEintrag.date.getMonth() + 1, geschlosseneMonate) ||
+    istMonatGeschlossen(neuesDatum.getFullYear(), neuesDatum.getMonth() + 1, geschlosseneMonate)
+  ) {
+    return { error: "Dieser Monat ist bereits abgeschlossen und schreibgeschützt. Bitte zuerst über \"Wieder öffnen\" freigeben." };
   }
 
   const konflikte = await findeUeberschneidungen(new Date(date), startTime, endTime, id);
@@ -348,10 +389,118 @@ export async function pruefeMonatsUeberschneidungen(caseId: string, year: number
   return konflikte;
 }
 
-export async function deleteInterimEntry(id: string, caseId: string) {
+export async function deleteInterimEntry(id: string, caseId: string): Promise<{ error?: string } | undefined> {
   const user = await requireInterimAdmin();
+
+  const eintrag = await prisma.interimEntry.findUnique({ where: { id }, select: { date: true } });
+  if (!eintrag) return { error: "Eintrag nicht gefunden." };
+
+  const monatsFehler = await pruefeMonatOffenFuerSchreibzugriff(eintrag.date);
+  if (monatsFehler) return { error: monatsFehler };
+
   await prisma.interimEntry.delete({ where: { id } });
   await logAccess({ userId: user.id, action: "UPDATE", entityType: "InterimEntry", entityId: id, details: "Gelöscht" });
   revalidatePath(`/interim/${caseId}`);
   revalidatePath("/interim");
+  return undefined;
+}
+
+// ---------- Monatsabschluss (global, keine Fachkraft-Dimension - siehe Modell-Kommentar in schema.prisma) ----------
+
+export type OffenerMonat = { jahr: number; monat: number; label: string };
+
+/** Frühester relevanter Monat als Ausgangspunkt für den Vorwärtslauf: der früheste Monat mit
+ * dokumentierten Einträgen, sonst (frisches System) der heutige Kalendermonat. */
+async function ermittleAnkerMonat(): Promise<{ jahr: number; monat: number }> {
+  const frueheste = await prisma.interimEntry.findFirst({ orderBy: { date: "asc" }, select: { date: true } });
+  const anker = frueheste?.date ?? new Date();
+  return { jahr: anker.getFullYear(), monat: anker.getMonth() + 1 };
+}
+
+export async function getAktuellerOffenerMonat(): Promise<OffenerMonat> {
+  await requireInterimAdmin();
+  const [anker, geschlosseneMonate] = await Promise.all([ermittleAnkerMonat(), ladeGeschlosseneMonate()]);
+  const offen = ermittleOffenenMonat(anker, geschlosseneMonate);
+  return { ...offen, label: format(new Date(offen.jahr, offen.monat - 1, 1), "MMMM yyyy", { locale: de }) };
+}
+
+export async function getMonatsZusammenfassung(jahr: number, monat: number): Promise<{ anzahlEintraege: number }> {
+  await requireInterimAdmin();
+  const anzahlEintraege = await prisma.interimEntry.count({
+    where: { date: { gte: new Date(Date.UTC(jahr, monat - 1, 1)), lt: new Date(Date.UTC(jahr, monat, 1)) } },
+  });
+  return { anzahlEintraege };
+}
+
+export type MonatsabschlussZeile = {
+  jahr: number;
+  monat: number;
+  label: string;
+  status: "OFFEN" | "ABGESCHLOSSEN";
+  abgeschlossenAmLabel: string;
+  abgeschlossenVonName: string;
+  wiederGeoeffnetAmLabel: string | null;
+  wiederGeoeffnetVonName: string | null;
+};
+
+/** Monats-Historie (Prompt Punkt 3): jeder Monat, der mindestens einmal abgeschlossen wurde, unabhängig
+ * vom aktuellen Status (auch bereits wieder geöffnete bleiben sichtbar - keine harte Löschung). */
+export async function getMonatsabschlussHistorie(): Promise<MonatsabschlussZeile[]> {
+  await requireInterimAdmin();
+  const rows = await prisma.monatsabschluss.findMany({
+    include: { abgeschlossenVon: true, wiederGeoeffnetVon: true },
+    orderBy: [{ jahr: "desc" }, { monat: "desc" }],
+  });
+  return rows.map((r) => ({
+    jahr: r.jahr,
+    monat: r.monat,
+    label: format(new Date(r.jahr, r.monat - 1, 1), "MMMM yyyy", { locale: de }),
+    status: r.status,
+    abgeschlossenAmLabel: format(r.abgeschlossenAm, "dd.MM.yyyy HH:mm", { locale: de }),
+    abgeschlossenVonName: r.abgeschlossenVon.name,
+    wiederGeoeffnetAmLabel: r.wiederGeoeffnetAm ? format(r.wiederGeoeffnetAm, "dd.MM.yyyy HH:mm", { locale: de }) : null,
+    wiederGeoeffnetVonName: r.wiederGeoeffnetVon?.name ?? null,
+  }));
+}
+
+export async function istMonatBereitsAbgeschlossen(jahr: number, monat: number): Promise<boolean> {
+  await requireInterimAdmin();
+  const geschlosseneMonate = await ladeGeschlosseneMonate();
+  return istMonatGeschlossen(jahr, monat, geschlosseneMonate);
+}
+
+export async function schliesseMonatAb(jahr: number, monat: number): Promise<{ error?: string } | undefined> {
+  const user = await requireInterimAdmin();
+  if (!Number.isInteger(jahr) || !Number.isInteger(monat) || monat < 1 || monat > 12) {
+    return { error: "Ungültiger Zeitraum." };
+  }
+
+  await prisma.monatsabschluss.upsert({
+    where: { jahr_monat: { jahr, monat } },
+    update: { status: "ABGESCHLOSSEN", abgeschlossenAm: new Date(), abgeschlossenVonId: user.id },
+    create: { jahr, monat, status: "ABGESCHLOSSEN", abgeschlossenAm: new Date(), abgeschlossenVonId: user.id },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Monatsabschluss", details: `Abgeschlossen ${monat}/${jahr}` });
+  revalidatePath("/interim");
+  return undefined;
+}
+
+/** Nur Admin (requireInterimAdmin deckt das bereits ab - der gesamte Interimsmodus ist admin-only). */
+export async function oeffneMonatWieder(jahr: number, monat: number): Promise<{ error?: string } | undefined> {
+  const user = await requireInterimAdmin();
+
+  const existing = await prisma.monatsabschluss.findUnique({ where: { jahr_monat: { jahr, monat } } });
+  if (!existing || existing.status !== "ABGESCHLOSSEN") {
+    return { error: "Dieser Monat ist nicht abgeschlossen." };
+  }
+
+  await prisma.monatsabschluss.update({
+    where: { jahr_monat: { jahr, monat } },
+    data: { status: "OFFEN", wiederGeoeffnetAm: new Date(), wiederGeoeffnetVonId: user.id },
+  });
+
+  await logAccess({ userId: user.id, action: "UPDATE", entityType: "Monatsabschluss", details: `Wieder geöffnet ${monat}/${jahr}` });
+  revalidatePath("/interim");
+  return undefined;
 }
