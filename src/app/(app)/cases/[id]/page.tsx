@@ -15,6 +15,7 @@ import { AuthorityAddressForm } from "./authority-address-form";
 import { StundensatzForm } from "./stundensatz-form";
 import { TriadeFallfuehrendForm } from "./triade-fallfuehrend-form";
 import { getSettings } from "@/lib/settings";
+import { istInAuslaufphase } from "@/lib/capacity";
 import { differenceInCalendarDays, addMonths, format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -80,6 +81,12 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const settings = user.role === "ADMIN" ? await getSettings() : null;
   const employees = await prisma.user.findMany({ where: { active: true }, orderBy: { name: "asc" } });
 
+  // Proaktiver Hinweis (KI-gestütztes Abschlussberichtswesen, Phase 4): sobald der Fall in seine
+  // Auslaufphase eintritt, aber nur solange die Vollständigkeitsprüfung/Generierung noch nicht
+  // begonnen wurde - kein Zwang, daher kein erneuter Hinweis, sobald bereits ein Entwurf existiert.
+  const bestehenderBerichtsentwurf = await prisma.abschlussberichtEntwurf.findUnique({ where: { caseId: id }, select: { id: true } });
+  const zeigeAuslaufphasenHinweis = istInAuslaufphase(caseRecord, now) && !bestehenderBerichtsentwurf;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -109,6 +116,18 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
               ⚠ {w.label}: {format(w.date, "dd.MM.yyyy", { locale: de })}
             </div>
           ))}
+        </div>
+      )}
+
+      {zeigeAuslaufphasenHinweis && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--color-primary)]/30 bg-[var(--color-primary-soft)] p-4 text-sm text-[var(--color-primary)]">
+          <span>Dieser Fall nähert sich dem Ende - Vollständigkeitsprüfung der Berichtsbausteine jetzt starten?</span>
+          <Link
+            href={`/cases/${caseRecord.id}/berichtsbausteine`}
+            className="shrink-0 rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+          >
+            Zum Abschlussbericht
+          </Link>
         </div>
       )}
 

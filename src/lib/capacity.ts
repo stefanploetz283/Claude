@@ -39,6 +39,18 @@ export function getCaseWeeklyRateAtDate(c: CaseWithProfile, date: Date): number 
   return baseRate * Math.max(0, fraction);
 }
 
+export type CasePhaseOutFields = Pick<Case, "expectedEndDate" | "phaseOutWeeks">;
+
+/** Ist der Fall an diesem Datum in seiner Auslaufphase (Kapazitätsplanung)? Für den proaktiven
+ * Abschlussbericht-Hinweis (KI-gestütztes Abschlussberichtswesen, Phase 4) - unabhängig von der
+ * Wochenprofil-Summe, daher ohne HelpType/activityProfiles auskommend (anders als CaseWithProfile oben). */
+export function istInAuslaufphase(c: CasePhaseOutFields, date: Date): boolean {
+  if (!c.expectedEndDate || !c.phaseOutWeeks || c.phaseOutWeeks <= 0) return false;
+  if (date >= c.expectedEndDate) return false;
+  const phaseOutStart = addWeeks(c.expectedEndDate, -c.phaseOutWeeks);
+  return date >= phaseOutStart;
+}
+
 export function getEmployeeCapacity(employee: User, billableCapacityFactor: number): number {
   const contract = employee.weeklyContractHours?.toNumber() ?? 0;
   return contract * billableCapacityFactor;
