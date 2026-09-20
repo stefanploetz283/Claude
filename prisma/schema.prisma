@@ -18,53 +18,54 @@ enum Role {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
-  name              String
-  passwordHash      String
-  role              Role     @default(EMPLOYEE)
-  active            Boolean  @default(true) // Deaktivieren statt Löschen (Datenschutz)
-  avatarUrl         String? // Storage-Key des selbst hochgeladenen Profilbilds
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String
+  passwordHash String
+  role         Role    @default(EMPLOYEE)
+  active       Boolean @default(true) // Deaktivieren statt Löschen (Datenschutz)
+  avatarUrl    String? // Storage-Key des selbst hochgeladenen Profilbilds
 
   totpSecret        String? // aktiver, bestätigter TOTP-Secret
   totpSecretPending String? // Secret während des Ersteinrichtungsvorgangs
-  totpEnabled       Boolean  @default(false)
+  totpEnabled       Boolean @default(false)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  assignedCases     Case[]            @relation("AssignedEmployee")
-  substituteCases   Case[]            @relation("SubstituteEmployee")
-  caseStatusChanges CaseStatusHistory[]
-  serviceEntries    ServiceEntry[]
-  timeEntries       TimeEntry[]
-  absences          Absence[]
-  appointments      Appointment[]     @relation("AppointmentOrganizer")
-  uploadedDocuments Document[]
-  employeeDocuments EmployeeDocument[]
-  uploadedEmployeeDocuments EmployeeDocument[] @relation("EmployeeDocumentUploadedBy")
-  knowledgeItems    KnowledgeItem[]
-  accessLogs        AccessLog[]
-  issuedInvoices    Invoice[]
-  createdWaitlistEntries WaitlistEntry[]
-  submittedApprovals MonthlyApproval[] @relation("ApprovalSubmittedBy")
-  reviewedApprovals  MonthlyApproval[] @relation("ApprovalReviewedBy")
-  lastEditedApprovals MonthlyApproval[] @relation("ApprovalLastEditedBy")
-  serviceEntryChangeLogs ServiceEntryChangeLog[]
+  assignedCases                       Case[]                    @relation("AssignedEmployee")
+  substituteCases                     Case[]                    @relation("SubstituteEmployee")
+  caseStatusChanges                   CaseStatusHistory[]
+  serviceEntries                      ServiceEntry[]
+  timeEntries                         TimeEntry[]
+  absences                            Absence[]
+  appointments                        Appointment[]             @relation("AppointmentOrganizer")
+  uploadedDocuments                   Document[]
+  hochgeladeneBelege                  Beleg[]
+  employeeDocuments                   EmployeeDocument[]
+  uploadedEmployeeDocuments           EmployeeDocument[]        @relation("EmployeeDocumentUploadedBy")
+  knowledgeItems                      KnowledgeItem[]
+  accessLogs                          AccessLog[]
+  issuedInvoices                      Invoice[]
+  createdWaitlistEntries              WaitlistEntry[]
+  submittedApprovals                  MonthlyApproval[]         @relation("ApprovalSubmittedBy")
+  reviewedApprovals                   MonthlyApproval[]         @relation("ApprovalReviewedBy")
+  lastEditedApprovals                 MonthlyApproval[]         @relation("ApprovalLastEditedBy")
+  serviceEntryChangeLogs              ServiceEntryChangeLog[]
   // KI-gestütztes Abschlussberichtswesen (siehe Berichtsbaustein)
-  faelleAlsFallfuehrendeFachkraft Case[]              @relation("FallfuehrendeFachkraft")
-  berichtsbausteine               Berichtsbaustein[]
-  berichtsManualVersionen         BerichtsManualVersion[]
-  referenzberichte                Referenzbericht[]
-  generierteBerichtsentwuerfe     AbschlussberichtEntwurf[] @relation("BerichtGeneriertVon")
-  eingereichteBerichtsentwuerfe   AbschlussberichtEntwurf[] @relation("BerichtSubmittedBy")
-  geprueteBerichtsentwuerfe       AbschlussberichtEntwurf[] @relation("BerichtReviewedBy")
+  faelleAlsFallfuehrendeFachkraft     Case[]                    @relation("FallfuehrendeFachkraft")
+  berichtsbausteine                   Berichtsbaustein[]
+  berichtsManualVersionen             BerichtsManualVersion[]
+  referenzberichte                    Referenzbericht[]
+  generierteBerichtsentwuerfe         AbschlussberichtEntwurf[] @relation("BerichtGeneriertVon")
+  eingereichteBerichtsentwuerfe       AbschlussberichtEntwurf[] @relation("BerichtSubmittedBy")
+  geprueteBerichtsentwuerfe           AbschlussberichtEntwurf[] @relation("BerichtReviewedBy")
   zuletztBearbeiteteBerichtsentwuerfe AbschlussberichtEntwurf[] @relation("BerichtLastEditedBy")
-  monatsabschluesseAbgeschlossen      Monatsabschluss[] @relation("MonatsabschlussAbgeschlossenVon")
-  monatsabschluesseWiederGeoeffnet    Monatsabschluss[] @relation("MonatsabschlussWiederGeoeffnetVon")
-  gutscheinAuswahlen GutscheinAuswahl[]
-  bonusPayouts       QuarterlyBonusPayout[]
-  paidOutBonuses     QuarterlyBonusPayout[] @relation("BonusPaidOutBy")
+  monatsabschluesseAbgeschlossen      Monatsabschluss[]         @relation("MonatsabschlussAbgeschlossenVon")
+  monatsabschluesseWiederGeoeffnet    Monatsabschluss[]         @relation("MonatsabschlussWiederGeoeffnetVon")
+  gutscheinAuswahlen                  GutscheinAuswahl[]
+  bonusPayouts                        QuarterlyBonusPayout[]
+  paidOutBonuses                      QuarterlyBonusPayout[]    @relation("BonusPaidOutBy")
 
   sentMessages      Message[]
   messageRecipients MessageRecipient[]
@@ -73,7 +74,7 @@ model User {
   allowedHelpTypes    HelpType[] @relation("EmployeeAllowedHelpTypes") // welche Hilfearten diese Fachkraft bearbeiten darf
 
   // Stundenmodell-Rechner (Jahresarbeitszeit/August-Vorarbeit)
-  weeklyWorkDays   Int?     // Tage/Woche, 4 oder 5
+  weeklyWorkDays   Int? // Tage/Woche, 4 oder 5
   hireDate         DateTime? @db.Date // Eintrittsdatum
   fondsBasisAtHire Decimal?  @db.Decimal(5, 2) // Bestandsschutz-Snapshot der Fonds-Basis bei Einstellung
   tvoedStufe       String? // z.B. "S8b Stufe 3"
@@ -81,10 +82,10 @@ model User {
   mitarbeiterPlaene MitarbeiterPlan[]
 
   // Personalakte-Stammdaten
-  address                     String?
-  birthday                    DateTime? @db.Date
-  emergencyContact            String? // Name + Telefonnummer, Freitext
-  fuehrungszeugnisGueltigBis  DateTime? @db.Date // erw. Führungszeugnis nach §72a SGB VIII
+  address                    String?
+  birthday                   DateTime? @db.Date
+  emergencyContact           String? // Name + Telefonnummer, Freitext
+  fuehrungszeugnisGueltigBis DateTime? @db.Date // erw. Führungszeugnis nach §72a SGB VIII
 
   // Fahrten-/Fallrechner: Referenzpunkt-Bildung (Wohnort, falls hinterlegt, sonst primärer Standort)
   wohnortAdresse         String?
@@ -97,11 +98,11 @@ model User {
 
   // Terminbuchung: feste Kalenderfarbe für die Mitarbeiterinnen-Spalte im Tages-/Wochenraster - null
   // heißt "kein Override", dann greift die deterministische Standard-Palette (employeeColor(index)).
-  calendarColor String?
-  terminWochenvorlagen   TerminWochenvorlage[]
-  terminSlots            TerminSlot[]
-  termineAlsMitarbeiterin Termin[] @relation("TerminEmployee")
-  termineGebuchtVon       Termin[] @relation("TerminBookedBy")
+  calendarColor           String?
+  terminWochenvorlagen    TerminWochenvorlage[]
+  terminSlots             TerminSlot[]
+  termineAlsMitarbeiterin Termin[]              @relation("TerminEmployee")
+  termineGebuchtVon       Termin[]              @relation("TerminBookedBy")
 
   @@index([role])
 }
@@ -121,28 +122,28 @@ model HelpType {
   createdAt   DateTime @default(now())
 
   // Referenzwerte für Fallanlage und Kapazitätsplanung (Stunden-Budget-Modell)
-  defaultDurationWeeks  Int?
-  defaultTotalHoursMin  Decimal? @db.Decimal(6, 2)
-  defaultTotalHoursMax  Decimal? @db.Decimal(6, 2)
+  defaultDurationWeeks Int?
+  defaultTotalHoursMin Decimal? @db.Decimal(6, 2)
+  defaultTotalHoursMax Decimal? @db.Decimal(6, 2)
 
-  cases            Case[]
-  activityProfiles HelpTypeActivityProfile[]
-  allowedForEmployees User[] @relation("EmployeeAllowedHelpTypes")
-  waitlistEntries  WaitlistEntry[]
+  cases                   Case[]
+  activityProfiles        HelpTypeActivityProfile[]
+  allowedForEmployees     User[]                    @relation("EmployeeAllowedHelpTypes")
+  waitlistEntries         WaitlistEntry[]
   berichtsManualVersionen BerichtsManualVersion[]
 }
 
 // Wochenprofil einer Hilfeart: einzelne Tätigkeitskategorien mit Wochenstunden-Referenzwert.
 // Die Summe der hoursPerWeek-Werte ist die für die Kapazitätsplanung maßgebliche Wochenrate eines Falls.
 model HelpTypeActivityProfile {
-  id           String   @id @default(cuid())
-  helpType     HelpType @relation(fields: [helpTypeId], references: [id])
-  helpTypeId   String
-  activityLabel String  // z.B. "Einzelzeit Kind", "Telefonische Netzwerkarbeit"
-  hoursPerWeek Decimal? @db.Decimal(5, 2) // nullable, solange kein verlässlicher Wert bekannt (z.B. Netzwerkarbeit)
-  sortOrder    Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  helpType      HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId    String
+  activityLabel String // z.B. "Einzelzeit Kind", "Telefonische Netzwerkarbeit"
+  hoursPerWeek  Decimal? @db.Decimal(5, 2) // nullable, solange kein verlässlicher Wert bekannt (z.B. Netzwerkarbeit)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   serviceEntries ServiceEntry[]
 
@@ -150,26 +151,26 @@ model HelpTypeActivityProfile {
 }
 
 model Client {
-  id           String   @id @default(cuid())
-  firstName    String
-  lastName     String
-  birthDate    DateTime?
-  address      String? // veraltet - siehe street/postalCodeCity; bleibt für Altdatensätze erhalten
-  street          String?
-  postalCodeCity  String?
-  contactInfo  String?
+  id             String    @id @default(cuid())
+  firstName      String
+  lastName       String
+  birthDate      DateTime?
+  address        String? // veraltet - siehe street/postalCodeCity; bleibt für Altdatensätze erhalten
+  street         String?
+  postalCodeCity String?
+  contactInfo    String?
 
   // Fahrten-/Fallrechner: einmalig per Nominatim geocodiert, dauerhaft gespeichert (kein erneuter
   // Geocoding-Aufruf bei jedem Kartenaufruf - nur wenn sich street/postalCodeCity ändern).
-  lat          Decimal? @db.Decimal(9, 6)
-  lng          Decimal? @db.Decimal(9, 6)
-  geocodedAt   DateTime?
+  lat        Decimal?  @db.Decimal(9, 6)
+  lng        Decimal?  @db.Decimal(9, 6)
+  geocodedAt DateTime?
 
-  archived     Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  cases        Case[]
+  cases Case[]
 
   @@index([lastName, firstName])
 }
@@ -183,69 +184,69 @@ enum CaseStatus {
 }
 
 model Case {
-  id                   String     @id @default(cuid())
-  caseNumber           String     @unique // Aktenzeichen/Fallnummer
-  authority            String     // zuständiges Jugendamt/Auftraggeber
-  authorityStreet          String? // Rechnungsadresse Kostenträger
-  authorityPostalCodeCity  String?
+  id                      String  @id @default(cuid())
+  caseNumber              String  @unique // Aktenzeichen/Fallnummer
+  authority               String // zuständiges Jugendamt/Auftraggeber
+  authorityStreet         String? // Rechnungsadresse Kostenträger
+  authorityPostalCodeCity String?
 
-  client               Client     @relation(fields: [clientId], references: [id])
-  clientId             String
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId String
 
-  helpType             HelpType   @relation(fields: [helpTypeId], references: [id])
-  helpTypeId            String
+  helpType   HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId String
 
-  assignedEmployee     User       @relation("AssignedEmployee", fields: [assignedEmployeeId], references: [id])
-  assignedEmployeeId   String
+  assignedEmployee   User   @relation("AssignedEmployee", fields: [assignedEmployeeId], references: [id])
+  assignedEmployeeId String
 
-  substituteEmployee   User?      @relation("SubstituteEmployee", fields: [substituteEmployeeId], references: [id])
+  substituteEmployee   User?   @relation("SubstituteEmployee", fields: [substituteEmployeeId], references: [id])
   substituteEmployeeId String?
 
-  hoursContingent      Decimal    @db.Decimal(7, 2)
-  contingentPeriodMonths Int?     // Zeitraum in Monaten, in dem das Kontingent aufgebraucht werden muss
+  hoursContingent        Decimal @db.Decimal(7, 2)
+  contingentPeriodMonths Int? // Zeitraum in Monaten, in dem das Kontingent aufgebraucht werden muss
 
-  stundensatz          Decimal?   @db.Decimal(7, 2) // Umsatz-Cockpit: € je FLS-Std. für diesen Fall - null = Settings.stundensatzBasis
+  stundensatz Decimal? @db.Decimal(7, 2) // Umsatz-Cockpit: € je FLS-Std. für diesen Fall - null = Settings.stundensatzBasis
 
   // Fahrten-/Fallrechner: mehrere Besuchsorte (Zuhause, Schule, ...) statt einer einzelnen Adresse,
   // siehe Besuchsort. geplanteFlsStdWoche betrifft die fachliche Leistungszeit, nicht die Fahrt.
-  besuchsorte          Besuchsort[]
-  geplanteFlsStdWoche  Decimal?   @db.Decimal(5, 2)
+  besuchsorte         Besuchsort[]
+  geplanteFlsStdWoche Decimal?     @db.Decimal(5, 2)
 
-  status               CaseStatus @default(ACTIVE)
-  startDate            DateTime   @default(now())
-  endDate              DateTime?
+  status    CaseStatus @default(ACTIVE)
+  startDate DateTime   @default(now())
+  endDate   DateTime?
 
-  expectedEndDate      DateTime?  // voraussichtliches Enddatum für Kapazitätsplanung (separat vom Stundenkontingent-Zeitraum)
-  phaseOutWeeks        Int?       // optionale Auslaufphase: Wochenrate fällt in diesen letzten X Wochen linear auf 0
+  expectedEndDate DateTime? // voraussichtliches Enddatum für Kapazitätsplanung (separat vom Stundenkontingent-Zeitraum)
+  phaseOutWeeks   Int? // optionale Auslaufphase: Wochenrate fällt in diesen letzten X Wochen linear auf 0
 
-  helpPlanMeetingDate     DateTime? // Hilfeplangespräch
-  extensionDeadline       DateTime? // Verlängerungsantrag Frist
-  reminderLeadDays        Int       @default(14) // Vorlaufzeit für Fristen-Erinnerungen
+  helpPlanMeetingDate DateTime? // Hilfeplangespräch
+  extensionDeadline   DateTime? // Verlängerungsantrag Frist
+  reminderLeadDays    Int       @default(14) // Vorlaufzeit für Fristen-Erinnerungen
 
-  archived             Boolean    @default(false)
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // KI-gestütztes Abschlussberichtswesen: die für den Fall relevante systemische Dreier-Konstellation
   // (z.B. Kind/Eltern/Schule, siehe PROS-Fachkonzept) und die Fachkraft, aus deren Ich-Perspektive der
   // Abschlussbericht geschrieben wird (i.d.R., aber nicht zwingend, identisch zu assignedEmployee).
-  triade                     String[]  @default([])
-  fallfuehrendeFachkraft     User?     @relation("FallfuehrendeFachkraft", fields: [fallfuehrendeFachkraftId], references: [id])
-  fallfuehrendeFachkraftId   String?
+  triade                   String[] @default([])
+  fallfuehrendeFachkraft   User?    @relation("FallfuehrendeFachkraft", fields: [fallfuehrendeFachkraftId], references: [id])
+  fallfuehrendeFachkraftId String?
 
-  statusHistory        CaseStatusHistory[]
-  serviceEntries       ServiceEntry[]
-  timeEntries          TimeEntry[]
-  appointments         Appointment[]
-  documents            Document[]
-  messages             Message[]
-  processNotes         MonthlyProcessNote[]
-  monthlyApprovals     MonthlyApproval[]
-  invoices             Invoice[]
-  waitlistOrigin       WaitlistEntry?
-  berichtsbausteine    Berichtsbaustein[]
+  statusHistory           CaseStatusHistory[]
+  serviceEntries          ServiceEntry[]
+  timeEntries             TimeEntry[]
+  appointments            Appointment[]
+  documents               Document[]
+  messages                Message[]
+  processNotes            MonthlyProcessNote[]
+  monthlyApprovals        MonthlyApproval[]
+  invoices                Invoice[]
+  waitlistOrigin          WaitlistEntry?
+  berichtsbausteine       Berichtsbaustein[]
   abschlussberichtEntwurf AbschlussberichtEntwurf?
-  termine              Termin[]
+  termine                 Termin[]
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
@@ -257,21 +258,21 @@ model Case {
 // Besuchshäufigkeit (z.B. Zuhause und Schule). besucheProMonat statt -woche, da Rhythmen wie
 // "2x im Monat" real üblich sind und sich nicht sauber als Wochenwert abbilden lassen.
 model Besuchsort {
-  id              String    @id @default(cuid())
-  case            Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  caseId          String
-  bezeichnung     String // Freitext, z.B. "Zuhause", "Schule", "Sonstiges"
-  adresse         String
+  id          String @id @default(cuid())
+  case        Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  caseId      String
+  bezeichnung String // Freitext, z.B. "Zuhause", "Schule", "Sonstiges"
+  adresse     String
 
   // einmalig per Nominatim geocodiert, dauerhaft gespeichert (wie Client.lat/lng)
-  lat             Decimal?  @db.Decimal(9, 6)
-  lng             Decimal?  @db.Decimal(9, 6)
-  geocodedAt      DateTime?
+  lat        Decimal?  @db.Decimal(9, 6)
+  lng        Decimal?  @db.Decimal(9, 6)
+  geocodedAt DateTime?
 
-  besucheProMonat Decimal   @db.Decimal(5, 2)
-  sortOrder       Int       @default(0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  besucheProMonat Decimal  @db.Decimal(5, 2)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([caseId])
 }
@@ -283,30 +284,30 @@ enum RechnungStatus {
 
 // Rechnung ans Jugendamt/Kostenträger - fortlaufende, lückenlose Nummerierung pro Jahr (steuerrechtliche Anforderung)
 model Invoice {
-  id           String   @id @default(cuid())
-  case         Case     @relation(fields: [caseId], references: [id])
-  caseId       String
+  id     String @id @default(cuid())
+  case   Case   @relation(fields: [caseId], references: [id])
+  caseId String
 
-  number       String   @unique // z.B. "2026-07-001"
-  year         Int
-  sequence     Int // fortlaufender Zähler innerhalb des Jahres
+  number   String @unique // z.B. "2026-07-001"
+  year     Int
+  sequence Int // fortlaufender Zähler innerhalb des Jahres
 
-  periodFrom   DateTime
-  periodTo     DateTime
-  hours        Decimal  @db.Decimal(7, 2)
-  hourlyRate   Decimal  @db.Decimal(7, 2)
-  totalAmount  Decimal  @db.Decimal(10, 2)
+  periodFrom  DateTime
+  periodTo    DateTime
+  hours       Decimal  @db.Decimal(7, 2)
+  hourlyRate  Decimal  @db.Decimal(7, 2)
+  totalAmount Decimal  @db.Decimal(10, 2)
 
-  issuedBy     User     @relation(fields: [issuedById], references: [id])
-  issuedById   String
-  issuedAt     DateTime @default(now())
+  issuedBy   User     @relation(fields: [issuedById], references: [id])
+  issuedById String
+  issuedAt   DateTime @default(now())
 
   // Forderungsmanagement (Betriebswirtschaftliches Cockpit, Phase 3) - bewusst als Erweiterung dieses
   // bereits produktiv genutzten Invoice-Modells statt einer separaten "Rechnung_Eintrag"-Tabelle, damit
   // nicht zwei konkurrierende Rechnungs-Konzepte im System entstehen. Kein automatischer Bankabgleich -
   // "bezahlt" wird bewusst manuell gesetzt (siehe Prompt).
-  status       RechnungStatus @default(OFFEN)
-  bezahltAm    DateTime?
+  status    RechnungStatus @default(OFFEN)
+  bezahltAm DateTime?
 
   @@unique([caseId, periodFrom, periodTo])
   @@unique([year, sequence])
@@ -322,12 +323,12 @@ enum WaitlistStatus {
 
 // Warteliste für Kapazitätsplanung: Anfragen, die noch keinem freien Platz zugeordnet werden konnten.
 model WaitlistEntry {
-  id          String   @id @default(cuid())
-  clientName  String // Name/Fall-Kennung der Anfrage
-  authority   String? // anfragendes Jugendamt, optional
+  id         String  @id @default(cuid())
+  clientName String // Name/Fall-Kennung der Anfrage
+  authority  String? // anfragendes Jugendamt, optional
 
-  helpType    HelpType @relation(fields: [helpTypeId], references: [id])
-  helpTypeId  String
+  helpType   HelpType @relation(fields: [helpTypeId], references: [id])
+  helpTypeId String
 
   requestedAt DateTime @default(now()) // Eingangsdatum - Basis für Wartezeit-Sortierung
   urgencyNote String?
@@ -401,15 +402,15 @@ model MonthlyApproval {
 }
 
 model CaseStatusHistory {
-  id          String     @id @default(cuid())
-  case        Case       @relation(fields: [caseId], references: [id])
+  id          String      @id @default(cuid())
+  case        Case        @relation(fields: [caseId], references: [id])
   caseId      String
   oldStatus   CaseStatus?
   newStatus   CaseStatus
   reason      String?
-  changedBy   User       @relation(fields: [changedById], references: [id])
+  changedBy   User        @relation(fields: [changedById], references: [id])
   changedById String
-  changedAt   DateTime   @default(now())
+  changedAt   DateTime    @default(now())
 
   @@index([caseId])
 }
@@ -417,28 +418,28 @@ model CaseStatusHistory {
 // ---------- Leistungsdokumentation (abrechenbar) ----------
 
 model ServiceEntry {
-  id            String   @id @default(cuid())
-  case          Case     @relation(fields: [caseId], references: [id])
-  caseId        String
-  employee      User     @relation(fields: [employeeId], references: [id])
-  employeeId    String
+  id         String @id @default(cuid())
+  case       Case   @relation(fields: [caseId], references: [id])
+  caseId     String
+  employee   User   @relation(fields: [employeeId], references: [id])
+  employeeId String
 
-  date          DateTime @db.Date
-  startTime     DateTime // Uhrzeit (Datum-Anteil irrelevant)
-  endTime       DateTime
+  date            DateTime @db.Date
+  startTime       DateTime // Uhrzeit (Datum-Anteil irrelevant)
+  endTime         DateTime
   durationMinutes Int
 
-  description   String
+  description String
 
   // Optionale Zuordnung zu einer Wochenprofil-Kategorie der Hilfeart (z.B. "Telefonische Netzwerkarbeit"),
   // um über die Zeit echte Durchschnittswerte je Kategorie ableiten zu können. Nicht verpflichtend.
   activityProfile   HelpTypeActivityProfile? @relation(fields: [activityProfileId], references: [id])
   activityProfileId String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  changeLogs    ServiceEntryChangeLog[]
+  changeLogs ServiceEntryChangeLog[]
 
   @@index([caseId])
   @@index([employeeId])
@@ -456,12 +457,12 @@ enum ServiceEntryChangeField {
 // vollständig nachvollziehbar (wer/wann/vorher/nachher), da es sich um Jugendamt-relevante Dokumentation
 // handelt. Feld statt Diff, damit die Historie auch bei künftigen Formatänderungen lesbar bleibt.
 model ServiceEntryChangeLog {
-  id          String                   @id @default(cuid())
-  entry       ServiceEntry             @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  id          String                  @id @default(cuid())
+  entry       ServiceEntry            @relation(fields: [entryId], references: [id], onDelete: Cascade)
   entryId     String
-  changedBy   User                     @relation(fields: [changedById], references: [id])
+  changedBy   User                    @relation(fields: [changedById], references: [id])
   changedById String
-  changedAt   DateTime                 @default(now())
+  changedAt   DateTime                @default(now())
   field       ServiceEntryChangeField
   oldValue    String
   newValue    String
@@ -499,30 +500,30 @@ enum BerichtsbausteinStatus {
 // Beginn/Ende/Dauer). originaltext darf nach dem Erfassen inhaltlich nie verändert werden (bleibt als
 // Beleg bestehen) - die App bietet dafür bewusst keine Bearbeiten-Funktion an.
 model Berichtsbaustein {
-  id                  String                 @id @default(cuid())
-  case                Case                   @relation(fields: [caseId], references: [id])
+  id                  String   @id @default(cuid())
+  case                Case     @relation(fields: [caseId], references: [id])
   caseId              String
-  ersteller           User                   @relation(fields: [erstellerId], references: [id])
+  ersteller           User     @relation(fields: [erstellerId], references: [id])
   erstellerId         String
-  erfassungszeitpunkt DateTime               @default(now())
+  erfassungszeitpunkt DateTime @default(now())
 
-  originaltext        String
+  originaltext String
 
   vorlaeufigeKategorie BerichtsKapitel?
 
   // "Bezieht sich auf...": bildet z.B. die im Manual geforderte Kette Erkenntnis → Veränderung → Wirkung
   // ab (Kapitel "Verändern"). Einfaches Referenz-Feld statt komplexer Verlinkungsoberfläche.
-  bezugBaustein        Berichtsbaustein?      @relation("BausteinBezug", fields: [bezugBausteinId], references: [id], onDelete: SetNull)
-  bezugBausteinId      String?
-  bezugVon             Berichtsbaustein[]     @relation("BausteinBezug")
+  bezugBaustein   Berichtsbaustein?  @relation("BausteinBezug", fields: [bezugBausteinId], references: [id], onDelete: SetNull)
+  bezugBausteinId String?
+  bezugVon        Berichtsbaustein[] @relation("BausteinBezug")
 
   // Teilmenge von Case.triade - welche(s) der fallspezifischen Systeme dieser Baustein betrifft.
-  triadeZuordnung      String[]               @default([])
+  triadeZuordnung String[] @default([])
 
-  status               BerichtsbausteinStatus @default(GESAMMELT)
+  status BerichtsbausteinStatus @default(GESAMMELT)
 
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([caseId])
   @@index([erstellerId])
@@ -644,23 +645,23 @@ enum GeneralActivity {
 }
 
 model TimeEntry {
-  id              String           @id @default(cuid())
-  employee        User             @relation(fields: [employeeId], references: [id])
-  employeeId      String
+  id         String @id @default(cuid())
+  employee   User   @relation(fields: [employeeId], references: [id])
+  employeeId String
 
   case            Case?            @relation(fields: [caseId], references: [id])
   caseId          String?
   generalActivity GeneralActivity?
 
-  date            DateTime         @db.Date
+  date            DateTime        @db.Date
   startTime       DateTime?
   endTime         DateTime?
   durationMinutes Int
   note            String?
-  source          TimeEntrySource  @default(MANUAL)
+  source          TimeEntrySource @default(MANUAL)
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([employeeId])
   @@index([caseId])
@@ -696,20 +697,20 @@ model Absence {
 // in einer separaten Migration, sobald bestätigt ist, dass nichts fehlt).
 
 model Appointment {
-  id                   String   @id @default(cuid())
-  title                String
-  organizer            User     @relation("AppointmentOrganizer", fields: [organizerId], references: [id])
-  organizerId          String
-  case                 Case?    @relation(fields: [caseId], references: [id])
-  caseId               String?
-  startsAt             DateTime
-  endsAt               DateTime
-  location             String?
-  note                 String?
-  reminderMinutesBefore Int?    @default(60)
+  id                    String   @id @default(cuid())
+  title                 String
+  organizer             User     @relation("AppointmentOrganizer", fields: [organizerId], references: [id])
+  organizerId           String
+  case                  Case?    @relation(fields: [caseId], references: [id])
+  caseId                String?
+  startsAt              DateTime
+  endsAt                DateTime
+  location              String?
+  note                  String?
+  reminderMinutesBefore Int?     @default(60)
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizerId])
   @@index([caseId])
@@ -723,7 +724,7 @@ model Document {
   case         Case     @relation(fields: [caseId], references: [id])
   caseId       String
   fileName     String
-  fileKey      String   // Schlüssel im S3-kompatiblen Speicher
+  fileKey      String // Schlüssel im S3-kompatiblen Speicher
   mimeType     String
   sizeBytes    Int
   category     String?
@@ -747,18 +748,18 @@ model KnowledgeItem {
   title       String
   type        KnowledgeItemType
   description String?
-  fileKey     String?           // bei DOCUMENT/IMAGE
+  fileKey     String? // bei DOCUMENT/IMAGE
   mimeType    String?
   sizeBytes   Int?
-  url         String?           // bei LINK
-  folder      String?           // Ordnerstruktur (z.B. "Hilfeart/Thema")
+  url         String? // bei LINK
+  folder      String? // Ordnerstruktur (z.B. "Hilfeart/Thema")
   tags        String[]          @default([])
 
-  createdBy   User              @relation(fields: [createdById], references: [id])
+  createdBy   User     @relation(fields: [createdById], references: [id])
   createdById String
-  archived    Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  archived    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([folder])
 }
@@ -766,29 +767,29 @@ model KnowledgeItem {
 // ---------- Team-Kommunikation ----------
 
 model Message {
-  id          String              @id @default(cuid())
-  sender      User                @relation(fields: [senderId], references: [id])
+  id          String   @id @default(cuid())
+  sender      User     @relation(fields: [senderId], references: [id])
   senderId    String
   subject     String
   body        String
-  isBroadcast Boolean             @default(false)
-  case        Case?               @relation(fields: [caseId], references: [id])
+  isBroadcast Boolean  @default(false)
+  case        Case?    @relation(fields: [caseId], references: [id])
   caseId      String?
-  createdAt   DateTime            @default(now())
+  createdAt   DateTime @default(now())
 
-  recipients  MessageRecipient[]
+  recipients MessageRecipient[]
 
   @@index([senderId])
   @@index([caseId])
 }
 
 model MessageRecipient {
-  id        String    @id @default(cuid())
-  message   Message   @relation(fields: [messageId], references: [id])
-  messageId String
-  recipient User      @relation(fields: [recipientId], references: [id])
+  id          String    @id @default(cuid())
+  message     Message   @relation(fields: [messageId], references: [id])
+  messageId   String
+  recipient   User      @relation(fields: [recipientId], references: [id])
   recipientId String
-  readAt    DateTime?
+  readAt      DateTime?
 
   @@unique([messageId, recipientId])
   @@index([recipientId, readAt])
@@ -812,7 +813,7 @@ model AccessLog {
   user       User?        @relation(fields: [userId], references: [id])
   userId     String?
   action     AccessAction
-  entityType String       // z.B. "Case", "Document", "ServiceEntry"
+  entityType String // z.B. "Case", "Document", "ServiceEntry"
   entityId   String?
   details    String?
   ipAddress  String?
@@ -826,29 +827,29 @@ model AccessLog {
 // ---------- Praxis-Einstellungen (Singleton) ----------
 
 model Settings {
-  id                          String  @id @default("singleton")
-  practiceName                String  @default("PROS Jugendhilfe")
-  practiceAddress             String?
-  practicePhone                String?
-  practiceEmail                String?
-  logoUrl                     String?
-  colorPrimary                String  @default("#0B3D46")
-  colorAccentLight             String  @default("#F7F3EA")
-  colorTextDark                String  @default("#2E3330")
-  hourlyRate                  Decimal? @db.Decimal(7, 2) // Stundensatz für Rechnungen (Praxis-weit einheitlich)
+  id               String   @id @default("singleton")
+  practiceName     String   @default("PROS Jugendhilfe")
+  practiceAddress  String?
+  practicePhone    String?
+  practiceEmail    String?
+  logoUrl          String?
+  colorPrimary     String   @default("#0B3D46")
+  colorAccentLight String   @default("#F7F3EA")
+  colorTextDark    String   @default("#2E3330")
+  hourlyRate       Decimal? @db.Decimal(7, 2) // Stundensatz für Rechnungen (Praxis-weit einheitlich)
 
   // Kapazitätsplanung (Stunden-Budget-Modell)
-  billableCapacityFactor      Decimal @default(0.75) @db.Decimal(4, 2) // Anteil der Vertragsstunden, der abrechenbar eingeplant wird
-  defaultPhaseOutWeeks        Int     @default(5) // Vorbefüllung für Case.phaseOutWeeks
-  targetParallelCasesAtFullTime Int   @default(5) // Richtwert, keine harte Grenze
+  billableCapacityFactor        Decimal @default(0.75) @db.Decimal(4, 2) // Anteil der Vertragsstunden, der abrechenbar eingeplant wird
+  defaultPhaseOutWeeks          Int     @default(5) // Vorbefüllung für Case.phaseOutWeeks
+  targetParallelCasesAtFullTime Int     @default(5) // Richtwert, keine harte Grenze
 
-  contingentWarningThreshold  Int     @default(10) // Prozent
-  sessionIdleTimeoutMinutes   Int     @default(20)
+  contingentWarningThreshold      Int     @default(10) // Prozent
+  sessionIdleTimeoutMinutes       Int     @default(20)
   employeesCanContributeKnowledge Boolean @default(false)
 
   // Stundenmodell-Rechner: EINE zentrale Fonds-Basis (%), neue Mitarbeiter übernehmen sie bei Einstellung
   // als eigenen Bestandsschutz-Snapshot (User.fondsBasisAtHire) - kein Mitarbeiter-Wahlrecht.
-  aktuelleFondsBasis          Decimal @default(70.28) @db.Decimal(5, 2)
+  aktuelleFondsBasis Decimal @default(70.28) @db.Decimal(5, 2)
 
   // Fahrten-/Fallrechner: Ø km/h für die Umrechnung Fahrstrecke → Fahrzeit (siehe src/lib/fahrtenrechner/calc.ts)
   fahrtenrechnerDurchschnittskmh Decimal @default(80) @db.Decimal(5, 1)
@@ -856,12 +857,12 @@ model Settings {
   // KI-gestütztes Abschlussberichtswesen: Obergrenze gleichzeitig genutzter Referenzberichte im
   // Generierungs-Prompt (Prompt Teil 2/3 Punkt 8, gegen Kontext-Sprengung bei wachsender Bibliothek) -
   // angewendet als "die N zuletzt freigegebenen Referenzberichte".
-  berichtReferenzberichteMaxAnzahl Int @default(3)
+  berichtReferenzberichteMaxAnzahl      Int @default(3)
   // Vollständigkeitsprüfung (Prompt Teil 3/3 Punkt 10b): ab wie vielen dokumentierten Terminen in einem
   // Monat OHNE jeden Berichtsbaustein ein Hinweis erscheint - konfigurierbar statt hart codiert.
   berichtLeistungsnachweisSchwellenwert Int @default(3)
 
-  updatedAt                   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 // ---------- Betriebswirtschaftliches Cockpit ----------
@@ -873,23 +874,23 @@ model Settings {
 // Prompt ergibt sich als Summe von Raum-/Verwaltungssachkosten/Sonstige Kosten, GEPLANTE_GESAMTKOSTEN_JAHR
 // als Summe aller vier (siehe praxisKalkulationTotals in src/lib/betriebscockpit.ts).
 model PraxisKalkulation {
-  id                                 String   @id @default(cuid())
-  gueltigAb                          DateTime @db.Date
-  geplantePersonalkostenJahr         Decimal  @db.Decimal(10, 2)
-  geplanteRaumkostenJahr             Decimal  @db.Decimal(10, 2)
-  geplanteVerwaltungssachkostenJahr  Decimal  @db.Decimal(10, 2)
-  geplanteSonstigeKostenAfaJahr      Decimal  @db.Decimal(10, 2)
+  id                                String   @id @default(cuid())
+  gueltigAb                         DateTime @db.Date
+  geplantePersonalkostenJahr        Decimal  @db.Decimal(10, 2)
+  geplanteRaumkostenJahr            Decimal  @db.Decimal(10, 2)
+  geplanteVerwaltungssachkostenJahr Decimal  @db.Decimal(10, 2)
+  geplanteSonstigeKostenAfaJahr     Decimal  @db.Decimal(10, 2)
 
-  zielQuote                          Decimal  @default(0.75) @db.Decimal(4, 3)
-  verfuegbarkeitsquote               Decimal  @default(0.769) @db.Decimal(4, 3) // 200/260 Tage
-  zielFaktor                         Decimal  @default(2.2) @db.Decimal(4, 2)
-  mindestFaktorSteuerberater         Decimal  @default(2.1) @db.Decimal(4, 2)
-  stundensatzBasis                   Decimal  @db.Decimal(7, 2)
-  zielFlsStdJahr                     Decimal  @db.Decimal(8, 2)
-  zahlungsverzugTageJugendamt        Int      @default(45)
+  zielQuote                   Decimal @default(0.75) @db.Decimal(4, 3)
+  verfuegbarkeitsquote        Decimal @default(0.769) @db.Decimal(4, 3) // 200/260 Tage
+  zielFaktor                  Decimal @default(2.2) @db.Decimal(4, 2)
+  mindestFaktorSteuerberater  Decimal @default(2.1) @db.Decimal(4, 2)
+  stundensatzBasis            Decimal @db.Decimal(7, 2)
+  zielFlsStdJahr              Decimal @db.Decimal(8, 2)
+  zahlungsverzugTageJugendamt Int     @default(45)
 
-  quelle                             String? // Freitext, z.B. "Entgeltkalkulation Kommission 20260901"
-  erstelltAm                         DateTime @default(now())
+  quelle     String? // Freitext, z.B. "Entgeltkalkulation Kommission 20260901"
+  erstelltAm DateTime @default(now())
 
   @@index([gueltigAb])
 }
@@ -959,6 +960,9 @@ enum FinomZuordnungsquelle {
   FINOM_KATEGORIE
   BELEG_FALLBACK
   MANUELL
+  // Konsolidierung Betriebswirtschaftstool: Stichwort-Match gegen eine granulare Budget-Position
+  // (bisherige Zuordnungslogik des separaten Budgetrechner-Imports, siehe src/lib/budgetrechner/finom.ts).
+  STICHWORT
 }
 
 enum FinomBuchungStatus {
@@ -971,21 +975,31 @@ enum FinomBuchungStatus {
 // Verwendungszweck) und die "Bitte zuordnen"-Liste. istKostenEintragId ist bewusst kein Prisma-Relationsfeld
 // (nur informativer Verweis), damit IstKostenEintrag unabhängig davon bleibt, ob eine Zeile aus dem
 // CSV-Import oder manuell entstanden ist.
+//
+// Konsolidierung Betriebswirtschaftstool (Schritt 1/3, Schema): dieselbe Zeile bekommt künftig zwei
+// Zuordnungsschritte statt zwei getrennter CSV-Importe - die bestehende grobe Zuordnung
+// (zugeordneteKategorie/zuordnungsquelle) bleibt unverändert, zugeordneteBudgetPositionId/
+// budgetZuordnungsquelle ergänzen die granulare Zuordnung (bisher zweiter, separater Import im
+// Budgetrechner). istBuchungId verweist auf den neuen, vereinheitlichten Ist-Erfassungs-Datensatz
+// (siehe IstBuchung) - Verknüpfung folgt in Schritt 2 (Import-Konsolidierung), Feld liegt bereits an.
 model FinomBuchungRohdaten {
-  id                   String                @id @default(cuid())
-  datum                DateTime              @db.Date
-  betrag               Decimal               @db.Decimal(10, 2)
-  empfaengerName       String?
-  empfaengerIban       String?
-  verwendungszweck     String?
-  finomKategorie       String?
-  hatBeleg             Boolean?
-  zugeordneteKategorie KostenKategorie?
-  zuordnungsquelle     FinomZuordnungsquelle?
-  status               FinomBuchungStatus    @default(ZU_KLAEREN)
-  istKostenEintragId   String?
-  importBatchId        String
-  erstelltAm           DateTime              @default(now())
+  id                          String                 @id @default(cuid())
+  datum                       DateTime               @db.Date
+  betrag                      Decimal                @db.Decimal(10, 2)
+  empfaengerName              String?
+  empfaengerIban              String?
+  verwendungszweck            String?
+  finomKategorie              String?
+  hatBeleg                    Boolean?
+  zugeordneteKategorie        KostenKategorie?
+  zuordnungsquelle            FinomZuordnungsquelle?
+  status                      FinomBuchungStatus     @default(ZU_KLAEREN)
+  istKostenEintragId          String?
+  zugeordneteBudgetPositionId String?
+  budgetZuordnungsquelle      FinomZuordnungsquelle?
+  istBuchungId                String?
+  importBatchId               String
+  erstelltAm                  DateTime               @default(now())
 
   @@index([datum])
   @@index([status])
@@ -995,15 +1009,15 @@ model FinomBuchungRohdaten {
 // Zuletzt verwendete CSV-Spaltenzuordnung (Singleton) - Finom-Exportformat kann sich ändern, daher
 // admin-konfigurierbar statt hart codierter Spaltennamen; wird beim nächsten Import vorbefüllt.
 model FinomCsvSpaltenzuordnung {
-  id                      String   @id @default("singleton")
-  datumSpalte             String
-  betragSpalte            String
-  empfaengerNameSpalte    String?
-  empfaengerIbanSpalte    String?
-  verwendungszweckSpalte  String?
-  finomKategorieSpalte    String?
-  belegSpalte             String?
-  aktualisiertAm          DateTime @updatedAt
+  id                     String   @id @default("singleton")
+  datumSpalte            String
+  betragSpalte           String
+  empfaengerNameSpalte   String?
+  empfaengerIbanSpalte   String?
+  verwendungszweckSpalte String?
+  finomKategorieSpalte   String?
+  belegSpalte            String?
+  aktualisiertAm         DateTime @updatedAt
 }
 
 // ---------- Betriebswirtschaftliches Cockpit: Steuerrücklagenrechner (Phase 3) ----------
@@ -1038,8 +1052,8 @@ model PraxisSteuereinstellungen {
   id                           String          @id @default("singleton")
   persoenlicherGrenzsteuersatz Decimal         @default(42) @db.Decimal(4, 2) // %
   veranlagungsart              Veranlagungsart @default(EINZELN)
-  ehepartnerEinkommenJahr       Decimal?        @db.Decimal(9, 2) // rein informativ
-  aktualisiertAm                DateTime        @updatedAt
+  ehepartnerEinkommenJahr      Decimal?        @db.Decimal(9, 2) // rein informativ
+  aktualisiertAm               DateTime        @updatedAt
 }
 
 // ---------- Betriebswirtschaftliches Cockpit: Privater Steuerabzugs-Assistent (Phase 3) ----------
@@ -1117,13 +1131,13 @@ model GutscheinAuswahl {
 // Markiert, dass der Quartals-Bonus eines Mitarbeiters tatsächlich ausgezahlt wurde (üblicherweise im
 // Kalendermonat nach Quartalsende). Quote/Bonusbetrag selbst werden live berechnet, nicht persistiert.
 model QuarterlyBonusPayout {
-  id         String   @id @default(cuid())
-  employee   User     @relation(fields: [employeeId], references: [id])
-  employeeId String
-  year       Int
-  quarter    Int // 1-4
-  paidOutAt  DateTime @default(now())
-  paidOutBy  User     @relation("BonusPaidOutBy", fields: [paidOutById], references: [id])
+  id          String   @id @default(cuid())
+  employee    User     @relation(fields: [employeeId], references: [id])
+  employeeId  String
+  year        Int
+  quarter     Int // 1-4
+  paidOutAt   DateTime @default(now())
+  paidOutBy   User     @relation("BonusPaidOutBy", fields: [paidOutById], references: [id])
   paidOutById String
 
   @@unique([employeeId, year, quarter])
@@ -1134,14 +1148,14 @@ model QuarterlyBonusPayout {
 // Katalog datierter Sondertage (Konzeptionstag/Teamtag), die einem oder mehreren Mitarbeiter-Plänen
 // zugeordnet werden können - als gemeinsamer Katalog, damit die Team-Gesamtansicht Kollisionen erkennen kann.
 model SondertagTyp {
-  id                String            @id @default(cuid())
+  id                String   @id @default(cuid())
   name              String // z.B. "Konzeptionstag" oder "Teamtag"
-  datum             DateTime          @db.Date
-  dauerStd          Decimal           @db.Decimal(4, 2)
+  datum             DateTime @db.Date
+  dauerStd          Decimal  @db.Decimal(4, 2)
   istEchterExtraTag Boolean // true = Tag ohne normale Arbeitszeit, false = verlängerter Normaltag
-  createdAt         DateTime          @default(now())
+  createdAt         DateTime @default(now())
 
-  plaene            MitarbeiterPlan[]
+  plaene MitarbeiterPlan[]
 
   @@index([datum])
 }
@@ -1160,8 +1174,8 @@ model MitarbeiterPlan {
 
   sondertage SondertagTyp[]
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([employeeId, gueltigAb])
 }
@@ -1214,7 +1228,7 @@ model InterimCase {
   createdAt               DateTime           @default(now())
   updatedAt               DateTime           @updatedAt
 
-  entries                 InterimEntry[]
+  entries InterimEntry[]
 }
 
 model InterimEntry {
@@ -1285,12 +1299,20 @@ model BudgetKategorie {
   name         String
   jahr         Int
   jahresbudget Decimal  @db.Decimal(10, 2)
-  quelle       String // "excel_import" | "manuell"
+  quelle       String // "excel_import" | "manuell" | "migration"
   // Für das Keyword-Matching beim Finom-CSV-Import zusätzlich zum Namen pflegbar
   // (z.B. Kategorie "Bürobedarf" -> Stichwort "amazon"). Siehe src/lib/budgetrechner/finom.ts.
   stichwoerter String[] @default([])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  // Konsolidierung Betriebswirtschaftstool: jede granulare Position gehört genau einer der 4 groben
+  // Kosten-Kategorien an (Personal/Raum/Verwaltungssachkosten/Sonstige+AfA) - stellt die Verbindung
+  // zwischen grober Ampel-Übersicht und granularer Positions-Ebene her, ohne zwei gepflegte Summen.
+  // Nullable, weil bestehende Positionen diese Zuordnung noch nicht haben (siehe Datenmigrations-Tool
+  // unter /admin/budget-migration) - neue Positionen sollen sie ab Schritt 3 (UI) verpflichtend setzen.
+  kategorie KostenKategorie?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   ausgaben BudgetAusgabe[]
 
@@ -1325,6 +1347,63 @@ model BudgetAusgabe {
   @@index([kategorieId])
 }
 
+// ---------- Konsolidierung Betriebswirtschaftstool (Schritt 1/3: Schema) ----------
+//
+// IstBuchung ersetzt perspektivisch sowohl IstKostenEintrag (Cockpit, 4 grobe Kategorien) als auch
+// BudgetAusgabe (Budgetrechner, granulare Positionen) durch EINEN Datensatz je tatsächlicher Ausgabe.
+// Bewusst über budgetPositionId (-> BudgetKategorie) statt über eine eigene "kategorie"-Spalte verknüpft:
+// die grobe Kategorie-Summe ergibt sich dadurch strukturell als Summe ihrer granularen Positionen und
+// kann nicht unabhängig davon auseinanderlaufen (siehe Prüfung "Budgetrechner vs. Cockpit"-Überschneidung).
+// budgetPositionId ist wie bei FinomBuchungRohdaten bewusst kein Prisma-Relationsfeld, nur ein
+// informativer Verweis - null bedeutet "noch nicht zugeordnet" (zu-klären-Fall).
+//
+// Additiv/parallel zu IstKostenEintrag und BudgetAusgabe angelegt, damit der bestehende Cockpit- und
+// Budgetrechner-Code unverändert weiterläuft, bis Schritt 2 (Import-Konsolidierung) und Schritt 3 (UI)
+// die Anwendung auf IstBuchung umstellen. Die Übernahme bestehender IstKostenEintrag-/BudgetAusgabe-
+// Zeilen passiert nicht per SQL-Migration, sondern über ein geprüftes, im Client typsicheres
+// Admin-Werkzeug (/admin/budget-migration) mit Vorschau vor dem eigentlichen Schreiben.
+enum IstErfassungsart {
+  CSV_IMPORT
+  MANUELL
+}
+
+model IstBuchung {
+  id                 String           @id @default(cuid())
+  budgetPositionId   String? // -> BudgetKategorie.id, informativ. null = nicht zugeordnet ("zu klären")
+  betrag             Decimal          @db.Decimal(10, 2)
+  datum              DateTime         @db.Date
+  notiz              String?
+  erfassungsart      IstErfassungsart
+  reKoBudgetRelevant Boolean          @default(true)
+  quelle             String? // Freitext-Herkunft für Anzeige, z.B. "finom_csv" | "finom_import" | "manuell" | "migration"
+  importBatchId      String?
+  dedupKey           String?          @unique // Datum|Betrag|Empfänger - verhindert Doppel-Import derselben Buchung
+
+  belege Beleg[]
+
+  erstelltAm DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([datum])
+  @@index([budgetPositionId])
+}
+
+// Beleg-Hinterlegung: reine Datei-Ablage mit Verknüpfung zu einer Buchung (importiert oder manuell),
+// kein automatisches Auslesen von Betrag/Datum. S3-Speicher wie bei Document/EmployeeDocument.
+model Beleg {
+  id               String     @id @default(cuid())
+  istBuchung       IstBuchung @relation(fields: [istBuchungId], references: [id], onDelete: Cascade)
+  istBuchungId     String
+  fileKey          String
+  dateiname        String
+  contentType      String?
+  hochgeladenVon   User       @relation(fields: [hochgeladenVonId], references: [id])
+  hochgeladenVonId String
+  hochgeladenAm    DateTime   @default(now())
+
+  @@index([istBuchungId])
+}
+
 // ==========================================================================
 // TERMINBUCHUNG - Praxis-Terminvergabe wie eine Arztpraxis-Software: feste
 // wiederkehrende Zeitfenster je Mitarbeiterin (TerminWochenvorlage), daraus
@@ -1353,8 +1432,8 @@ model Raum {
 // JSON-Wochenplans (wie bei MitarbeiterPlan.wochenplan), weil jedes Zeitfenster einzeln
 // bearbeitet/deaktiviert werden muss, ohne die übrigen zu berühren.
 model TerminWochenvorlage {
-  id               String   @id @default(cuid())
-  employee         User     @relation(fields: [employeeId], references: [id])
+  id               String  @id @default(cuid())
+  employee         User    @relation(fields: [employeeId], references: [id])
   employeeId       String
   label            String? // z.B. "Praxisnachmittag"
   wochentag        Int // 1=Montag ... 7=Sonntag

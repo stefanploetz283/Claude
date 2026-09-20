@@ -92,11 +92,13 @@ export function computeLiquiditaetsReichweiteMonate(liquideMittel: number, monat
   return liquideMittel / monatlicheFixkosten;
 }
 
-/** Faktor_hochgerechnet = Hochrechnung_Umsatz_Jahr ÷ Hochrechnung_Gesamtkosten_Jahr - beide bereits
- * hochgerechnet (nicht Ist ÷ Plan, siehe Formel 5 im Prompt). */
-export function computeFaktorHochgerechnet(hochrechnungUmsatzJahr: number, hochrechnungGesamtkostenJahr: number): number | null {
-  if (hochrechnungGesamtkostenJahr <= 0) return null;
-  return hochrechnungUmsatzJahr / hochrechnungGesamtkostenJahr;
+/** Faktor_hochgerechnet = Hochrechnung_Umsatz_Jahr ÷ Hochrechnung_Personalkosten_Jahr - beide bereits
+ * hochgerechnet (nicht Ist ÷ Plan, siehe Formel 5 im Prompt). So war der Faktor in der Entgeltkalkulation
+ * von Anfang an vorgesehen (Korrektur ggü. einer früheren Fassung, die versehentlich gegen die
+ * Gesamtkosten statt nur die Personalkosten gerechnet hatte). */
+export function computeFaktorHochgerechnet(hochrechnungUmsatzJahr: number, hochrechnungPersonalkostenJahr: number): number | null {
+  if (hochrechnungPersonalkostenJahr <= 0) return null;
+  return hochrechnungUmsatzJahr / hochrechnungPersonalkostenJahr;
 }
 
 // ---------- Ampeln (Warnregeln 1-5) ----------
@@ -259,6 +261,7 @@ export type KostenKategorieZeile = {
 export type KostenSollIstResult = {
   zeilen: KostenKategorieZeile[]; // größte |Abweichung_Prozent| zuerst
   hochrechnungGesamtkostenJahr: number;
+  hochrechnungPersonalkostenJahr: number; // für den Faktor (Umsatz ÷ Personalkosten), separat ausgewiesen
   arbeitstageBisherJahr: number;
   arbeitstageGesamtJahr: number;
   letzterEintragAm: Date | null;
@@ -318,6 +321,7 @@ export async function computeKostenSollIst(year: number, kalkulation: PraxisKalk
   return {
     zeilen,
     hochrechnungGesamtkostenJahr: zeilen.reduce((sum, z) => sum + z.hochrechnungJahr, 0),
+    hochrechnungPersonalkostenJahr: zeilen.find((z) => z.kategorie === "PERSONALKOSTEN")?.hochrechnungJahr ?? 0,
     arbeitstageBisherJahr,
     arbeitstageGesamtJahr,
     letzterEintragAm: letzter?.datum ?? null,
@@ -428,7 +432,7 @@ export async function computeCockpitKernzahlen(
 
   const hochrechnungGesamtkostenJahr = kostenSollIst?.hochrechnungGesamtkostenJahr ?? null;
   const hochrechnungGewinnJahr = hochrechnungGesamtkostenJahr != null ? umsatz.hochrechnungJahr - hochrechnungGesamtkostenJahr : null;
-  const faktorHochgerechnet = hochrechnungGesamtkostenJahr != null ? computeFaktorHochgerechnet(umsatz.hochrechnungJahr, hochrechnungGesamtkostenJahr) : null;
+  const faktorHochgerechnet = kostenSollIst != null ? computeFaktorHochgerechnet(umsatz.hochrechnungJahr, kostenSollIst.hochrechnungPersonalkostenJahr) : null;
 
   const teamIstQuote = teamQuote.teamIstQuote;
   const zielQuote = kalkulation?.zielQuote.toNumber() ?? null;
