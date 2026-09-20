@@ -33,26 +33,11 @@ export default async function LoginPage() {
             <circle cx="470" cy="770" r="260" />
           </g>
         </svg>
-        <div className="relative flex items-center gap-4">
-          <svg viewBox="0 0 100 100" className="h-16 w-16 flex-none" aria-hidden="true">
-            <g style={{ isolation: "isolate" }}>
-              <circle cx="50" cy="37" r="26" fill="var(--color-gold)" style={{ mixBlendMode: "multiply" }} />
-              <circle cx="37" cy="60" r="26" fill="var(--color-sage)" style={{ mixBlendMode: "multiply" }} />
-              <circle cx="63" cy="60" r="26" fill="var(--color-primary)" style={{ mixBlendMode: "multiply" }} />
-            </g>
-            <g fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.65">
-              <circle cx="50" cy="37" r="26" />
-              <circle cx="37" cy="60" r="26" />
-              <circle cx="63" cy="60" r="26" />
-            </g>
-          </svg>
+        <div className="relative flex flex-col gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-wordmark-dark-bg.svg" alt="" className="h-14 w-auto" />
           <div className="leading-tight">
-            <div className="text-[15px] font-normal text-[#EDE7DA]">Praxis für</div>
-            <div className="text-2xl font-bold tracking-wide text-white">
-              SYSTEMISCHE
-              <br />
-              ENTWICKLUNG
-            </div>
+            <div className="text-sm font-semibold tracking-[0.18em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
             <div className="my-2.5 h-[1.5px] w-[180px] bg-[var(--color-gold)]" />
             <div className="text-[10px] font-semibold tracking-[0.12em] text-white">
               BERATUNG&nbsp;&nbsp;<span className="text-[var(--color-gold)]">•</span>&nbsp;&nbsp;PÄDAGOGIK&nbsp;&nbsp;

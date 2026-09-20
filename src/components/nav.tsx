@@ -88,10 +88,9 @@ export function Nav({
               // ausschließlich für Lesbarkeit auf dem petrolfarbenen Hintergrund angepasst.
               <div className="flex flex-col items-center gap-2 text-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-mark-petrol.svg" alt="" className="h-14 w-14" />
+                <img src="/logo-wordmark-dark-bg.svg" alt="" className="h-9 w-auto" />
                 <div className="leading-tight text-white">
-                  <div className="text-[19px] font-bold tracking-tight">PROS.</div>
-                  <div className="text-[11px] font-semibold tracking-[0.16em] uppercase">Jugendhilfe</div>
+                  <div className="text-[11px] font-semibold tracking-[0.16em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
                   <div className="mx-auto my-1.5 h-px w-16 bg-[var(--color-gold)]" />
                   <div className="text-[8.5px] font-semibold tracking-[0.14em] uppercase">Beratung · Pädagogik · Therapie</div>
                 </div>
