@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 import { computeStundenmodell, type SondertagWithMeta, type SondertagRow } from "@/lib/stundenmodell";
 import { VertragEditor, type VertragEmployee } from "./vertrag-editor";
 import type { WochenplanEntry } from "./actions";
 
 export default async function VertragPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireAdminOrVerwaltung();
   const { id } = await params;
   const settings = await getSettings();
   const aktuelleFondsBasis = settings.aktuelleFondsBasis.toNumber();

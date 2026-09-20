@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Praxis für Systemische Entwicklung – Fallverwaltung",
-    short_name: "Fallverwaltung",
-    description: "Fallverwaltung für die Praxis für Systemische Entwicklung.",
-    start_url: "/dashboard",
+    name: "PROS Jugendhilfe – Fallverwaltung",
+    short_name: "PROS Jugendhilfe",
+    description: "Fallverwaltung für PROS Jugendhilfe.",
+    start_url: "/heute",
     display: "standalone",
-    background_color: "#F5F0E8",
-    theme_color: "#204D4B",
+    background_color: "#F7F3EA",
+    theme_color: "#0B3D46",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },

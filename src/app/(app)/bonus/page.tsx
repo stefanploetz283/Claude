@@ -23,7 +23,7 @@ function getHeadline(currentWeekIndex: number, prognoseQuote: number | null): st
 
 export default async function BonusPage() {
   const user = await requireUser();
-  if (user.role === "VERWALTUNG") redirect("/dashboard");
+  if (user.role === "VERWALTUNG") redirect("/heute");
 
   const employee = await prisma.user.findUnique({ where: { id: user.id } });
   const now = new Date();

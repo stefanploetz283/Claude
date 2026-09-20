@@ -10,14 +10,16 @@ export async function requireUser(): Promise<Session["user"]> {
 
 export async function requireAdmin(): Promise<Session["user"]> {
   const user = await requireUser();
-  if (user.role !== "ADMIN") redirect("/dashboard");
+  // Redirect-Ziel bewusst /heute statt /dashboard - Verwaltung darf /dashboard (Fälle) nicht sehen,
+  // /heute ist für jede Rolle ein sicheres Ziel.
+  if (user.role !== "ADMIN") redirect("/heute");
   return user;
 }
 
 /** Admin oder Verwaltung - für Rechnungsstellung, Stundensatz, Fallanfragen. Fachkraft hat hier keinen Zugriff. */
 export async function requireAdminOrVerwaltung(): Promise<Session["user"]> {
   const user = await requireUser();
-  if (user.role !== "ADMIN" && user.role !== "VERWALTUNG") redirect("/dashboard");
+  if (user.role !== "ADMIN" && user.role !== "VERWALTUNG") redirect("/heute");
   return user;
 }
 
@@ -28,7 +30,7 @@ export async function requireAdminOrVerwaltung(): Promise<Session["user"]> {
  */
 export async function requireInterimAdmin(): Promise<Session["user"]> {
   const user = await requireUser();
-  if (user.role !== "ADMIN") redirect("/dashboard");
+  if (user.role !== "ADMIN") redirect("/heute");
   return user;
 }
 

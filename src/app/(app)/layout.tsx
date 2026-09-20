@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/rbac";
 import { getSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
-import { Nav } from "@/components/nav";
+import { AppSidebar } from "@/components/app-sidebar";
 import { AppBody } from "@/components/app-body";
 import { IdleTimer } from "@/components/idle-timer";
 import { GlobalDictateWidget } from "@/components/global-dictate/global-dictate-widget";
@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div
-      className="flex min-h-screen flex-col"
+      className="flex min-h-screen flex-col lg:flex-row"
       style={
         {
           "--color-primary": settings.colorPrimary,
@@ -25,14 +25,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         } as React.CSSProperties
       }
     >
-      <Nav
+      <AppSidebar
         role={user.role}
         unreadCount={unreadCount}
         logoUrl={settings.logoUrl ? "/api/settings/logo" : null}
         practiceName={settings.practiceName}
         userName={user.name ?? user.email ?? "?"}
       />
-      <AppBody role={user.role}>{children}</AppBody>
+      <AppBody>{children}</AppBody>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />
       {(user.role === "EMPLOYEE" || user.role === "ADMIN") && <GlobalDictateWidget />}
     </div>

@@ -70,6 +70,9 @@ model User {
   sentMessages      Message[]
   messageRecipients MessageRecipient[]
 
+  zugewieseneAufgaben Aufgabe[] @relation("AufgabeZugewiesen")
+  erstellteAufgaben   Aufgabe[] @relation("AufgabeErstelltVon")
+
   weeklyContractHours Decimal?   @db.Decimal(5, 2) // Vertragsstunden/Woche, für Kapazitätsplanung
   allowedHelpTypes    HelpType[] @relation("EmployeeAllowedHelpTypes") // welche Hilfearten diese Fachkraft bearbeiten darf
 
@@ -247,11 +250,39 @@ model Case {
   berichtsbausteine       Berichtsbaustein[]
   abschlussberichtEntwurf AbschlussberichtEntwurf?
   termine                 Termin[]
+  aufgaben                Aufgabe[]
 
   @@index([assignedEmployeeId])
   @@index([substituteEmployeeId])
   @@index([status])
   @@index([helpTypeId])
+}
+
+// ---------- Aufgaben (persönliche To-dos, optional an einen Fall gebunden) ----------
+// caseId bewusst optional: eine Aufgabe kann ein rein organisatorisches To-do sein (z.B. "Jugendamt
+// zurückrufen") ohne Fallbezug - relevant für die Verwaltungs-Rolle, die keine Fälle sehen darf und
+// deshalb nur fallungebundene Aufgaben angezeigt bekommt (siehe getOwnAufgaben in aufgaben-helpers.ts).
+model Aufgabe {
+  id         String    @id @default(cuid())
+  titel      String
+  faelligAm  DateTime? @db.Date
+  erledigt   Boolean   @default(false)
+  erledigtAm DateTime?
+
+  zugewiesenAn   User   @relation("AufgabeZugewiesen", fields: [zugewiesenAnId], references: [id])
+  zugewiesenAnId String
+
+  erstelltVon   User   @relation("AufgabeErstelltVon", fields: [erstelltVonId], references: [id])
+  erstelltVonId String
+
+  case   Case?   @relation(fields: [caseId], references: [id])
+  caseId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([zugewiesenAnId, erledigt])
+  @@index([faelligAm])
 }
 
 // Fahrten-/Fallrechner: ein Fall hat i.d.R. mehrere feste Anlaufstellen mit unterschiedlicher

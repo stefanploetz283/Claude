@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { format, differenceInCalendarDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { UploadForm } from "./upload-form";
 import { DocumentList, type EmployeeDocumentRow } from "./document-list";
 import { FzeugnisForm } from "./fzeugnis-form";
@@ -15,7 +15,7 @@ function formatSize(bytes: number) {
 }
 
 export default async function DokumentePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireAdminOrVerwaltung();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });

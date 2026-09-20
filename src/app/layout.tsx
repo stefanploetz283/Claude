@@ -5,22 +5,22 @@ import { Providers } from "@/components/providers";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-outfit" });
-// Skript-Akzentschrift, exakt wie im Flyer - bewusst sparsam eingesetzt (nur die Begrüßung auf dem
-// Dashboard), siehe src/app/(app)/dashboard/greeting-header.tsx.
+// Skript-Akzentschrift, exakt wie im Flyer - bewusst sparsam eingesetzt (nur die Begrüßung auf der
+// Heute-Seite), siehe src/app/(app)/heute/heute-hero.tsx.
 const caveat = Caveat({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-caveat" });
 
 export const metadata: Metadata = {
-  title: "Fallverwaltung",
-  description: "Fallverwaltung für sozialpädagogische Praxis",
+  title: "PROS Jugendhilfe – Fallverwaltung",
+  description: "Fallverwaltung für PROS Jugendhilfe",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Fallverwaltung",
+    title: "PROS Jugendhilfe",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#204D4B",
+  themeColor: "#0B3D46",
 };
 
 export default function RootLayout({

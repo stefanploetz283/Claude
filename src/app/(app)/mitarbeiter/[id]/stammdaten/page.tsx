@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { logAccess } from "@/lib/access-log";
 import { employeeColor } from "@/lib/fahrtenrechner/employee-colors";
 import { AccountActions } from "./account-actions";
@@ -9,7 +9,7 @@ import { StammdatenForm } from "./stammdaten-form";
 const ROLE_LABELS: Record<string, string> = { ADMIN: "Admin", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" };
 
 export default async function StammdatenPage({ params }: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
+  const admin = await requireAdminOrVerwaltung();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { NewEmployeeForm } from "./new-employee-form";
 
@@ -8,7 +8,7 @@ const PALETTE = ["var(--color-primary)", "var(--color-gold)", "var(--color-coral
 const SOFT_PALETTE = ["var(--color-primary-soft)", "var(--color-gold-soft)", "var(--color-coral-soft)", "var(--color-primary-soft)"];
 
 export default async function MitarbeiterListPage() {
-  await requireAdmin();
+  await requireAdminOrVerwaltung();
   const [employees, caseCounts] = await Promise.all([
     prisma.user.findMany({ orderBy: { name: "asc" } }),
     prisma.case.groupBy({

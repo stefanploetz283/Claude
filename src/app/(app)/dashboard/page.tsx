@@ -4,29 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { getRemainingHoursBulk } from "@/lib/case-helpers";
 import { getSettings } from "@/lib/settings";
 import type { CaseStatus, Prisma } from "@prisma/client";
-import { GreetingHeader } from "./greeting-header";
 import { CaseCard } from "./case-card";
 
-const WEEKDAY_LABELS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-
-function berlinHour() {
-  return Number(new Date().toLocaleString("en-US", { timeZone: "Europe/Berlin", hour: "2-digit", hour12: false }));
-}
-
-function greetingForHour(hour: number) {
-  if (hour < 11) return "Guten Morgen";
-  if (hour < 18) return "Guten Tag";
-  return "Guten Abend";
-}
-
-function dateKey(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-
 /**
- * Persönliches "Meine Fälle"-Dashboard - für alle Rollen inkl. Admin (eigene zugewiesene/vertretene
- * Fälle). Die rollenübergreifende Gesamtübersicht mit Mitarbeiter-Filter liegt separat unter
- * /admin/alle-faelle, damit hier nie zwei stark unterschiedliche Dichten auf einer Seite mischen.
+ * "Fälle" - die vollständige, persönliche Fallliste (eigene zugewiesene/vertretene Fälle, alle Rollen
+ * inkl. Admin). Die Begrüßung/Tagesübersicht liegt separat unter /heute, die rollenübergreifende
+ * Gesamtübersicht mit Mitarbeiter-Filter unter /admin/alle-faelle.
  */
 export default async function DashboardPage({
   searchParams,
@@ -39,10 +22,7 @@ export default async function DashboardPage({
 
   const ownVisibility: Prisma.CaseWhereInput = { OR: [{ assignedEmployeeId: user.id }, { substituteEmployeeId: user.id }] };
 
-  const [helpTypes, activeCount] = await Promise.all([
-    prisma.helpType.findMany({ orderBy: { name: "asc" } }),
-    prisma.case.count({ where: { archived: false, status: "ACTIVE", ...ownVisibility } }),
-  ]);
+  const helpTypes = await prisma.helpType.findMany({ orderBy: { name: "asc" } });
 
   const showArchived = params.archived === "1";
   const where: Prisma.CaseWhereInput = {
@@ -79,63 +59,15 @@ export default async function DashboardPage({
     const remainingPercent = contingent > 0 ? (remaining / contingent) * 100 : 0;
     return { case: c, remaining, contingent, remainingPercent, warn: remainingPercent <= threshold };
   });
-  const warnCount = caseRows.filter((r) => r.warn).length;
-
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { avatarUrl: true } });
-  const avatarSrc = dbUser?.avatarUrl ? `/api/users/${user.id}/avatar` : null;
-
-  const today = new Date();
-  const days: Date[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    days.push(d);
-  }
-  const rangeStart = days[0];
-
-  const [entries, recentByCase] = await Promise.all([
-    prisma.serviceEntry.findMany({
-      where: { employeeId: user.id, date: { gte: rangeStart } },
-      select: { date: true, durationMinutes: true },
-    }),
-    prisma.serviceEntry.groupBy({
-      by: ["caseId"],
-      where: { caseId: { in: cases.map((c) => c.id) }, date: { gte: rangeStart } },
-    }),
-  ]);
-
-  const hoursByDate = new Map<string, number>();
-  for (const e of entries) {
-    const key = dateKey(e.date);
-    hoursByDate.set(key, (hoursByDate.get(key) ?? 0) + e.durationMinutes / 60);
-  }
-  const todayKey = dateKey(today);
-  const weekly = days.map((d) => {
-    const key = dateKey(d);
-    const weekdayIdx = (d.getDay() + 6) % 7;
-    return { label: WEEKDAY_LABELS[weekdayIdx], hours: hoursByDate.get(key) ?? 0, isToday: key === todayKey };
-  });
-
-  const documentedCaseIds = new Set(recentByCase.map((r) => r.caseId));
-  const undocumentedCount = cases.filter((c) => c.status === "ACTIVE" && !documentedCaseIds.has(c.id)).length;
-  const hintText =
-    undocumentedCount === 0
-      ? "Diese Woche schon alles dokumentiert"
-      : undocumentedCount === 1
-        ? "1 Fall braucht diese Woche noch eine Doku"
-        : `${undocumentedCount} Fälle brauchen diese Woche noch eine Doku`;
 
   return (
     <div className="flex flex-col gap-6">
-      <GreetingHeader
-        name={user.name ?? user.email ?? "?"}
-        greeting={greetingForHour(berlinHour())}
-        avatarUrl={avatarSrc}
-        hintText={hintText}
-        activeCount={activeCount}
-        warnCount={warnCount}
-        weekly={weekly}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">{showArchived ? "Archivierte Fälle" : "Fälle"}</h1>
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">{cases.length} Fälle gefunden.</p>
+        </div>
+      </div>
 
       <form
         method="get"

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/rbac";
+import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { computeQuarterBonus, computeQuoteTrend, getCurrentQuarter, type Quarter } from "@/lib/bonus";
 import { GUTSCHEIN_STYLES, type GutscheinAnbieterKey } from "@/lib/bonus-colors";
 import { QuoteTrendSparkline } from "./quote-trend-sparkline";
@@ -20,7 +20,7 @@ function prevQuarter(year: number, quarter: Quarter): { year: number; quarter: Q
 }
 
 export default async function BonusHistoriePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireAdminOrVerwaltung();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });

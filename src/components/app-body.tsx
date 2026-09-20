@@ -1,45 +1,9 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-import { Sidebar, shouldShowSidebar } from "./sidebar";
-import { MitarbeiterSubnav } from "./mitarbeiter-subnav";
-import { FinanzenSubnav } from "./finanzen-subnav";
-import { CalendarSubnav } from "./calendar-subnav";
-
-export function AppBody({ role, children }: { role: "ADMIN" | "EMPLOYEE" | "VERWALTUNG"; children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isAdmin = role === "ADMIN";
-
-  const mitarbeiterMatch = isAdmin ? pathname.match(/^\/mitarbeiter\/([^/]+)/) : null;
-  const inFinanzen = isAdmin && pathname.startsWith("/finanzen");
-  // Nur die Verwaltungs-Unterseiten (Wochenvorlagen/Räume) bekommen die Subnav - die eigentliche
-  // Kalenderansicht (/calendar selbst) bleibt für alle Rollen ohne Sidebar, damit das Tages-/Wochenraster
-  // die volle Breite nutzen kann.
-  const inCalendarVerwaltung = isAdmin && (pathname.startsWith("/calendar/wochenvorlagen") || pathname.startsWith("/calendar/raeume"));
-  const withSidebar = isAdmin && (mitarbeiterMatch != null || inFinanzen || inCalendarVerwaltung || shouldShowSidebar(pathname));
-
-  if (!withSidebar) {
-    return (
-      <div className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 gap-8 px-5 py-8">
-        <main className="flex min-w-0 flex-col gap-6">{children}</main>
-      </div>
-    );
-  }
-
+// Reiner Inhaltsbereich - alle Navigation (primär + kontextuelle Unterpunkte) liegt jetzt in der
+// einen durchgehenden AppSidebar, deshalb keine Routen-Fallunterscheidung mehr nötig.
+export function AppBody({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-1 items-stretch">
-      {mitarbeiterMatch ? (
-        <MitarbeiterSubnav employeeId={mitarbeiterMatch[1]} />
-      ) : inFinanzen ? (
-        <FinanzenSubnav />
-      ) : inCalendarVerwaltung ? (
-        <CalendarSubnav />
-      ) : (
-        <Sidebar role={role} />
-      )}
-      <div className="min-w-0 flex-1 px-5 py-8">
-        <main className="mx-auto flex max-w-[1112px] min-w-0 flex-col gap-6">{children}</main>
-      </div>
+    <div className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
+      <main className="mx-auto flex max-w-[1400px] min-w-0 flex-col gap-6">{children}</main>
     </div>
   );
 }
