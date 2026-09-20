@@ -83,17 +83,12 @@ export function Nav({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={practiceName} className="h-auto w-[190px] object-contain" />
             ) : (
-              // Standard-Logo: Kreis-Mark mit weißer Outline (alle drei Kreise, Füllfarben unverändert)
-              // plus Schriftzug in Weiß, exakt derselben Schriftart (Outfit) wie im Rest der App - beides
-              // ausschließlich für Lesbarkeit auf dem petrolfarbenen Hintergrund angepasst.
-              <div className="flex flex-col items-center gap-2 text-center">
+              // Standard-Logo: die Original-Logodatei unverändert (1:1, keine Nachbildung), auf einer
+              // hellen Karte statt direkt auf Petrol - so wie das Logo auch im Flyer auf heller Fläche
+              // sitzt, statt Farben/Schriftzug für den dunklen Hintergrund nachzubauen.
+              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-wordmark-dark-bg.svg" alt="" className="h-9 w-auto" />
-                <div className="leading-tight text-white">
-                  <div className="text-[11px] font-semibold tracking-[0.16em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
-                  <div className="mx-auto my-1.5 h-px w-16 bg-[var(--color-gold)]" />
-                  <div className="text-[8.5px] font-semibold tracking-[0.14em] uppercase">Beratung · Pädagogik · Therapie</div>
-                </div>
+                <img src="/logo-lockup.png" alt={practiceName} className="h-auto w-[170px] object-contain" />
               </div>
             )}
           </Link>

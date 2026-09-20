@@ -33,17 +33,10 @@ export default async function LoginPage() {
             <circle cx="470" cy="770" r="260" />
           </g>
         </svg>
-        <div className="relative flex flex-col gap-3">
+        <div className="relative w-fit rounded-2xl bg-[var(--color-bg)] px-6 py-5">
+          {/* Original-Logodatei unverändert (1:1), auf heller Karte statt direkt auf Petrol. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-wordmark-dark-bg.svg" alt="" className="h-14 w-auto" />
-          <div className="leading-tight">
-            <div className="text-sm font-semibold tracking-[0.18em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
-            <div className="my-2.5 h-[1.5px] w-[180px] bg-[var(--color-gold)]" />
-            <div className="text-[10px] font-semibold tracking-[0.12em] text-white">
-              BERATUNG&nbsp;&nbsp;<span className="text-[var(--color-gold)]">•</span>&nbsp;&nbsp;PÄDAGOGIK&nbsp;&nbsp;
-              <span className="text-[var(--color-gold)]">•</span>&nbsp;&nbsp;THERAPIE
-            </div>
-          </div>
+          <img src="/logo-lockup.png" alt="" className="h-auto w-[260px] object-contain" />
         </div>
       </div>
 
