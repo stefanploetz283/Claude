@@ -81,19 +81,24 @@ export function Nav({
         <div className="flex w-[288px] flex-none flex-col items-center justify-center bg-[var(--color-primary)] px-[22px] py-4">
           <Link href="/dashboard" className="shrink-0">
             {logoUrl ? (
-              // Individuell hochgeladenes Logo: unverändert, aber ebenfalls auf heller Karte statt
-              // direkt auf Petrol - Logos sollen grundsätzlich nie auf farbigem Grund stehen.
+              // Individuell hochgeladenes Logo: Farbe/Format nicht unter unserer Kontrolle, deshalb hier
+              // bewusst weiterhin eine helle Karte als sichere Absicherung gegen unlesbare Kombinationen.
               <div className="rounded-xl bg-[var(--color-bg)] px-4 py-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={logoUrl} alt={practiceName} className="h-auto w-[170px] object-contain" />
               </div>
             ) : (
-              // Standard-Logo: die Original-Logodatei unverändert (1:1, keine Nachbildung), auf einer
-              // hellen Karte statt direkt auf Petrol - so wie das Logo auch im Flyer auf heller Fläche
-              // sitzt, statt Farben/Schriftzug für den dunklen Hintergrund nachzubauen.
-              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-3">
+              // Standard-Logo: kompaktes Icon-Mark (nicht das volle Print-Lockup) - dieselbe Regel wie bei
+              // jeder Marke mit eigenem Symbol: das Mark trägt dunkle Flächen, das volle Lockup bleibt
+              // hellen/großzügigen Flächen vorbehalten (Login-Hero, PDF-Briefkopf). Keine Box nötig, weil
+              // das Mark selbst schon auf Petrol funktioniert.
+              <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-lockup.png" alt={practiceName} className="h-auto w-[170px] object-contain" />
+                <img src="/logo-mark-color.svg" alt="" className="h-11 w-11 shrink-0" />
+                <div className="text-left leading-tight text-white">
+                  <div className="text-[17px] font-bold tracking-tight">PROS.</div>
+                  <div className="text-[10px] font-semibold tracking-[0.14em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
+                </div>
               </div>
             )}
           </Link>

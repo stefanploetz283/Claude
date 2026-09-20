@@ -33,10 +33,15 @@ export default async function LoginPage() {
             <circle cx="470" cy="770" r="260" />
           </g>
         </svg>
-        <div className="relative w-fit rounded-2xl bg-[var(--color-bg)] px-6 py-5">
-          {/* Original-Logodatei unverändert (1:1), auf heller Karte statt direkt auf Petrol. */}
+        <div className="relative flex items-center gap-5">
+          {/* Icon-Mark statt vollem Lockup - dieselbe Regel wie im Header: das Mark trägt dunkle
+              Flächen, das volle Lockup bleibt hellen Flächen vorbehalten (siehe mobile Ansicht unten). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-lockup.png" alt="" className="h-auto w-[260px] object-contain" />
+          <img src="/logo-mark-color.svg" alt="" className="h-20 w-20 shrink-0" />
+          <div className="leading-tight text-white">
+            <div className="text-4xl font-bold tracking-tight">PROS.</div>
+            <div className="mt-1 text-sm font-semibold tracking-[0.2em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
+          </div>
         </div>
       </div>
 
