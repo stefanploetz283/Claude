@@ -10,6 +10,11 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    # SCALINGO_API_TOKEN als Job-weite Umgebungsvariable statt separatem "scalingo login"-Schritt -
+    # laut Scalingo-Doku liest die CLI Zugangsdaten automatisch aus dieser Variable, das ist robuster
+    # als der explizite Login-Handshake (der hier mit "user unauthenticated" fehlschlug).
+    env:
+      SCALINGO_API_TOKEN: ${{ secrets.SCALINGO_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,10 +28,8 @@ jobs:
           bash install
           echo "$HOME/.local/scalingo/bin" >> "$GITHUB_PATH"
 
-      - name: Bei Scalingo anmelden
-        env:
-          SCALINGO_API_TOKEN: ${{ secrets.SCALINGO_API_TOKEN }}
-        run: scalingo login --api-token "$SCALINGO_API_TOKEN"
+      - name: Anmeldung prüfen
+        run: scalingo whoami
 
       - name: Abhängigkeiten installieren
         run: npm ci
