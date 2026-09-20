@@ -24,6 +24,7 @@ model User {
   passwordHash      String
   role              Role     @default(EMPLOYEE)
   active            Boolean  @default(true) // Deaktivieren statt Löschen (Datenschutz)
+  avatarUrl         String? // Storage-Key des selbst hochgeladenen Profilbilds
 
   totpSecret        String? // aktiver, bestätigter TOTP-Secret
   totpSecretPending String? // Secret während des Ersteinrichtungsvorgangs
@@ -826,13 +827,13 @@ model AccessLog {
 
 model Settings {
   id                          String  @id @default("singleton")
-  practiceName                String  @default("Praxis für Systemische Entwicklung")
+  practiceName                String  @default("PROS Jugendhilfe")
   practiceAddress             String?
   practicePhone                String?
   practiceEmail                String?
   logoUrl                     String?
-  colorPrimary                String  @default("#204D4B")
-  colorAccentLight             String  @default("#F5F0E8")
+  colorPrimary                String  @default("#0B3D46")
+  colorAccentLight             String  @default("#F7F3EA")
   colorTextDark                String  @default("#2E3330")
   hourlyRate                  Decimal? @db.Decimal(7, 2) // Stundensatz für Rechnungen (Praxis-weit einheitlich)
 

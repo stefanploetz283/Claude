@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* Farbschema "Praxis für Systemische Entwicklung" — Petrol/Salbei/Gold auf warmem Creme */
-  --color-primary: #204d4b;
-  --color-primary-hover: #173a38;
-  --color-primary-soft: #e8edec;
-  --color-sage: #9fa47e;
-  --color-green-medium: #9fa47e;
-  --color-gold: #d2ad69;
-  --color-yellow: #d2ad69;
-  --color-orange: #d2ad69;
+  /* Farbschema "PROS Jugendhilfe" — Petrol/Salbei/Gold auf warmem Creme */
+  --color-primary: #0b3d46;
+  --color-primary-hover: #082a31;
+  --color-primary-soft: #e1eaea;
+  --color-sage: #8aa187;
+  --color-green-medium: #8aa187;
+  --color-gold: #e3a72c;
+  --color-yellow: #e3a72c;
+  --color-orange: #e3a72c;
   --color-coral: #d65a3a;
 
-  --color-bg: #f5f0e8;
-  --color-surface: #fbf8f2;
+  --color-bg: #f7f3ea;
+  --color-surface: #fefcf6;
   --color-text: #2e3330;
   --color-text-muted: #5c635e;
-  --color-border: #e2d9c8;
+  --color-border: #e6dfc9;
 
   --color-warn: var(--color-gold);
-  --color-warn-soft: #fdf3dc;
+  --color-warn-soft: #fcefd6;
   --color-warn-text: #8a5a12;
   --color-danger: var(--color-coral);
   --color-coral-soft: #f9e3dc;
-  --color-gold-soft: #fdecd9;
+  --color-gold-soft: #fbead1;
 
   --radius-card: 14px;
   --radius-control: 9px;
-  --shadow-soft: 0 8px 24px rgba(32, 77, 75, 0.08);
+  --shadow-soft: 0 8px 24px rgba(11, 61, 70, 0.08);
   --shadow-card: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
@@ -43,4 +43,26 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Kurze, dezente Eingangsanimation für die "Meine Fälle"-Kartenansicht (Begrüßungskopf + Fallkarten). */
+@keyframes dash-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dash-card-enter {
+  animation: dash-card-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-card-enter {
+    animation: none;
+  }
 }

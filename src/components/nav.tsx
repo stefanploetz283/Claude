@@ -90,8 +90,8 @@ export function Nav({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo-mark-petrol.svg" alt="" className="h-14 w-14" />
                 <div className="leading-tight text-white">
-                  <div className="text-[13px] font-normal">Praxis für</div>
-                  <div className="text-[15px] font-bold tracking-tight uppercase">Systemische Entwicklung</div>
+                  <div className="text-[19px] font-bold tracking-tight">PROS.</div>
+                  <div className="text-[11px] font-semibold tracking-[0.16em] uppercase">Jugendhilfe</div>
                   <div className="mx-auto my-1.5 h-px w-16 bg-[var(--color-gold)]" />
                   <div className="text-[8.5px] font-semibold tracking-[0.14em] uppercase">Beratung · Pädagogik · Therapie</div>
                 </div>
