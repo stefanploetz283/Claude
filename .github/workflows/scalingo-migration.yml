@@ -1,0 +1,35 @@
+name: Scalingo DB-Migration (manuell)
+
+# Manuell auslösbarer Workflow, um "npx prisma migrate deploy" gegen die Produktions-Datenbank
+# auszuführen, wenn die Scalingo-CLI lokal nicht nutzbar ist (z.B. durch Windows Smart App Control
+# blockiert). Läuft auf einem GitHub-eigenen Linux-Runner, nutzt Scalingos eigenen authentifizierten
+# Tunnel ("scalingo run") - die Datenbank muss dafür NICHT fürs Internet geöffnet werden.
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Scalingo-CLI installieren
+        run: |
+          curl -O https://cli-dl.scalingo.com/install
+          bash install
+          echo "$HOME/.local/scalingo/bin" >> "$GITHUB_PATH"
+
+      - name: Bei Scalingo anmelden
+        env:
+          SCALINGO_API_TOKEN: ${{ secrets.SCALINGO_API_TOKEN }}
+        run: scalingo login --api-token "$SCALINGO_API_TOKEN"
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Prisma-Migration gegen Produktion ausführen
+        run: scalingo --app fallverwaltung-ploetz --region osc-fr1 run npx prisma migrate deploy
