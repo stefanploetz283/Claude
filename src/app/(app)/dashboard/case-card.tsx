@@ -67,7 +67,7 @@ export function CaseCard({
   return (
     <Link
       href={`/cases/${caseId}`}
-      className="dash-card-enter group flex items-center gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:border-[var(--color-primary-soft)] hover:shadow-md"
+      className="dash-card-enter group flex items-center gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)] transition-[transform,box-shadow,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[var(--color-primary-soft)] hover:shadow-md active:scale-[0.98] active:duration-100"
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
     >
       <div className="relative flex shrink-0 items-center justify-center">

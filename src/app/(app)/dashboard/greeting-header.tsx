@@ -60,7 +60,7 @@ export function GreetingHeader({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               aria-label="Profilbild ändern"
-              className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white/40 bg-[var(--color-sage)] text-lg font-semibold text-white transition group-hover:border-white/70"
+              className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-white/40 bg-[var(--color-sage)] text-lg font-semibold text-white transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:border-white/70 active:scale-[0.96] active:duration-100"
             >
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -69,7 +69,7 @@ export function GreetingHeader({
                 initials(name)
               )}
             </button>
-            <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-gold)] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+            <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-gold)] text-white opacity-0 shadow-sm transition-opacity duration-200 ease-out group-hover:opacity-100">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 20h9" />
                 <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
