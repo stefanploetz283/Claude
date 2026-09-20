@@ -20,9 +20,11 @@ const ROW1_ITEMS: NavItem[] = [
   { href: "/messages", label: "Nachrichten" },
 ];
 
-// Zusätzlich zu den 7 gemeinsamen Reitern, nur für Admin: zwei umfangreiche Hauptbereiche mit eigenen
-// Unterreitern (kontextuelle linke Navigation, siehe mitarbeiter-subnav.tsx/finanzen-subnav.tsx).
+// Zusätzlich zu den 7 gemeinsamen Reitern, nur für Admin: die teamweite, dichte Fallübersicht (getrennt
+// von der persönlichen "Meine Fälle"-Ansicht unter /dashboard) sowie zwei umfangreiche Hauptbereiche mit
+// eigenen Unterreitern (kontextuelle linke Navigation, siehe mitarbeiter-subnav.tsx/finanzen-subnav.tsx).
 const ADMIN_EXTRA_ITEMS: NavItem[] = [
+  { href: "/admin/alle-faelle", label: "Alle Fälle" },
   { href: "/mitarbeiter", label: "Mitarbeiter" },
   { href: "/finanzen", label: "Finanzen" },
 ];
