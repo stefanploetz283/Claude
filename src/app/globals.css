@@ -45,6 +45,12 @@ body {
   font-family: var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+/* Skript-Akzentschrift aus dem Flyer - bewusst nur für die Dashboard-Begrüßung, siehe
+   AGENTS.md-Designrichtlinie "Marke lebt über präzise Details, nicht über Ausdruck". */
+.font-script {
+  font-family: var(--font-caveat), cursive;
+}
+
 /* Kurze, dezente Eingangsanimation für die "Meine Fälle"-Kartenansicht (Begrüßungskopf + Fallkarten). */
 @keyframes dash-card-enter {
   from {

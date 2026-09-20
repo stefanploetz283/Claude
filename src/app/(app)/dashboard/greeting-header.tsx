@@ -79,10 +79,9 @@ export function GreetingHeader({
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-white sm:text-2xl">
-              {greeting}, {firstName}
-            </h1>
-            <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-gold)] px-3 py-1 text-xs font-semibold text-white">
+            <div className="font-script pb-1 text-[28px] leading-[1.15] text-[var(--color-gold)] sm:text-[32px]">{greeting},</div>
+            <h1 className="-mt-1.5 text-xl font-bold text-white sm:text-2xl">{firstName}</h1>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-gold)] px-3 py-1 text-xs font-semibold text-white">
               {hintText}
             </div>
             {state?.error && <p className="mt-1.5 text-xs font-medium text-[#ffd9cc]">{state.error}</p>}

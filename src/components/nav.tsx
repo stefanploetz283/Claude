@@ -79,9 +79,12 @@ export function Nav({
         <div className="flex w-[288px] flex-none flex-col items-center justify-center bg-[var(--color-primary)] px-[22px] py-4">
           <Link href="/dashboard" className="shrink-0">
             {logoUrl ? (
-              // Individuell hochgeladenes Logo: unverändert als eigenständiges Bild anzeigen.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={practiceName} className="h-auto w-[190px] object-contain" />
+              // Individuell hochgeladenes Logo: unverändert, aber ebenfalls auf heller Karte statt
+              // direkt auf Petrol - Logos sollen grundsätzlich nie auf farbigem Grund stehen.
+              <div className="rounded-xl bg-[var(--color-bg)] px-4 py-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoUrl} alt={practiceName} className="h-auto w-[170px] object-contain" />
+              </div>
             ) : (
               // Standard-Logo: die Original-Logodatei unverändert (1:1, keine Nachbildung), auf einer
               // hellen Karte statt direkt auf Petrol - so wie das Logo auch im Flyer auf heller Fläche
