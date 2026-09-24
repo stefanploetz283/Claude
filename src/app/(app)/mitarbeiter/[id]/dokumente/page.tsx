@@ -5,6 +5,9 @@ import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { UploadForm } from "./upload-form";
 import { DocumentList, type EmployeeDocumentRow } from "./document-list";
 import { FzeugnisForm } from "./fzeugnis-form";
+import { MitarbeiterHeader } from "../mitarbeiter-header";
+import { cardCls, noticeWarnCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 const REMINDER_LEAD_DAYS = 8 * 7; // 8 Wochen vor Ablauf
 
@@ -15,7 +18,7 @@ function formatSize(bytes: number) {
 }
 
 export default async function DokumentePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminOrVerwaltung();
+  const viewer = await requireAdminOrVerwaltung();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });
@@ -44,16 +47,15 @@ export default async function DokumentePage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Dokumente · {employee.name}</h1>
-      </div>
+      <MitarbeiterHeader id={employee.id} name={employee.name} role={employee.role} active={employee.active} viewerRole={viewer.role} />
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Erweitertes Führungszeugnis</h2>
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">Nach § 72a SGB VIII, Erinnerung {REMINDER_LEAD_DAYS / 7} Wochen vor Ablauf.</p>
         {showReminder && (
-          <p className="mb-3 rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-3.5 py-2.5 text-sm text-[var(--color-warn-text)]">
-            ⚠ Läuft {daysUntilExpiry! >= 0 ? `in ${daysUntilExpiry} Tagen` : `seit ${-daysUntilExpiry!} Tagen`} ab
+          <p className={`mb-3 flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+            <IconWarnTriangle />
+            Läuft {daysUntilExpiry! >= 0 ? `in ${daysUntilExpiry} Tagen` : `seit ${-daysUntilExpiry!} Tagen`} ab
             {employee.fuehrungszeugnisGueltigBis ? ` (${format(employee.fuehrungszeugnisGueltigBis, "dd.MM.yyyy")})` : ""} – bitte erneuern lassen.
           </p>
         )}
@@ -65,7 +67,7 @@ export default async function DokumentePage({ params }: { params: Promise<{ id: 
 
       <UploadForm employeeId={id} />
 
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <DocumentList employeeId={id} documents={rows} />
       </div>
     </div>

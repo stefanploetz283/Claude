@@ -7,6 +7,8 @@ import { TimerWidget } from "./timer-widget";
 import { ManualEntryForm } from "./manual-entry-form";
 import { EntriesList, type TimeEntryRow } from "./entries-list";
 import { ZeitKapazitaetTabs } from "../tabs";
+import { ProsKpiCard } from "@/components/pros/pros-kpi-card";
+import { buttonSecondaryCls } from "@/app/(app)/cases/case-ui";
 
 const ACTIVITY_LABELS: Record<string, string> = {
   VERWALTUNG: "Verwaltung",
@@ -92,7 +94,7 @@ export default async function TimeTrackingPage({
             <select
               name="employeeId"
               defaultValue={viewedEmployeeId}
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] px-3.5 py-2 text-sm text-[var(--color-text)]"
             >
               <option value={user.id}>Ich ({user.name})</option>
               {employees
@@ -103,10 +105,7 @@ export default async function TimeTrackingPage({
                   </option>
                 ))}
             </select>
-            <button
-              type="submit"
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
-            >
+            <button type="submit" className={buttonSecondaryCls}>
               Anzeigen
             </button>
           </form>
@@ -115,7 +114,7 @@ export default async function TimeTrackingPage({
 
       <ZeitKapazitaetTabs />
 
-      <p className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-4 py-2.5 text-sm text-[var(--color-warn-text)]">
+      <p className="rounded-[var(--pros-r-sm)] bg-[var(--pros-status-attention-bg)] px-4 py-2.5 text-sm text-[var(--pros-status-attention-text)]">
         Für den <strong>Leistungsnachweis ans Jugendamt</strong> trägst du Einträge stattdessen im jeweiligen Fall unter „Leistungsdokumentation&quot; ein.
       </p>
 
@@ -123,10 +122,10 @@ export default async function TimeTrackingPage({
       {isSelf && <ManualEntryForm cases={caseOptions} />}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile value={`${totalHours.toFixed(1)}`} label="Std. diesen Monat" />
-        <StatTile value={`${rows.length}`} label="Einträge diesen Monat" />
-        <StatTile value={avgPerEntry.toFixed(2)} label="Ø Std. pro Eintrag" />
-        <StatTile value={avgPerWeek.toFixed(1)} label="Ø Std. pro Woche" />
+        <ProsKpiCard icon={<IconClock />} value={totalHours.toFixed(1)} label="Std. diesen Monat" primary />
+        <ProsKpiCard icon={<IconList />} value={rows.length} label="Einträge diesen Monat" />
+        <ProsKpiCard icon={<IconAverage />} value={avgPerEntry.toFixed(2)} label="Ø Std. pro Eintrag" />
+        <ProsKpiCard icon={<IconWeek />} value={avgPerWeek.toFixed(1)} label="Ø Std. pro Woche" />
       </div>
 
       <div className="flex items-center justify-between">
@@ -137,14 +136,14 @@ export default async function TimeTrackingPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)] lg:col-span-2">
+        <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)] lg:col-span-2">
           <EntriesList entries={rows} canDelete={isSelf || user.role === "ADMIN"} />
         </div>
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Aufteilung</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {Array.from(byLabel.entries()).map(([label, hours]) => (
-              <li key={label} className="flex justify-between border-b border-[var(--color-border)] py-1.5 last:border-0">
+              <li key={label} className="flex justify-between border-b border-[var(--pros-border-default)] py-1.5 last:border-0">
                 <span className="text-[var(--color-text-muted)]">{label}</span>
                 <span className="font-medium text-[var(--color-text)]">{hours.toFixed(2)} Std.</span>
               </li>
@@ -153,15 +152,6 @@ export default async function TimeTrackingPage({
           </ul>
         </div>
       </div>
-    </div>
-  );
-}
-
-function StatTile({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-      <div className="text-[28px] leading-none font-bold text-[var(--color-text)]">{value}</div>
-      <div className="mt-1.5 text-sm font-semibold text-[var(--color-text)]">{label}</div>
     </div>
   );
 }
@@ -175,21 +165,58 @@ function MonthNav({ year, month, employeeId }: { year: number; month: number; em
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link
-        href={`/zeit-kapazitaet/zeiterfassung?year=${prevYear}&month=${prevMonth}${empParam}`}
-        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
-      >
+      <Link href={`/zeit-kapazitaet/zeiterfassung?year=${prevYear}&month=${prevMonth}${empParam}`} className={buttonSecondaryCls}>
         ← Vormonat
       </Link>
       <span className="font-semibold text-[var(--color-text)]">
         {String(month).padStart(2, "0")}/{year}
       </span>
-      <Link
-        href={`/zeit-kapazitaet/zeiterfassung?year=${nextYear}&month=${nextMonth}${empParam}`}
-        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
-      >
+      <Link href={`/zeit-kapazitaet/zeiterfassung?year=${nextYear}&month=${nextMonth}${empParam}`} className={buttonSecondaryCls}>
         Folgemonat →
       </Link>
     </div>
+  );
+}
+
+function IconClock() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
+    </svg>
+  );
+}
+
+function IconList() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="20" y2="6" />
+      <line x1="8" y1="12" x2="20" y2="12" />
+      <line x1="8" y1="18" x2="20" y2="18" />
+      <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconAverage() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20V10" />
+      <path d="M12 20V4" />
+      <path d="M20 20v-7" />
+    </svg>
+  );
+}
+
+function IconWeek() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M8 3v4" />
+      <path d="M16 3v4" />
+    </svg>
   );
 }

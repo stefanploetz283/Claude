@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 import { useActionState } from "react";
 import { computeStundenmodell, type SondertagWithMeta, type SondertagRow } from "@/lib/stundenmodell";
 import { savePlan, saveVertrag, saveFahrtenrechnerProfil, type ActionState, type WochenplanEntry } from "./actions";
+import { ProsSectionCard } from "@/components/pros/pros-card";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { inputCls, labelCls, buttonOutlineCls, buttonPrimaryCls, buttonSecondaryCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 export type VertragEmployee = {
   id: string;
@@ -24,11 +28,8 @@ export type VertragEmployee = {
   zielFlsStdWocheManuell: number | null;
 };
 
-const AMPEL_COLOR: Record<string, string> = { gruen: "var(--color-primary)", gelb: "var(--color-gold)", rot: "var(--color-coral)" };
+const AMPEL_TONE: Record<string, "active" | "attention" | "critical"> = { gruen: "active", gelb: "attention", rot: "critical" };
 const AMPEL_LABEL: Record<string, string> = { gruen: "Grün", gelb: "Gelb", rot: "Rot" };
-// Weiß auf Gold (gelb) unterschreitet WCAG AA (~2.1:1) - dort Petrol statt Weiß, gruen/rot behalten
-// ausreichend Kontrast mit Weiß.
-const AMPEL_TEXT_COLOR: Record<string, string> = { gruen: "white", gelb: "var(--color-primary)", rot: "white" };
 const WOCHENTAG_NAMEN = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
 
 function toDateInputValue(date: Date): string {
@@ -110,22 +111,15 @@ export function VertragEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[var(--color-text)]">Vertragsdaten</h2>
-          <span
-            className="rounded-full px-3 py-1 text-xs font-semibold"
-            style={{ background: AMPEL_COLOR[result.ampel], color: AMPEL_TEXT_COLOR[result.ampel] }}
-          >
-            {AMPEL_LABEL[result.ampel]}
-          </span>
-        </div>
-
+      <ProsSectionCard
+        title="Vertragsdaten"
+        action={<ProsStatusPill tone={AMPEL_TONE[result.ampel]}>{AMPEL_LABEL[result.ampel]}</ProsStatusPill>}
+      >
         <form action={profileAction} className="flex flex-col gap-4">
           <input type="hidden" name="employeeId" value={employee.id} />
           <div className="flex flex-wrap items-end gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Wochenstunden</span>
+              <span className={labelCls}>Wochenstunden</span>
               <input
                 name="wochenstunden"
                 type="number"
@@ -133,44 +127,28 @@ export function VertragEditor({
                 step="0.5"
                 value={wochenstunden}
                 onChange={(e) => setWochenstunden(Number(e.target.value) || 0)}
-                className="w-28 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+                className={`w-28 ${inputCls}`}
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Tage/Woche</span>
-              <select
-                name="tageProWoche"
-                value={tageProWoche}
-                onChange={(e) => toggleTageProWoche(Number(e.target.value) as 4 | 5)}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              >
+              <span className={labelCls}>Tage/Woche</span>
+              <select name="tageProWoche" value={tageProWoche} onChange={(e) => toggleTageProWoche(Number(e.target.value) as 4 | 5)} className={inputCls}>
                 <option value={4}>4</option>
                 <option value={5}>5</option>
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Eintrittsdatum</span>
-              <input
-                name="eintrittsdatum"
-                type="date"
-                value={eintrittsdatum}
-                onChange={(e) => setEintrittsdatum(e.target.value)}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              />
+              <span className={labelCls}>Eintrittsdatum</span>
+              <input name="eintrittsdatum" type="date" value={eintrittsdatum} onChange={(e) => setEintrittsdatum(e.target.value)} className={inputCls} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">TVöD-Stufe</span>
-              <input
-                name="tvoedStufe"
-                defaultValue={employee.tvoedStufe ?? ""}
-                placeholder="z.B. S8b Stufe 3"
-                className="w-40 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              />
+              <span className={labelCls}>TVöD-Stufe</span>
+              <input name="tvoedStufe" defaultValue={employee.tvoedStufe ?? ""} placeholder="z.B. S8b Stufe 3" className={`w-40 ${inputCls}`} />
             </label>
           </div>
 
           <div>
-            <span className="text-xs font-medium text-[var(--color-text-muted)]">Darf folgende Hilfearten bearbeiten</span>
+            <span className={labelCls}>Darf folgende Hilfearten bearbeiten</span>
             <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
               {helpTypes.map((h) => (
                 <label key={h.id} className="flex items-center gap-2 text-sm text-[var(--color-text)]">
@@ -181,16 +159,12 @@ export function VertragEditor({
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={profilePending}
-            className="self-start rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
-          >
+          <button type="submit" disabled={profilePending} className={`self-start ${buttonOutlineCls}`}>
             {profilePending ? "Speichern…" : "Vertragsdaten speichern"}
           </button>
         </form>
-        {profileState?.error && <p className="mt-2 text-sm text-[var(--color-coral)]">{profileState.error}</p>}
-        {profileState?.success && <p className="mt-2 text-sm text-[var(--color-green-medium)]">{profileState.success}</p>}
+        {profileState?.error && <p className="mt-2 text-sm text-[var(--pros-status-critical-text)]">{profileState.error}</p>}
+        {profileState?.success && <p className="mt-2 text-sm text-[var(--pros-status-active-text)]">{profileState.success}</p>}
         <p className="mt-2 text-xs text-[var(--color-text-muted)]">
           Fonds-Basis für diesen Mitarbeiter: <strong>{effectiveFondsBasis.toFixed(2)}%</strong>
           {employee.fondsBasisAtHire != null
@@ -198,10 +172,9 @@ export function VertragEditor({
             : " (noch kein Snapshot – wird beim ersten Speichern übernommen)"}
           {aktuelleFondsBasis !== effectiveFondsBasis && ` · aktuelle Praxis-Basis: ${aktuelleFondsBasis.toFixed(2)}%`}
         </p>
-      </div>
+      </ProsSectionCard>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner-Profil</h2>
+      <ProsSectionCard title="Fahrten-/Fallrechner-Profil">
         <p className="mb-4 text-sm text-[var(--color-text-muted)]">
           Referenzpunkt für Fahrzeit-Schätzungen — Wohnort, falls hinterlegt, sonst der primäre Standort.
         </p>
@@ -209,38 +182,22 @@ export function VertragEditor({
           <input type="hidden" name="employeeId" value={employee.id} />
           <div className="flex flex-wrap items-end gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Wohnort-Adresse (optional)</span>
-              <input
-                name="wohnortAdresse"
-                defaultValue={employee.wohnortAdresse ?? ""}
-                placeholder="Straße Hausnr., PLZ Ort"
-                className="w-64 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              />
+              <span className={labelCls}>Wohnort-Adresse (optional)</span>
+              <input name="wohnortAdresse" defaultValue={employee.wohnortAdresse ?? ""} placeholder="Straße Hausnr., PLZ Ort" className={`w-64 ${inputCls}`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Primärer Standort</span>
-              <select
-                name="primaerStandort"
-                defaultValue={employee.primaerStandort}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              >
+              <span className={labelCls}>Primärer Standort</span>
+              <select name="primaerStandort" defaultValue={employee.primaerStandort} className={inputCls}>
                 <option value="NITTENDORF">Nittendorf</option>
                 <option value="REGENSBURG">Regensburg</option>
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Einsatzradius (km)</span>
-              <input
-                name="einsatzradiusKm"
-                type="number"
-                min="1"
-                step="0.5"
-                defaultValue={employee.einsatzradiusKm}
-                className="w-28 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              />
+              <span className={labelCls}>Einsatzradius (km)</span>
+              <input name="einsatzradiusKm" type="number" min="1" step="0.5" defaultValue={employee.einsatzradiusKm} className={`w-28 ${inputCls}`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Ziel-FLS-Std./Woche (manuell)</span>
+              <span className={labelCls}>Ziel-FLS-Std./Woche (manuell)</span>
               <input
                 name="zielFlsStdWocheManuell"
                 type="number"
@@ -248,24 +205,19 @@ export function VertragEditor({
                 step="0.5"
                 defaultValue={employee.zielFlsStdWocheManuell ?? ""}
                 placeholder="z.B. 22.5"
-                className="w-36 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+                className={`w-36 ${inputCls}`}
               />
             </label>
           </div>
-          <button
-            type="submit"
-            disabled={fahrtenPending}
-            className="self-start rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
-          >
+          <button type="submit" disabled={fahrtenPending} className={`self-start ${buttonOutlineCls}`}>
             {fahrtenPending ? "Speichern…" : "Fahrtenrechner-Profil speichern"}
           </button>
-          {fahrtenState?.error && <p className="text-sm text-[var(--color-coral)]">{fahrtenState.error}</p>}
-          {fahrtenState?.success && <p className="text-sm text-[var(--color-green-medium)]">{fahrtenState.success}</p>}
+          {fahrtenState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{fahrtenState.error}</p>}
+          {fahrtenState?.success && <p className="text-sm text-[var(--pros-status-active-text)]">{fahrtenState.success}</p>}
         </form>
-      </div>
+      </ProsSectionCard>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Stundenmodell-Ergebnis</h2>
+      <ProsSectionCard title="Stundenmodell-Ergebnis">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat label="Std./Tag" value={result.stdProTag.toFixed(2)} />
           <Stat label="Fonds-Tage" value={result.fondsTageValue.toFixed(2)} />
@@ -282,20 +234,19 @@ export function VertragEditor({
             {result.warnings.map((w, i) => (
               <li
                 key={i}
-                className={`rounded-[var(--radius-control)] px-3.5 py-2.5 text-sm ${
-                  w.level === "rot" ? "bg-[var(--color-coral)]/10 text-[var(--color-text)]" : "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]"
+                className={`flex items-center gap-2 rounded-[var(--pros-r-sm)] px-3.5 py-2.5 text-sm ${
+                  w.level === "rot" ? "bg-[var(--pros-status-critical-bg)] text-[var(--pros-status-critical-text)]" : "bg-[var(--pros-status-attention-bg)] text-[var(--pros-status-attention-text)]"
                 }`}
               >
-                {w.level === "rot" ? "⚠ " : "⚡ "}
+                <IconWarnTriangle />
                 {w.message}
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </ProsSectionCard>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Sondertage zuordnen</h2>
+      <ProsSectionCard title="Sondertage zuordnen">
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">Live-Neuberechnung bei jeder Änderung.</p>
         <div className="flex flex-col gap-2">
           {sondertage.map((s) => (
@@ -317,24 +268,21 @@ export function VertragEditor({
             </label>
           ))}
           {sondertage.length === 0 && (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Noch keine Sondertage im Katalog (unter Team-Gesamtansicht anlegbar).
-            </p>
+            <p className="text-sm text-[var(--color-text-muted)]">Noch keine Sondertage im Katalog (unter Team-Gesamtansicht anlegbar).</p>
           )}
         </div>
-      </div>
+      </ProsSectionCard>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Wochenplan-Vorschlag</h2>
+      <ProsSectionCard title="Wochenplan-Vorschlag">
         <form action={planAction} className="flex flex-col gap-3">
           <input type="hidden" name="employeeId" value={employee.id} />
           <input type="hidden" name="wochenplan" value={JSON.stringify(wochenplan)} />
           {selectedSondertagIds.size > 0 &&
             Array.from(selectedSondertagIds).map((id) => <input key={id} type="hidden" name="sondertagIds" value={id} />)}
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+              <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
                 <tr>
                   <th className="px-3 py-2">Tag</th>
                   <th className="px-3 py-2">Von</th>
@@ -343,23 +291,13 @@ export function VertragEditor({
               </thead>
               <tbody>
                 {wochenplan.map((row, i) => (
-                  <tr key={row.day} className="border-t border-[var(--color-border)]">
+                  <tr key={row.day} className="border-t border-[var(--pros-border-default)]">
                     <td className="px-3 py-2 text-[var(--color-text)]">{WOCHENTAG_NAMEN[row.day - 1]}</td>
                     <td className="px-3 py-2">
-                      <input
-                        type="time"
-                        value={row.start}
-                        onChange={(e) => updateWochenplanRow(i, "start", e.target.value)}
-                        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm"
-                      />
+                      <input type="time" value={row.start} onChange={(e) => updateWochenplanRow(i, "start", e.target.value)} className={inputCls} />
                     </td>
                     <td className="px-3 py-2">
-                      <input
-                        type="time"
-                        value={row.end}
-                        onChange={(e) => updateWochenplanRow(i, "end", e.target.value)}
-                        className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm"
-                      />
+                      <input type="time" value={row.end} onChange={(e) => updateWochenplanRow(i, "end", e.target.value)} className={inputCls} />
                     </td>
                   </tr>
                 ))}
@@ -369,33 +307,18 @@ export function VertragEditor({
 
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-[var(--color-text-muted)]">Gültig ab (neue Plan-Version)</span>
-              <input
-                name="gueltigAb"
-                type="date"
-                value={gueltigAb}
-                onChange={(e) => setGueltigAb(e.target.value)}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-              />
+              <span className={labelCls}>Gültig ab (neue Plan-Version)</span>
+              <input name="gueltigAb" type="date" value={gueltigAb} onChange={(e) => setGueltigAb(e.target.value)} className={inputCls} />
             </label>
-            <button
-              type="submit"
-              disabled={planPending}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
+            <button type="submit" disabled={planPending} className={buttonPrimaryCls}>
               {planPending ? "Speichern…" : "Anpassen ab jetzt"}
             </button>
-            <a
-              href={`/api/admin/stundenmodell/${employee.id}/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
-            >
+            <a href={`/api/admin/stundenmodell/${employee.id}/pdf`} target="_blank" rel="noopener noreferrer" className={buttonSecondaryCls}>
               Als PDF exportieren
             </a>
           </div>
-          {planState?.error && <p className="text-sm text-[var(--color-coral)]">{planState.error}</p>}
-          {planState?.success && <p className="text-sm text-[var(--color-green-medium)]">{planState.success}</p>}
+          {planState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{planState.error}</p>}
+          {planState?.success && <p className="text-sm text-[var(--pros-status-active-text)]">{planState.success}</p>}
           {employee.currentPlanGueltigAb && (
             <p className="text-xs text-[var(--color-text-muted)]">
               Aktuell gespeicherte Version gültig ab {new Date(employee.currentPlanGueltigAb).toLocaleDateString("de-DE")}. Der PDF-Export
@@ -403,7 +326,7 @@ export function VertragEditor({
             </p>
           )}
         </form>
-      </div>
+      </ProsSectionCard>
     </div>
   );
 }

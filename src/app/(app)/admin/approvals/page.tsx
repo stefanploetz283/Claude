@@ -74,7 +74,7 @@ export default async function ApprovalsPage() {
           <ApprovalReviewCard key={c.approvalId} {...c} />
         ))}
         {cards.length === 0 && (
-          <p className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
+          <p className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
             Aktuell liegen keine Leistungsdokumentationen zur Freigabe vor.
           </p>
         )}
@@ -97,7 +97,7 @@ export default async function ApprovalsPage() {
           />
         ))}
         {pendingBerichte.length === 0 && (
-          <p className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
+          <p className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
             Aktuell liegen keine Abschlussberichte zur Freigabe vor.
           </p>
         )}

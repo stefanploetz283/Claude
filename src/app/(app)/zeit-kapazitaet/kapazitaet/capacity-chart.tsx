@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { addDays, format, isSameMonth } from "date-fns";
 import { de } from "date-fns/locale";
 import type { WeeklyCapacityBreakdown } from "@/lib/capacity";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 const WIDTH = 920;
 const HEIGHT = 170;
@@ -139,7 +140,7 @@ export function CapacityChart({
 
         {/* Wochenraster im Hintergrund */}
         {points.map((p, i) => (
-          <line key={`w-${i}`} x1={x(i)} y1={PAD_TOP} x2={x(i)} y2={PAD_TOP + chartH} stroke="var(--color-border)" strokeWidth="1" opacity="0.35" />
+          <line key={`w-${i}`} x1={x(i)} y1={PAD_TOP} x2={x(i)} y2={PAD_TOP + chartH} stroke="var(--pros-border-strong)" strokeWidth="1" opacity="0.35" />
         ))}
         {/* Monatslinien + Beschriftung */}
         {points.map((p, i) => {
@@ -147,7 +148,7 @@ export function CapacityChart({
           if (!isMonthStart) return null;
           return (
             <g key={`m-${i}`}>
-              <line x1={x(i)} y1={PAD_TOP} x2={x(i)} y2={PAD_TOP + chartH} stroke="var(--color-border)" strokeWidth="1.2" />
+              <line x1={x(i)} y1={PAD_TOP} x2={x(i)} y2={PAD_TOP + chartH} stroke="var(--pros-border-strong)" strokeWidth="1.2" />
               <text x={x(i) + 3} y={HEIGHT - 4} fontSize="10" fontWeight={600} fill="var(--color-text-muted)">
                 {format(p.weekStart, "MMM", { locale: de })}
               </text>
@@ -160,8 +161,8 @@ export function CapacityChart({
           <path key={b.helpTypeId} d={b.path} fill={b.color} opacity={0.88} />
         ))}
         <path d={stackTopPath} fill="none" stroke="var(--color-primary)" strokeWidth="1.5" />
-        <line x1={PAD_LEFT} y1={capacityY} x2={WIDTH} y2={capacityY} stroke="var(--color-coral)" strokeWidth="1" strokeDasharray="4 3" />
-        <line x1={PAD_LEFT} y1={PAD_TOP + chartH} x2={WIDTH} y2={PAD_TOP + chartH} stroke="var(--color-border)" strokeWidth="1" />
+        <line x1={PAD_LEFT} y1={capacityY} x2={WIDTH} y2={capacityY} stroke="var(--pros-status-critical-text)" strokeWidth="1" strokeDasharray="4 3" />
+        <line x1={PAD_LEFT} y1={PAD_TOP + chartH} x2={WIDTH} y2={PAD_TOP + chartH} stroke="var(--pros-border-strong)" strokeWidth="1" />
 
         {activeIndex != null && (
           <line x1={x(activeIndex)} y1={PAD_TOP} x2={x(activeIndex)} y2={PAD_TOP + chartH} stroke="var(--color-text)" strokeWidth="1" opacity="0.5" />
@@ -184,8 +185,9 @@ export function CapacityChart({
       </div>
 
       {overCapacityWeeks.length > 0 && (
-        <p className="mt-1 text-xs text-[var(--color-coral)]">
-          ⚠ Überbucht in {overCapacityWeeks.length} Woche(n) im Horizont – Wochenprofile/Vertragsstunden prüfen.
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--pros-status-critical-text)]">
+          <IconWarnTriangle />
+          Überbucht in {overCapacityWeeks.length} Woche(n) im Horizont – Wochenprofile/Vertragsstunden prüfen.
         </p>
       )}
 
@@ -201,7 +203,7 @@ export function CapacityChart({
       )}
 
       {active && (
-        <div className="mt-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-3 text-xs">
+        <div className="mt-2 rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] p-3 text-xs">
           <p className="mb-1.5 font-semibold text-[var(--color-text)]">
             KW {format(active.weekStart, "w")} · {format(active.weekStart, "dd.MM.")}–{format(addDays(active.weekStart, 6), "dd.MM.yyyy")} ·{" "}
             {active.used.toFixed(1)} / {active.capacity.toFixed(1)} Std.

@@ -40,7 +40,7 @@ export default async function KapazitaetPage() {
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">Deine eigene Auslastung über die nächsten 12 Monate.</p>
         </div>
         <ZeitKapazitaetTabs />
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
           {me?.weeklyContractHours ? (
             <CapacityChart employeeId={me.id} points={points} title={me.name} helpTypeOrder={ownHelpTypes} />
           ) : (
@@ -143,7 +143,7 @@ export default async function KapazitaetPage() {
         waitlistItems={waitlistWithSuggestions}
         employeeOptions={employees.map((e) => ({ id: e.id, name: e.name }))}
       >
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Neue Anfrage auf Warteliste setzen</h2>
           <WaitlistForm helpTypes={helpTypes} />
         </div>

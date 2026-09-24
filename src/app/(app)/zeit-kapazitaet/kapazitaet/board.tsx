@@ -45,7 +45,7 @@ export function KapazitaetBoard({
 
   return (
     <>
-      <div className="flex flex-col gap-5 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className="flex flex-col gap-5 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
         <h2 className="text-sm font-semibold text-[var(--color-text)]">Auslastung je Fachkraft</h2>
         {employees.map((e) =>
           e.hasContractHours ? (

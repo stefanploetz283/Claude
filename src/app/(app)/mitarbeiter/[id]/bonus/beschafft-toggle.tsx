@@ -9,13 +9,13 @@ export function BeschafftToggle({ id, employeeId, beschafft }: { id: string; emp
     <button
       disabled={pending}
       onClick={() => startTransition(() => toggleGutscheinBeschafft(id, employeeId, !beschafft))}
-      className={`rounded-[var(--radius-control)] px-3.5 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+      className={`rounded-[var(--pros-r-sm)] px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150 disabled:opacity-50 ${
         beschafft
-          ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
-          : "border border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]"
+          ? "bg-[var(--pros-status-active-bg)] text-[var(--pros-status-active-text)]"
+          : "border border-[var(--pros-border-strong)] text-[var(--color-text-muted)] hover:bg-[var(--pros-sage-pale)]"
       }`}
     >
-      {beschafft ? "Beschafft ✓" : "Noch offen"}
+      {beschafft ? "Beschafft" : "Noch offen"}
     </button>
   );
 }

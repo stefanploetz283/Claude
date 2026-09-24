@@ -39,14 +39,14 @@ export function TimerWidget({
 
   if (running) {
     return (
-      <div className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className="flex items-center justify-between rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
         <div>
           <p className="text-xs font-medium text-[var(--color-text-muted)]">Läuft seit {new Date(running.startTime).toLocaleTimeString("de-DE")}</p>
           <p className="text-2xl font-bold tabular-nums text-[var(--color-primary)]">{elapsed}</p>
           <p className="text-sm text-[var(--color-text-muted)]">{running.caseLabel ?? ACTIVITY_LABELS[running.generalActivity ?? ""] ?? "–"}</p>
         </div>
         <form action={() => stopTimer()}>
-          <button type="submit" className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:brightness-95">
+          <button type="submit" className="rounded-[var(--pros-r-sm)] bg-[var(--pros-status-critical-text)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:brightness-95">
             Stopp
           </button>
         </form>
@@ -55,7 +55,7 @@ export function TimerWidget({
   }
 
   return (
-    <form action={startAction} className="flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+    <form action={startAction} className="flex flex-wrap items-end gap-3 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium text-[var(--color-text-muted)]">Zuordnung</span>
         <div className="flex gap-3 text-sm">
@@ -71,13 +71,13 @@ export function TimerWidget({
       </div>
 
       {assignmentType === "general" ? (
-        <select name="generalActivity" className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
+        <select name="generalActivity" className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
           <option value="VERWALTUNG">Verwaltung</option>
           <option value="FAHRZEITEN">Fahrzeiten</option>
           <option value="SONSTIGES">Sonstiges</option>
         </select>
       ) : (
-        <select name="caseId" className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
+        <select name="caseId" className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
           {cases.map((c) => (
             <option key={c.id} value={c.id}>
               {c.label}
@@ -89,11 +89,11 @@ export function TimerWidget({
       <button
         type="submit"
         disabled={startPending}
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
       >
         {startPending ? "Start…" : "Start"}
       </button>
-      {startState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{startState.error}</p>}
+      {startState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{startState.error}</p>}
     </form>
   );
 }

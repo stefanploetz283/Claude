@@ -8,6 +8,8 @@ import { GUTSCHEIN_STYLES, type GutscheinAnbieterKey } from "@/lib/bonus-colors"
 import { QuoteTrendSparkline } from "./quote-trend-sparkline";
 import { PayoutButton } from "./payout-button";
 import { BeschafftToggle } from "./beschafft-toggle";
+import { MitarbeiterHeader } from "../mitarbeiter-header";
+import { cardCls } from "@/app/(app)/cases/case-ui";
 
 const TREND_QUARTERS = 6;
 
@@ -20,7 +22,7 @@ function prevQuarter(year: number, quarter: Quarter): { year: number; quarter: Q
 }
 
 export default async function BonusHistoriePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminOrVerwaltung();
+  const viewer = await requireAdminOrVerwaltung();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });
@@ -43,18 +45,15 @@ export default async function BonusHistoriePage({ params }: { params: Promise<{ 
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Bonus-Historie · {employee.name}</h1>
-        <p className="mt-1 text-sm text-black/60">Quartals-Bonus und Sachbezug-Gutschein im Zeitverlauf.</p>
-      </div>
+      <MitarbeiterHeader id={employee.id} name={employee.name} role={employee.role} active={employee.active} viewerRole={viewer.role} />
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Quotenentwicklung</h2>
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">Letzte {TREND_QUARTERS} Quartale, gestrichelt die Zielquote (75%).</p>
         <QuoteTrendSparkline points={trend} />
       </div>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">
           Letztes abgeschlossenes Quartal · Q{reviewQuarter.quarter}/{reviewQuarter.year}
         </h2>
@@ -79,11 +78,11 @@ export default async function BonusHistoriePage({ params }: { params: Promise<{ 
         </div>
       </div>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Ausgezahlte Quartale</h2>
         <ul className="flex flex-col gap-1.5 text-sm">
           {allPayouts.map((p) => (
-            <li key={p.id} className="flex justify-between border-b border-[var(--color-border)] py-1.5 last:border-0">
+            <li key={p.id} className="flex justify-between border-b border-[var(--pros-border-default)] py-1.5 last:border-0">
               <span className="text-[var(--color-text)]">
                 Q{p.quarter}/{p.year}
               </span>
@@ -94,7 +93,7 @@ export default async function BonusHistoriePage({ params }: { params: Promise<{ 
         </ul>
       </div>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Sachbezug-Gutscheine</h2>
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">Unabhängig vom Bonus – ein Eintrag je Monat.</p>
         <div className="overflow-x-auto">
@@ -110,7 +109,7 @@ export default async function BonusHistoriePage({ params }: { params: Promise<{ 
               {gutscheinAuswahlen.map((g) => {
                 const style = GUTSCHEIN_STYLES[g.anbieter as GutscheinAnbieterKey];
                 return (
-                  <tr key={g.id} className="border-t border-[var(--color-border)]">
+                  <tr key={g.id} className="border-t border-[var(--pros-border-default)]">
                     <td className="px-4 py-2.5 text-[var(--color-text)]">
                       {format(new Date(Date.UTC(g.year, g.month - 1, 1)), "MMMM yyyy", { locale: de })}
                     </td>

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { NewEmployeeForm } from "./new-employee-form";
+import { ProsKpiCard } from "@/components/pros/pros-kpi-card";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 
 const ROLE_LABELS: Record<string, string> = { ADMIN: "Admin", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" };
-const PALETTE = ["var(--color-primary)", "var(--color-gold)", "var(--color-coral)", "var(--color-sage)"];
-const SOFT_PALETTE = ["var(--color-primary-soft)", "var(--color-gold-soft)", "var(--color-coral-soft)", "var(--color-primary-soft)"];
+const PALETTE = ["var(--color-primary)", "var(--color-gold)", "var(--pros-status-critical-text)", "var(--color-sage)"];
+const SOFT_PALETTE = ["var(--color-primary-soft)", "var(--pros-gold-soft)", "var(--pros-status-critical-bg)", "var(--pros-sage-soft)"];
 // Weiß auf Gold (Index 1) unterschreitet WCAG AA (~2.1:1) - Avatar-Initialen dort in Petrol statt
 // Weiß, alle anderen Palettefarben bleiben bei Weiß (ausreichend Kontrast).
 const AVATAR_TEXT_PALETTE = ["white", "var(--color-primary)", "white", "white"];
@@ -35,10 +37,10 @@ export default async function MitarbeiterListPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile value={`${employees.length}`} label="Gesamt Mitarbeiter" />
-        <StatTile value={`${adminCount}`} label="Admins" />
-        <StatTile value={`${fachkraftCount}`} label="Fachkräfte" />
-        <StatTile value={avgCasesPerEmployee.toFixed(1)} label="Ø Fälle pro Mitarbeiter" />
+        <ProsKpiCard icon={<IconPeople />} value={employees.length} label="Gesamt Mitarbeiter" />
+        <ProsKpiCard icon={<IconShield />} value={adminCount} label="Admins" />
+        <ProsKpiCard icon={<IconBriefcase />} value={fachkraftCount} label="Fachkräfte" />
+        <ProsKpiCard icon={<IconChart />} value={avgCasesPerEmployee.toFixed(1)} label="Ø Fälle pro Mitarbeiter" />
       </div>
 
       <NewEmployeeForm />
@@ -52,7 +54,7 @@ export default async function MitarbeiterListPage() {
             <Link
               key={e.id}
               href={`/mitarbeiter/${e.id}/stammdaten`}
-              className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)] transition hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(0,0,0,.1)]"
+              className="flex flex-col gap-4 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)] transition-[transform,box-shadow] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:shadow-[var(--pros-shadow-hover)]"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -73,13 +75,7 @@ export default async function MitarbeiterListPage() {
                 <span className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: soft, color: "var(--color-primary)" }}>
                   {ROLE_LABELS[e.role] ?? e.role}
                 </span>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                    e.active ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]" : "bg-[var(--color-border)] text-[var(--color-text-muted)]"
-                  }`}
-                >
-                  {e.active ? "Aktiv" : "Deaktiviert"}
-                </span>
+                <ProsStatusPill tone={e.active ? "active" : "archived"}>{e.active ? "Aktiv" : "Deaktiviert"}</ProsStatusPill>
                 <span className="text-xs text-[var(--color-text-muted)]">{casesByEmployee.get(e.id) ?? 0} aktive Fälle</span>
               </div>
             </Link>
@@ -95,11 +91,41 @@ function initials(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-function StatTile({ value, label }: { value: string; label: string }) {
+function IconPeople() {
   return (
-    <div className="rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-      <div className="text-[28px] leading-none font-bold text-[var(--color-text)]">{value}</div>
-      <div className="mt-1.5 text-sm font-semibold text-[var(--color-text)]">{label}</div>
-    </div>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
+      <circle cx="18" cy="9" r="2.7" />
+      <path d="M15 20c0-2.6 1.6-4.6 4-5.2" />
+    </svg>
+  );
+}
+
+function IconShield() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+function IconBriefcase() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
+function IconChart() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20V10" />
+      <path d="M12 20V4" />
+      <path d="M20 20v-7" />
+    </svg>
   );
 }

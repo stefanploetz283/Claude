@@ -28,7 +28,7 @@ export function DocumentList({ employeeId, documents }: { employeeId: string; do
       </thead>
       <tbody>
         {documents.map((d) => (
-          <tr key={d.id} className="border-t border-[var(--color-border)]">
+          <tr key={d.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
             <td className="px-4 py-2">
               <a
                 href={`/api/mitarbeiter/${employeeId}/dokumente/${d.id}/download`}
@@ -50,7 +50,7 @@ export function DocumentList({ employeeId, documents }: { employeeId: string; do
                 onClick={() => {
                   if (confirm(`"${d.fileName}" wirklich löschen?`)) startTransition(() => deleteEmployeeDocument(d.id, employeeId));
                 }}
-                className="text-xs text-[var(--color-coral)] hover:underline disabled:opacity-50"
+                className="text-xs text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
               >
                 Löschen
               </button>

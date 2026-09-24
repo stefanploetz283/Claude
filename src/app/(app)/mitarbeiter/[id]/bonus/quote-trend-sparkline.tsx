@@ -23,7 +23,7 @@ export function QuoteTrendSparkline({ points }: { points: QuoteTrendPoint[] }) {
   return (
     <div className="flex items-center gap-2">
       <svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
-        <line x1={0} y1={targetY} x2={WIDTH} y2={targetY} stroke="var(--color-border)" strokeWidth="1" strokeDasharray="2 2" />
+        <line x1={0} y1={targetY} x2={WIDTH} y2={targetY} stroke="var(--pros-border-strong)" strokeWidth="1" strokeDasharray="2 2" />
         <path d={path} fill="none" stroke={BONUS_PRIMARY} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
         {values.map((v, i) => (
           <circle key={i} cx={x(i)} cy={y(v)} r={i === values.length - 1 ? 2.5 : 1.5} fill={BONUS_PRIMARY} opacity={points[i].isCurrent ? 0.55 : 1} />

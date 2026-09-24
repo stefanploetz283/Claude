@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
+import { MitarbeiterHeader } from "../mitarbeiter-header";
 
 const STATUS_LABELS: Record<string, string> = { ACTIVE: "Aktiv", PAUSED: "Pausiert", COMPLETED: "Abgeschlossen" };
 
 export default async function MitarbeiterFaellePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const viewer = await requireAdmin();
   const { id } = await params;
 
   const employee = await prisma.user.findUnique({ where: { id } });
@@ -20,12 +21,10 @@ export default async function MitarbeiterFaellePage({ params }: { params: Promis
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Fälle · {employee.name}</h1>
-        <p className="mt-1 text-sm text-black/60">Zugeteilte und vertretene Fälle.</p>
-      </div>
+      <MitarbeiterHeader id={employee.id} name={employee.name} role={employee.role} active={employee.active} viewerRole={viewer.role} />
+      <p className="-mt-2 text-sm text-[var(--color-text-muted)]">Zugeteilte und vertretene Fälle.</p>
 
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
             <tr>
@@ -38,7 +37,7 @@ export default async function MitarbeiterFaellePage({ params }: { params: Promis
           </thead>
           <tbody>
             {cases.map((c) => (
-              <tr key={c.id} className="border-t border-[var(--color-border)]">
+              <tr key={c.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                 <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">
                   {c.client.lastName}, {c.client.firstName}
                 </td>

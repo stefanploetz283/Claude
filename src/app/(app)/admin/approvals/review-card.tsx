@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useTransition, useActionState } from "react";
 import { approveMonth, requestCorrection, adminUpdateServiceEntry, getChangeHistory, type ChangeHistoryEntry } from "./actions";
+import { ProsModal } from "@/components/pros/pros-modal";
+import { buttonPrimaryCls, buttonDangerOutlineCls, buttonDangerSolidCls, inputCls } from "@/app/(app)/cases/case-ui";
 
 export type ReviewEntry = {
   id: string;
@@ -74,7 +76,7 @@ export function ApprovalReviewCard({
   }
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-[var(--color-text)]">
@@ -111,7 +113,7 @@ export function ApprovalReviewCard({
         </div>
       </div>
 
-      <div className="mt-3 max-h-80 overflow-y-auto rounded-[var(--radius-control)] border border-[var(--color-border)]">
+      <div className="mt-3 max-h-80 overflow-y-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--color-bg)] text-xs uppercase text-[var(--color-text-muted)]">
             <tr>
@@ -137,18 +139,10 @@ export function ApprovalReviewCard({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2.5">
-        <button
-          disabled={pending}
-          onClick={() => startTransition(() => approveMonth(caseId, year, month))}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button disabled={pending} onClick={() => startTransition(() => approveMonth(caseId, year, month))} className={buttonPrimaryCls}>
           Freigeben
         </button>
-        <button
-          disabled={pending}
-          onClick={() => setShowCorrection((v) => !v)}
-          className="rounded-[var(--radius-control)] border border-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-[var(--color-coral)] transition hover:bg-[var(--color-coral)]/10 disabled:opacity-50"
-        >
+        <button disabled={pending} onClick={() => setShowCorrection((v) => !v)} className={buttonDangerOutlineCls}>
           Korrektur anfordern
         </button>
       </div>
@@ -163,56 +157,41 @@ export function ApprovalReviewCard({
             required
             rows={3}
             placeholder="Was muss die Fachkraft korrigieren?"
-            className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]"
+            className={`w-full ${inputCls}`}
           />
-          <button
-            type="submit"
-            disabled={correctionPending}
-            className="self-start rounded-[var(--radius-control)] bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          >
+          <button type="submit" disabled={correctionPending} className={`self-start ${buttonDangerSolidCls}`}>
             {correctionPending ? "Wird gesendet…" : "Korrektur senden"}
           </button>
-          {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+          {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
         </form>
       )}
 
       {showHistory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowHistory(false)}>
-          <div
-            className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-[var(--color-text)]">Änderungshistorie · {clientName}</h4>
-              <button onClick={() => setShowHistory(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]" aria-label="Schließen">
-                ✕
-              </button>
-            </div>
-            {historyLoading && <p className="text-sm text-[var(--color-text-muted)]">Wird geladen…</p>}
-            {!historyLoading && history && history.length === 0 && (
-              <p className="text-sm text-[var(--color-text-muted)]">Noch keine Änderungen protokolliert.</p>
-            )}
-            {!historyLoading && history && history.length > 0 && (
-              <ul className="flex flex-col gap-3 text-sm">
-                {history.map((h) => (
-                  <li key={h.id} className="rounded-[var(--radius-control)] border border-[var(--color-border)] p-3">
-                    <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
-                      <span className="font-semibold text-[var(--color-primary)]">{FIELD_LABELS[h.field]}</span>
-                      <span>
-                        {h.changedByName} · {h.changedAt}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-[var(--color-text)]">
-                      <span className="text-[var(--color-coral)] line-through">{h.oldValue}</span>
-                      {" → "}
-                      <span className="font-medium">{h.newValue}</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+        <ProsModal title={`Änderungshistorie · ${clientName}`} onClose={() => setShowHistory(false)}>
+          {historyLoading && <p className="text-sm text-[var(--color-text-muted)]">Wird geladen…</p>}
+          {!historyLoading && history && history.length === 0 && (
+            <p className="text-sm text-[var(--color-text-muted)]">Noch keine Änderungen protokolliert.</p>
+          )}
+          {!historyLoading && history && history.length > 0 && (
+            <ul className="flex flex-col gap-3 text-sm">
+              {history.map((h) => (
+                <li key={h.id} className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] p-3">
+                  <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)]">
+                    <span className="font-semibold text-[var(--color-primary)]">{FIELD_LABELS[h.field]}</span>
+                    <span>
+                      {h.changedByName} · {h.changedAt}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[var(--color-text)]">
+                    <span className="text-[var(--pros-status-critical-text)] line-through">{h.oldValue}</span>
+                    {" → "}
+                    <span className="font-medium">{h.newValue}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </ProsModal>
       )}
     </div>
   );
@@ -252,7 +231,7 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
 
   if (!editing) {
     return (
-      <tr className="group border-t border-[var(--color-border)]">
+      <tr className="group border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
         <td className="px-3 py-2 whitespace-nowrap text-[var(--color-text-muted)]">{entry.dateLabel}</td>
         <td className="px-3 py-2 whitespace-nowrap text-[var(--color-text-muted)]">
           {entry.startTime}–{entry.endTime}
@@ -276,7 +255,7 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
   }
 
   return (
-    <tr className="border-t border-[var(--color-border)] bg-[var(--color-warn-soft)]/40">
+    <tr className="border-t border-[var(--pros-border-strong)] bg-[var(--pros-status-attention-bg)]/40">
       <td colSpan={4} className="px-3 py-3">
         <form
           action={(fd) => {
@@ -295,7 +274,7 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
               name="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+              className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
             />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
@@ -304,8 +283,8 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
                   name="startTime"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className={`rounded-[var(--radius-control)] border px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none ${
-                    timeInvalid ? "border-[var(--color-coral)]" : "border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                  className={`rounded-[var(--pros-r-sm)] border px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none ${
+                    timeInvalid ? "border-[var(--pros-status-critical-text)]" : "border-[var(--pros-border-strong)] focus:border-[var(--color-primary)]"
                   } bg-[var(--color-bg)]`}
                 />
                 <span className="text-[var(--color-text-muted)]">–</span>
@@ -314,12 +293,12 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
                   name="endTime"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className={`rounded-[var(--radius-control)] border px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none ${
-                    timeInvalid ? "border-[var(--color-coral)]" : "border-[var(--color-border)] focus:border-[var(--color-primary)]"
+                  className={`rounded-[var(--pros-r-sm)] border px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none ${
+                    timeInvalid ? "border-[var(--pros-status-critical-text)]" : "border-[var(--pros-border-strong)] focus:border-[var(--color-primary)]"
                   } bg-[var(--color-bg)]`}
                 />
               </div>
-              {timeInvalid && <p className="text-xs text-[var(--color-coral)]">Ende muss nach Beginn liegen.</p>}
+              {timeInvalid && <p className="text-xs text-[var(--pros-status-critical-text)]">Ende muss nach Beginn liegen.</p>}
             </div>
           </div>
           <div className="flex flex-col gap-1">
@@ -328,13 +307,13 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className={`w-full rounded-[var(--radius-control)] border px-3 py-2 text-sm text-[var(--color-text)] outline-none ${
-                descriptionInvalid ? "border-[var(--color-coral)]" : "border-[var(--color-border)] focus:border-[var(--color-primary)]"
+              className={`w-full rounded-[var(--pros-r-sm)] border px-3 py-2 text-sm text-[var(--color-text)] outline-none ${
+                descriptionInvalid ? "border-[var(--pros-status-critical-text)]" : "border-[var(--pros-border-strong)] focus:border-[var(--color-primary)]"
               } bg-[var(--color-bg)]`}
             />
-            {descriptionInvalid && <p className="text-xs text-[var(--color-coral)]">Bemerkung darf nicht leer sein.</p>}
+            {descriptionInvalid && <p className="text-xs text-[var(--pros-status-critical-text)]">Bemerkung darf nicht leer sein.</p>}
           </div>
-          {state?.error && <p className="text-xs text-[var(--color-coral)]">{state.error}</p>}
+          {state?.error && <p className="text-xs text-[var(--pros-status-critical-text)]">{state.error}</p>}
           <div className="flex items-center gap-2">
             <button
               type="submit"
@@ -353,7 +332,7 @@ function EntryRow({ caseId, year, month, entry }: { caseId: string; year: number
               disabled={pending}
               aria-label="Abbrechen"
               title="Abbrechen"
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-text-muted)] transition hover:bg-[var(--color-bg)]"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--pros-border-strong)] text-[var(--color-text-muted)] transition hover:bg-[var(--color-bg)]"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />

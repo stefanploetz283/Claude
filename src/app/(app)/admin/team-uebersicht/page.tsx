@@ -34,8 +34,8 @@ export default async function TeamUebersichtPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Team-Gesamtansicht</h1>
-        <p className="mt-1 text-sm text-black/60">Sondertage aller Fachkräfte im Überblick, um Kollisionen zu erkennen.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Team-Gesamtansicht</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">Sondertage aller Fachkräfte im Überblick, um Kollisionen zu erkennen.</p>
       </div>
 
       <TeamOverview employees={employeeRows} sondertage={sondertage} />

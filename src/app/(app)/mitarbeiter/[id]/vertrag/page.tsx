@@ -5,9 +5,10 @@ import { getSettings } from "@/lib/settings";
 import { computeStundenmodell, type SondertagWithMeta, type SondertagRow } from "@/lib/stundenmodell";
 import { VertragEditor, type VertragEmployee } from "./vertrag-editor";
 import type { WochenplanEntry } from "./actions";
+import { MitarbeiterHeader } from "../mitarbeiter-header";
 
 export default async function VertragPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminOrVerwaltung();
+  const viewer = await requireAdminOrVerwaltung();
   const { id } = await params;
   const settings = await getSettings();
   const aktuelleFondsBasis = settings.aktuelleFondsBasis.toNumber();
@@ -72,11 +73,14 @@ export default async function VertragPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <VertragEditor
-      employee={employeeData}
-      sondertage={sondertage}
-      helpTypes={helpTypes.map((h) => ({ id: h.id, name: h.name }))}
-      aktuelleFondsBasis={aktuelleFondsBasis}
-    />
+    <div className="flex flex-col gap-6">
+      <MitarbeiterHeader id={employee.id} name={employee.name} role={employee.role} active={employee.active} viewerRole={viewer.role} />
+      <VertragEditor
+        employee={employeeData}
+        sondertage={sondertage}
+        helpTypes={helpTypes.map((h) => ({ id: h.id, name: h.name }))}
+        aktuelleFondsBasis={aktuelleFondsBasis}
+      />
+    </div>
   );
 }

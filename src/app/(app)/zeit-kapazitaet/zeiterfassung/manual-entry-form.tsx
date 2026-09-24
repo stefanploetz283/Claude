@@ -6,7 +6,7 @@ import { toDateInputValue } from "@/lib/date";
 
 type CaseOption = { id: string; label: string };
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function ManualEntryForm({ cases }: { cases: CaseOption[] }) {
   const [state, formAction, pending] = useActionState(createManualEntry, undefined);
@@ -14,7 +14,7 @@ export function ManualEntryForm({ cases }: { cases: CaseOption[] }) {
   const [mode, setMode] = useState<"range" | "duration">("range");
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+    <form action={formAction} className="flex flex-col gap-3 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
       <h2 className="text-sm font-semibold text-[var(--color-text)]">Manuelle Erfassung / Korrektur</h2>
 
       <div className="flex flex-wrap gap-4 text-sm">
@@ -84,13 +84,13 @@ export function ManualEntryForm({ cases }: { cases: CaseOption[] }) {
         </label>
       </div>
 
-      {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
 
       <div>
         <button
           type="submit"
           disabled={pending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+          className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
         >
           {pending ? "Speichern…" : "Eintragen"}
         </button>

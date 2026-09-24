@@ -4,6 +4,8 @@ import { requireUser } from "@/lib/rbac";
 import { AbsenceForm } from "./absence-form";
 import { AbsenceList, type AbsenceRow } from "./absence-list";
 import { ZeitKapazitaetTabs } from "../tabs";
+import { noticeWarnCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 export default async function AbsencesPage() {
   const user = await requireUser();
@@ -32,8 +34,8 @@ export default async function AbsencesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Urlaub &amp; Abwesenheit</h1>
-        <p className="mt-1 text-sm text-black/60">
+        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Urlaub &amp; Abwesenheit</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
           {user.role === "ADMIN" ? "Übersicht aller Mitarbeiter." : "Eigene Abwesenheiten eintragen und verwalten."}
         </p>
       </div>
@@ -41,8 +43,11 @@ export default async function AbsencesPage() {
       <ZeitKapazitaetTabs />
 
       {user.role === "ADMIN" && currentlyAbsent.length > 0 && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="mb-1 font-medium">Aktuell abwesend:</p>
+        <div className={`${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+          <p className="mb-1.5 flex items-center gap-2 font-semibold">
+            <IconWarnTriangle />
+            Aktuell abwesend:
+          </p>
           {currentlyAbsent.map((a) => (
             <div key={a.id}>
               {a.employee.name} – {format(a.startDate, "dd.MM.")} bis {format(a.endDate, "dd.MM.yyyy")}
@@ -53,7 +58,7 @@ export default async function AbsencesPage() {
 
       <AbsenceForm employees={employees ? employees.map((e) => ({ id: e.id, name: e.name })) : null} />
 
-      <div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <AbsenceList rows={rows} showEmployee={user.role === "ADMIN"} />
       </div>
     </div>

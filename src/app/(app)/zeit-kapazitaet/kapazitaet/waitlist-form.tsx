@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { createWaitlistEntry, type ActionState } from "./actions";
 
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function WaitlistForm({ helpTypes }: { helpTypes: { id: string; name: string }[] }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(createWaitlistEntry, undefined);
@@ -37,12 +37,12 @@ export function WaitlistForm({ helpTypes }: { helpTypes: { id: string; name: str
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
       >
         {pending ? "Speichern…" : "Auf Warteliste setzen"}
       </button>
-      {state?.error && <p className="w-full text-sm text-[var(--color-coral)]">{state.error}</p>}
-      {state?.success && <p className="w-full text-sm text-[var(--color-green-medium)]">{state.success}</p>}
+      {state?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
+      {state?.success && <p className="w-full text-sm text-[var(--pros-status-active-text)]">{state.success}</p>}
     </form>
   );
 }

@@ -10,7 +10,7 @@ export function AccountActions({ id, active }: { id: string; active: boolean }) 
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
       {tempPassword && (
-        <span className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] px-2 py-1 font-mono text-[var(--color-warn-text)]">
+        <span className="rounded-[var(--pros-r-sm)] bg-[var(--pros-status-attention-bg)] px-2 py-1 font-mono text-[var(--pros-status-attention-text)]">
           Neues Passwort: {tempPassword}
         </span>
       )}
@@ -29,7 +29,7 @@ export function AccountActions({ id, active }: { id: string; active: boolean }) 
       <button
         disabled={pending}
         onClick={() => startTransition(() => setEmployeeActive(id, !active))}
-        className="font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+        className={`font-medium hover:underline disabled:opacity-50 ${active ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-primary)]"}`}
       >
         {active ? "Deaktivieren" : "Reaktivieren"}
       </button>

@@ -29,10 +29,10 @@ export function EntriesList({ entries, canDelete }: { entries: TimeEntryRow[]; c
       </thead>
       <tbody>
         {entries.map((e) => (
-          <tr key={e.id} className="border-t border-[var(--color-border)]">
+          <tr key={e.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
             <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{e.date}</td>
             <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{e.timeLabel}</td>
-            <td className={`px-5 py-3 font-semibold whitespace-nowrap ${e.durationHours < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-text)]"}`}>
+            <td className={`px-5 py-3 font-semibold whitespace-nowrap ${e.durationHours < 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-text)]"}`}>
               {e.durationHours.toFixed(2)} Std.
             </td>
             <td className="px-5 py-3 text-[var(--color-text)]">{e.label}</td>
@@ -44,7 +44,7 @@ export function EntriesList({ entries, canDelete }: { entries: TimeEntryRow[]; c
                   onClick={() => {
                     if (confirm("Eintrag wirklich löschen?")) startTransition(() => deleteTimeEntry(e.id));
                   }}
-                  className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+                  className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
                 >
                   Löschen
                 </button>

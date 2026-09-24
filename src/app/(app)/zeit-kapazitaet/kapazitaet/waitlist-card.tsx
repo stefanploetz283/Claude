@@ -7,7 +7,7 @@ import { cancelWaitlistEntry, convertWaitlistEntry, type ConvertActionState } fr
 import { toDateInputValue } from "@/lib/date";
 
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
 
 export type Suggestion = { employeeId: string; employeeName: string; fromWeek: Date; toWeek: Date } | null;
 
@@ -38,7 +38,7 @@ export function WaitlistCard({
   const [cancelPending, startCancel] = useTransition();
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-soft)]">
+    <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-4 shadow-[var(--pros-shadow)]">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-[var(--color-text)]">{entry.clientName}</p>
@@ -56,19 +56,19 @@ export function WaitlistCard({
           onClick={() => {
             if (confirm("Diese Anfrage von der Warteliste nehmen?")) startCancel(() => cancelWaitlistEntry(entry.id));
           }}
-          className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+          className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
         >
           Zurückziehen
         </button>
       </div>
 
       {suggestion ? (
-        <p className="mt-2 rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3 py-2 text-sm text-[var(--color-primary)]">
+        <p className="mt-2 rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-3 py-2 text-sm text-[var(--color-primary)]">
           Vorschlag: <strong>{suggestion.employeeName}</strong> wird voraussichtlich KW {format(suggestion.fromWeek, "w")}–
           {format(suggestion.toWeek, "w")} frei ({format(suggestion.fromWeek, "dd.MM.")}–{format(suggestion.toWeek, "dd.MM.yyyy")}).
         </p>
       ) : (
-        <p className="mt-2 rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-muted)]">
+        <p className="mt-2 rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text-muted)]">
           Aktuell keine passende Kapazität in Sicht (nächste {"~"}6 Monate).
         </p>
       )}
@@ -126,7 +126,7 @@ function ConvertForm({
   );
 
   return (
-    <form action={formAction} className="mt-3 flex flex-col gap-2.5 border-t border-[var(--color-border)] pt-3">
+    <form action={formAction} className="mt-3 flex flex-col gap-2.5 border-t border-[var(--pros-border-strong)] pt-3">
       <input type="hidden" name="waitlistEntryId" value={entryId} />
       <div className="flex flex-wrap gap-2">
         <input name="firstName" placeholder="Vorname" required className={`w-32 ${inputCls}`} />
@@ -178,11 +178,11 @@ function ConvertForm({
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className="self-start rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
       >
         {pending ? "Wird angelegt…" : "Als Fall anlegen"}
       </button>
-      {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
     </form>
   );
 }
