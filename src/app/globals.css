@@ -60,7 +60,12 @@
   --pros-status-stable-bg: #e6efef;
   --pros-status-stable-text: #285f63;
   --pros-status-critical-bg: #fbe3de;
-  --pros-status-critical-text: #e04c39;
+  /* Abgedunkelt von #e04c39 (Accessibility-Pass): auf den realen hellen PROS-Flächen
+     (--pros-card/--pros-canvas/--pros-cream/Weiß) unterschritt der Originalton WCAG AA für
+     normalen Text (~3,6–4,0:1). Gleicher Hue/Saturation (≈7°, ≈73%), nur die HSL-Lightness von
+     55,1% auf 46,2% reduziert - erreicht jetzt mind. 4,66:1 auf der dunkelsten dieser vier Flächen
+     (--pros-cream) und 4,99–5,16:1 auf den übrigen drei. */
+  --pros-status-critical-text: #cc3320;
   /* Etwas dunkler als ursprünglich dokumentiert (Design-System nennt #EDEDE8) - auf den
      warmweißen Cards (--color-surface: #fefcf6) war der Kontrast sonst zu gering, die Pille kaum
      als Fläche erkennbar. */

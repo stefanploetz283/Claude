@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { archiveCase } from "../actions";
+import { buttonDangerOutlineCls } from "../case-ui";
 
 export function ArchiveCaseButton({ caseId }: { caseId: string }) {
   const [pending, startTransition] = useTransition();
@@ -14,7 +15,7 @@ export function ArchiveCaseButton({ caseId }: { caseId: string }) {
           startTransition(() => archiveCase(caseId));
         }
       }}
-      className="rounded-[var(--radius-control)] border border-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-[var(--color-coral)] transition hover:bg-[var(--color-coral)] hover:text-white disabled:opacity-50"
+      className={buttonDangerOutlineCls}
     >
       {pending ? "Wird archiviert…" : "Fall archivieren"}
     </button>

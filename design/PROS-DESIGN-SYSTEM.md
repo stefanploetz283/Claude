@@ -112,9 +112,23 @@ CSS-Variable — hiermit zentralisiert:
 --pros-meta-4: #738182;   /* Case-Meta */
 
 /* Error / Critical — einziger Rotwert aus der Referenz (kpi-note.alert) */
---pros-critical-text: #E04C39;
+--pros-critical-text: #CC3320;   /* abgedunkelt von #E04C39, Accessibility-Pass s.u. */
 --pros-critical-bg:   #FBE3DE;   /* ⚠ extrapoliert, s. Abschnitt "Nicht eindeutig spezifiziert" */
 ```
+
+**Accessibility-Korrektur (Critical-Text):** Der ursprüngliche Referenzwert `#E04C39` erreichte auf
+den realen hellen PROS-Arbeitsflächen (`--pros-card` `#FFFCF7`, `--pros-canvas` `#FDFBF6`,
+`--pros-cream` `#F7F3EA`, Weiß) nur 3,6–4,0:1 und unterschritt damit WCAG AA (4,5:1) für normalen
+Text. Korrigiert auf `#CC3320` — gleicher Hue/Sättigung (≈7°, ≈73%), nur die HSL-Lightness von
+55,1 % auf 46,2 % reduziert. Neue Werte: 4,66:1 (`--pros-cream`, schlechtester Fall), 4,99:1
+(`--pros-canvas`), 5,05:1 (`--pros-card`), 5,16:1 (Weiß) — alle ≥ AA. Als Nebeneffekt verbessert
+sich auch die umgekehrte Paarung (weißer Text auf `--pros-critical-text`-Fläche, z. B.
+Gefahrenzone-Buttons) von zuvor ~4,0:1 auf denselben Wert wie oben.
+**Bekannte, noch offene Lücke:** Critical-Text auf `--pros-critical-bg` (`#FBE3DE`, die Status-Pill-
+Fläche) erreicht auch nach dieser Korrektur nur ~4,22:1 (zuvor ~3,26:1) — verbessert, aber weiterhin
+unter AA. Da `--pros-critical-bg` nicht zu den vier oben geprüften Arbeitsflächen zählt und dieser
+Pass ausdrücklich nur `--pros-critical-text` ändern sollte, wurde das hier bewusst nicht mitgelöst;
+braucht einen eigenen Blick auf `--pros-critical-bg`.
 
 ### 3.3 Shadow-Tokens
 
@@ -334,7 +348,7 @@ vier weitere Zustände ergänzt (⚠ extrapoliert, an bestehende Tonalität ange
 | Active | `#E2EBD9` | `#2D5C3C` | direkt |
 | Stable | `#E6EFEF` | `#285F63` | direkt |
 | Attention | `#FFF0C9` | `#B86F00` | direkt |
-| Critical | `--pros-critical-bg` `#FBE3DE` | `--pros-critical-text` `#E04C39` | Text direkt (`.kpi-note.alert`), Fläche ⚠ extrapoliert |
+| Critical | `--pros-critical-bg` `#FBE3DE` | `--pros-critical-text` `#CC3320` | Text direkt (`.kpi-note.alert`), Fläche ⚠ extrapoliert; Text abgedunkelt von `#E04C39` im Accessibility-Pass, s. Abschnitt 3.2 |
 | Info | `#E6EFEF` (wie Stable, petrol-neutral) | `#285F63` | ⚠ extrapoliert, teilt sich Ton mit Stable |
 | Paused | `--pros-sage-pale` `#EEF2EA` | `--pros-muted` `#6F7E7B` | ⚠ extrapoliert |
 | Archived | `#E2E0D8` | `#756F60` | ⚠ extrapoliert, bewusst entsättigt; in der Interim-Umsetzung gegenüber der ersten Fassung (`#EDEDE8`/`#8A8A82`) abgedunkelt, weil der Kontrast auf den warmweißen Cards (`--color-surface: #fefcf6`) sonst zu gering war |

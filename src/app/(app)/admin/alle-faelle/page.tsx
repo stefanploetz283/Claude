@@ -4,6 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { getRemainingHoursBulk } from "@/lib/case-helpers";
 import { getSettings } from "@/lib/settings";
 import type { CaseStatus, Prisma } from "@prisma/client";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { filterFieldCls, buttonSecondaryCls } from "../../cases/case-ui";
+import { IconWarnTriangle } from "../../cases/case-icons";
+
+const STATUS_TONE: Record<CaseStatus, "active" | "attention" | "stable"> = {
+  ACTIVE: "active",
+  PAUSED: "attention",
+  COMPLETED: "stable",
+};
 
 const STATUS_LABELS: Record<CaseStatus, string> = {
   ACTIVE: "Aktiv",
@@ -71,14 +80,14 @@ export default async function AlleFaellePage({
         <div className="flex items-center gap-3">
           <Link
             href={showArchived ? "/admin/alle-faelle" : "/admin/alle-faelle?archived=1"}
-            className="inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+            className={`inline-flex items-center gap-1.5 ${buttonSecondaryCls}`}
           >
             <ArchiveIcon />
             {showArchived ? "Zu aktiven Fällen" : "Archivierte Fälle anzeigen"}
           </Link>
           <Link
             href="/cases/new"
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+            className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
           >
             + Neue Hilfe anlegen
           </Link>
@@ -87,13 +96,13 @@ export default async function AlleFaellePage({
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]"
+        className="flex flex-wrap items-end gap-4 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]"
       >
         <FilterField label="Suche">
-          <input name="q" defaultValue={params.q ?? ""} placeholder="Klient, Dokumentation…" className={`${fieldCls} w-56`} />
+          <input name="q" defaultValue={params.q ?? ""} placeholder="Klient, Dokumentation…" className={`${filterFieldCls} w-56`} />
         </FilterField>
         <FilterField label="Mitarbeiter">
-          <select name="employeeId" defaultValue={params.employeeId ?? ""} className={fieldCls}>
+          <select name="employeeId" defaultValue={params.employeeId ?? ""} className={filterFieldCls}>
             <option value="">Alle Mitarbeiter</option>
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
@@ -103,7 +112,7 @@ export default async function AlleFaellePage({
           </select>
         </FilterField>
         <FilterField label="Status">
-          <select name="status" defaultValue={params.status ?? ""} className={fieldCls}>
+          <select name="status" defaultValue={params.status ?? ""} className={filterFieldCls}>
             <option value="">Alle</option>
             <option value="ACTIVE">Aktiv</option>
             <option value="PAUSED">Pausiert</option>
@@ -111,7 +120,7 @@ export default async function AlleFaellePage({
           </select>
         </FilterField>
         <FilterField label="Hilfeart">
-          <select name="helpTypeId" defaultValue={params.helpTypeId ?? ""} className={fieldCls}>
+          <select name="helpTypeId" defaultValue={params.helpTypeId ?? ""} className={filterFieldCls}>
             <option value="">Alle</option>
             {helpTypes.map((h) => (
               <option key={h.id} value={h.id}>
@@ -122,24 +131,24 @@ export default async function AlleFaellePage({
         </FilterField>
         <button
           type="submit"
-          className="inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--color-primary-soft)] bg-[var(--color-primary-soft)] px-4 py-2.5 text-sm font-medium text-[var(--color-primary)] transition hover:brightness-95"
+          className="inline-flex items-center gap-1.5 rounded-[var(--pros-r-sm)] border border-[var(--pros-sage)] bg-[var(--pros-sage-pale)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--pros-sage-soft)] active:translate-y-0 active:scale-[0.97]"
         >
           <FilterIcon />
           Filtern
         </button>
-        <Link href="/admin/alle-faelle" className="px-1 py-2.5 text-sm font-medium text-[var(--color-coral)] hover:underline">
+        <Link href="/admin/alle-faelle" className="px-1 py-2.5 text-sm font-medium text-[var(--pros-status-critical-text)] hover:underline">
           Zurücksetzen
         </Link>
       </form>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<StatFaelleIcon />} color="#0B3D46" bg="#0B3D461f" value={totalOpen} label="Gesamtfälle" sub="Alle aktiven Fälle" />
-        <StatCard icon={<StatActiveIcon />} color="#8AA187" bg="#8AA1871f" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
-        <StatCard icon={<StatDoneIcon />} color="#E3A72C" bg="#E3A72C1f" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
-        <StatCard icon={<StatArchiveIcon />} color="#5C635E" bg="#5C635E1f" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
+        <StatCard icon={<StatFaelleIcon />} color="var(--color-primary)" bg="var(--pros-status-stable-bg)" value={totalOpen} label="Gesamtfälle" sub="Alle aktiven Fälle" />
+        <StatCard icon={<StatActiveIcon />} color="var(--pros-status-active-text)" bg="var(--pros-status-active-bg)" value={activeCount} label="In Bearbeitung" sub="Aktuell laufende Hilfen" />
+        <StatCard icon={<StatDoneIcon />} color="var(--pros-status-attention-text)" bg="var(--pros-status-attention-bg)" value={completedCount} label="Abgeschlossen" sub="Beendete Hilfen" />
+        <StatCard icon={<StatArchiveIcon />} color="var(--pros-status-archived-text)" bg="var(--pros-status-archived-bg)" value={archivedCount} label="Archiviert" sub="Archivierte Fälle" />
       </div>
 
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
           {/* Weiß auf Salbei unterschreitet WCAG AA (~2.8:1) - dunkler Text (~4.6:1) besteht. */}
           <thead className="bg-[var(--color-sage)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text)]">
@@ -159,7 +168,7 @@ export default async function AlleFaellePage({
               const remainingPercent = contingent > 0 ? (remaining / contingent) * 100 : 0;
               const warn = remainingPercent <= threshold;
               return (
-                <tr key={c.id} className="border-t border-[var(--color-border)] transition hover:bg-[var(--color-primary-soft)]/40">
+                <tr key={c.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                   <td className="px-5 py-3.5">
                     <Link href={`/cases/${c.id}`} className="font-medium text-[var(--color-primary)] hover:underline">
                       {c.client.lastName}, {c.client.firstName}
@@ -171,13 +180,18 @@ export default async function AlleFaellePage({
                     {c.substituteEmployee && <div className="text-xs text-[var(--color-text-muted)]">Vertr.: {c.substituteEmployee.name}</div>}
                   </td>
                   <td className="px-5 py-3.5">
-                    <StatusBadge status={c.status} />
+                    <ProsStatusPill tone={STATUS_TONE[c.status]}>{STATUS_LABELS[c.status]}</ProsStatusPill>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={warn ? "font-semibold text-[var(--color-coral)]" : "text-[var(--color-text)]"}>
+                    <span className={warn ? "font-semibold text-[var(--pros-status-attention-text)]" : "text-[var(--color-text)]"}>
                       {remaining.toFixed(1)} / {contingent.toFixed(1)} Std.
                     </span>
-                    {warn && <div className="text-xs text-[var(--color-coral)]">⚠ Kontingent bald aufgebraucht</div>}
+                    {warn && (
+                      <div className="mt-0.5 flex items-center gap-1 text-xs text-[var(--pros-status-attention-text)]">
+                        <IconWarnTriangle />
+                        Kontingent bald aufgebraucht
+                      </div>
+                    )}
                   </td>
                 </tr>
               );
@@ -200,9 +214,6 @@ export default async function AlleFaellePage({
   );
 }
 
-const fieldCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-
 function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -210,15 +221,6 @@ function FilterField({ label, children }: { label: string; children: React.React
       {children}
     </label>
   );
-}
-
-function StatusBadge({ status }: { status: CaseStatus }) {
-  const colors: Record<CaseStatus, string> = {
-    ACTIVE: "bg-[#8AA18729] text-[#3f5a2f]",
-    PAUSED: "bg-[#E3A72C29] text-[#7d611f]",
-    COMPLETED: "bg-[#0B3D461f] text-[var(--color-primary)]",
-  };
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${colors[status]}`}>{STATUS_LABELS[status]}</span>;
 }
 
 function ArchiveIcon() {
@@ -255,7 +257,7 @@ function StatCard({
   sub: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-[var(--radius-card)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+    <div className="flex items-center gap-4 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
       <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full" style={{ background: bg, color }}>
         {icon}
       </div>

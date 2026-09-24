@@ -39,8 +39,8 @@ const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 type Stage = "eingabe" | "verarbeitung" | "pruefung" | "gespeichert";
 
 const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 export function BerichtsbausteinCapture({
   caseId,
@@ -195,7 +195,7 @@ export function BerichtsbausteinCapture({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)]"
       >
         + Baustein erfassen
       </button>
@@ -209,7 +209,7 @@ export function BerichtsbausteinCapture({
           <p className="text-sm text-[var(--color-text)]">Baustein gespeichert.</p>
           <button
             onClick={reset}
-            className="self-start rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
+            className="self-start rounded-[var(--pros-r-sm)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
           >
             Weiteren Baustein erfassen
           </button>
@@ -270,31 +270,31 @@ export function BerichtsbausteinCapture({
             <button
               onClick={handleSave}
               disabled={saving || !text.trim()}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+              className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
             >
               {saving ? "Speichern…" : "Baustein speichern"}
             </button>
-            <button onClick={reset} className="rounded-[var(--radius-control)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-muted)]">
+            <button onClick={reset} className="rounded-[var(--pros-r-sm)] px-4 py-2.5 text-sm font-medium text-[var(--color-text-muted)]">
               Abbrechen
             </button>
           </div>
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex gap-1 rounded-[var(--radius-control)] bg-[var(--color-bg)] p-1 text-sm">
+          <div className="flex gap-1 rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] p-1 text-sm">
             <button
               onClick={() => setModus("freitext")}
-              className={`flex-1 rounded-[calc(var(--radius-control)-2px)] px-3 py-1.5 font-medium transition ${
-                modus === "freitext" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-soft)]" : "text-[var(--color-text-muted)]"
+              className={`flex-1 rounded-[calc(var(--pros-r-sm)-2px)] px-3 py-1.5 font-medium transition ${
+                modus === "freitext" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--pros-shadow)]" : "text-[var(--color-text-muted)]"
               }`}
             >
               Freitext
             </button>
             <button
               onClick={() => setModus("diktat")}
-              className={`flex-1 rounded-[calc(var(--radius-control)-2px)] px-3 py-1.5 font-medium transition ${
-                modus === "diktat" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-soft)]" : "text-[var(--color-text-muted)]"
+              className={`flex-1 rounded-[calc(var(--pros-r-sm)-2px)] px-3 py-1.5 font-medium transition ${
+                modus === "diktat" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--pros-shadow)]" : "text-[var(--color-text-muted)]"
               }`}
             >
               Mikrofon-Diktat
@@ -313,7 +313,7 @@ export function BerichtsbausteinCapture({
               <button
                 onClick={() => runKategorisierung(freitext)}
                 disabled={!freitext.trim() || stage === "verarbeitung"}
-                className="self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                className="self-start rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 {stage === "verarbeitung" ? "Wird eingeordnet…" : "Weiter"}
               </button>
@@ -327,7 +327,7 @@ export function BerichtsbausteinCapture({
               {recording ? (
                 <button
                   onClick={stopRecording}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-coral)] text-white shadow-[var(--shadow-soft)] transition"
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--pros-status-critical-text)] text-white shadow-[var(--pros-shadow)] transition"
                   aria-label="Aufnahme stoppen"
                 >
                   <span className="h-4 w-4 animate-pulse rounded-full bg-white" />
@@ -336,7 +336,7 @@ export function BerichtsbausteinCapture({
                 <button
                   onClick={startRecording}
                   disabled={stage === "verarbeitung"}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
                   aria-label="Aufnahme starten"
                 >
                   <MicIcon />
@@ -355,7 +355,7 @@ export function BerichtsbausteinCapture({
               )}
             </div>
           )}
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
           <button onClick={reset} className="self-start text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
             Abbrechen
           </button>

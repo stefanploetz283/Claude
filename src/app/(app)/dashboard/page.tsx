@@ -5,6 +5,7 @@ import { getRemainingHoursBulk } from "@/lib/case-helpers";
 import { getSettings } from "@/lib/settings";
 import type { CaseStatus, Prisma } from "@prisma/client";
 import { CaseCard } from "./case-card";
+import { filterFieldCls, buttonSecondaryCls } from "../cases/case-ui";
 
 /**
  * "Fälle" - die vollständige, persönliche Fallliste (eigene zugewiesene/vertretene Fälle, alle Rollen
@@ -71,18 +72,18 @@ export default async function DashboardPage({
 
       <form
         method="get"
-        className="flex flex-wrap items-end gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]"
+        className="flex flex-wrap items-end gap-4 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]"
       >
         <FilterField label="Suche">
           <input
             name="q"
             defaultValue={params.q ?? ""}
             placeholder="Klient, Dokumentation…"
-            className={`${fieldCls} w-56`}
+            className={`${filterFieldCls} w-56`}
           />
         </FilterField>
         <FilterField label="Status">
-          <select name="status" defaultValue={params.status ?? ""} className={fieldCls}>
+          <select name="status" defaultValue={params.status ?? ""} className={filterFieldCls}>
             <option value="">Alle</option>
             <option value="ACTIVE">Aktiv</option>
             <option value="PAUSED">Pausiert</option>
@@ -90,7 +91,7 @@ export default async function DashboardPage({
           </select>
         </FilterField>
         <FilterField label="Hilfeart">
-          <select name="helpTypeId" defaultValue={params.helpTypeId ?? ""} className={fieldCls}>
+          <select name="helpTypeId" defaultValue={params.helpTypeId ?? ""} className={filterFieldCls}>
             <option value="">Alle</option>
             {helpTypes.map((h) => (
               <option key={h.id} value={h.id}>
@@ -101,24 +102,24 @@ export default async function DashboardPage({
         </FilterField>
         <button
           type="submit"
-          className="inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--color-primary-soft)] bg-[var(--color-primary-soft)] px-4 py-2.5 text-sm font-medium text-[var(--color-primary)] transition hover:brightness-95"
+          className="inline-flex items-center gap-1.5 rounded-[var(--pros-r-sm)] border border-[var(--pros-sage)] bg-[var(--pros-sage-pale)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--pros-sage-soft)] active:translate-y-0 active:scale-[0.97]"
         >
           <FilterIcon />
           Filtern
         </button>
-        <Link href="/dashboard" className="px-1 py-2.5 text-sm font-medium text-[var(--color-coral)] hover:underline">
+        <Link href="/dashboard" className="px-1 py-2.5 text-sm font-medium text-[var(--pros-status-critical-text)] hover:underline">
           Zurücksetzen
         </Link>
         <Link
           href={showArchived ? "/dashboard" : "/dashboard?archived=1"}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+          className={`ml-auto ${buttonSecondaryCls} inline-flex items-center gap-1.5`}
         >
           <ArchiveIcon />
           {showArchived ? "Zu aktiven Fällen" : "Archiv"}
         </Link>
         <Link
           href="/cases/new"
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+          className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
         >
           + Neue Hilfe anlegen
         </Link>
@@ -143,7 +144,7 @@ export default async function DashboardPage({
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-16 text-center shadow-[var(--shadow-soft)]">
+        <div className="flex flex-col items-center gap-3 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] px-4 py-16 text-center shadow-[var(--pros-shadow)]">
           <EmptyStateIcon />
           <p className="font-medium text-[var(--color-text)]">{showArchived ? "Keine archivierten Fälle." : "Aktuell keine Fälle gefunden."}</p>
           <p className="text-sm text-[var(--color-text-muted)]">Erstellen Sie eine neue Hilfe oder passen Sie Ihre Filterkriterien an.</p>
@@ -152,9 +153,6 @@ export default async function DashboardPage({
     </div>
   );
 }
-
-const fieldCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
   return (

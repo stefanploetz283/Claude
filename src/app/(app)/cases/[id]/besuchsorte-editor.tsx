@@ -2,12 +2,9 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { addBesuchsort, updateBesuchsort, deleteBesuchsort, updateCaseGeplanteFlsStdWoche } from "../actions";
+import { inputCls, labelCls, buttonOutlineCls, buttonPrimaryCls } from "../case-ui";
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const saveBtnCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50";
-const deleteBtnCls = "text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50";
+const deleteBtnCls = "text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50";
 const BEZEICHNUNG_VORSCHLAEGE_ID = "besuchsort-bezeichnung-vorschlaege";
 
 type Besuchsort = { id: string; bezeichnung: string; adresse: string; besucheProMonat: number };
@@ -38,7 +35,7 @@ export function BesuchsorteEditor({
 
       <AddBesuchsortForm caseId={caseId} />
 
-      <div className="border-t border-[var(--color-border)] pt-4">
+      <div className="border-t border-[var(--pros-border-default)] pt-4">
         <GeplanteFlsStdWocheForm caseId={caseId} geplanteFlsStdWoche={geplanteFlsStdWoche} />
       </div>
     </div>
@@ -55,7 +52,7 @@ function BesuchsortRow({ besuchsort, caseId, canDelete }: { besuchsort: Besuchso
   return (
     <div className="flex flex-wrap items-end gap-2">
       <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Bezeichnung</span>
+        <span className={labelCls}>Bezeichnung</span>
         <input
           list={BEZEICHNUNG_VORSCHLAEGE_ID}
           value={bezeichnung}
@@ -64,11 +61,11 @@ function BesuchsortRow({ besuchsort, caseId, canDelete }: { besuchsort: Besuchso
         />
       </label>
       <label className="flex min-w-[14rem] flex-1 flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Adresse</span>
-        <input value={adresse} onChange={(e) => setAdresse(e.target.value)} className={inputCls} />
+        <span className={labelCls}>Adresse</span>
+        <input value={adresse} onChange={(e) => setAdresse(e.target.value)} className={`w-full ${inputCls}`} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Besuche/Monat</span>
+        <span className={labelCls}>Besuche/Monat</span>
         <input
           type="number"
           min="0"
@@ -86,7 +83,7 @@ function BesuchsortRow({ besuchsort, caseId, canDelete }: { besuchsort: Besuchso
             setError(result?.error ?? null);
           })
         }
-        className={saveBtnCls}
+        className={buttonOutlineCls}
       >
         {pending ? "Speichern…" : "Speichern"}
       </button>
@@ -104,7 +101,7 @@ function BesuchsortRow({ besuchsort, caseId, canDelete }: { besuchsort: Besuchso
       >
         Löschen
       </button>
-      {error && <p className="w-full text-xs text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="w-full text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }
@@ -117,9 +114,9 @@ function AddBesuchsortForm({ caseId }: { caseId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-wrap items-end gap-2 border-t border-[var(--color-border)] pt-3">
+    <div className="flex flex-wrap items-end gap-2 border-t border-[var(--pros-border-default)] pt-3">
       <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Bezeichnung</span>
+        <span className={labelCls}>Bezeichnung</span>
         <input
           list={BEZEICHNUNG_VORSCHLAEGE_ID}
           value={bezeichnung}
@@ -129,16 +126,16 @@ function AddBesuchsortForm({ caseId }: { caseId: string }) {
         />
       </label>
       <label className="flex min-w-[14rem] flex-1 flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Adresse</span>
+        <span className={labelCls}>Adresse</span>
         <input
           value={adresse}
           onChange={(e) => setAdresse(e.target.value)}
           placeholder="Straße Hausnr., PLZ Ort"
-          className={inputCls}
+          className={`w-full ${inputCls}`}
         />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Besuche/Monat</span>
+        <span className={labelCls}>Besuche/Monat</span>
         <input
           type="number"
           min="0"
@@ -163,11 +160,11 @@ function AddBesuchsortForm({ caseId }: { caseId: string }) {
             setBesucheProMonat("4.33");
           })
         }
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className={buttonPrimaryCls}
       >
         {pending ? "Wird hinzugefügt…" : "Weiteren Besuchsort hinzufügen"}
       </button>
-      {error && <p className="w-full text-xs text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="w-full text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }
@@ -179,7 +176,7 @@ function GeplanteFlsStdWocheForm({ caseId, geplanteFlsStdWoche }: { caseId: stri
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="caseId" value={caseId} />
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Geplante FLS-Std./Woche</span>
+        <span className={labelCls}>Geplante FLS-Std./Woche</span>
         <input
           name="geplanteFlsStdWoche"
           type="number"
@@ -189,10 +186,10 @@ function GeplanteFlsStdWocheForm({ caseId, geplanteFlsStdWoche }: { caseId: stri
           className={`w-36 ${inputCls}`}
         />
       </label>
-      <button type="submit" disabled={pending} className={saveBtnCls}>
+      <button type="submit" disabled={pending} className={buttonOutlineCls}>
         {pending ? "Speichern…" : "Speichern"}
       </button>
-      {state?.error && <p className="w-full text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
     </form>
   );
 }

@@ -5,7 +5,7 @@ import { buchenAdHoc, type BuchungActionState } from "../../../calendar/buchung-
 import { TERMINART_OPTIONS } from "@/lib/termine/labels";
 
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]";
 
 /** Schnelle Fall-Termin-Buchung direkt aus der Fallakte - immer Kategorie FALL_TERMIN, freie Ad-hoc-Zeit
  * (kein Slot-Bezug). Für Raum-Zuweisung/Slot-Buchung siehe der volle Terminkalender. */
@@ -15,7 +15,7 @@ export function CaseAppointmentForm({ caseId, employeeId, defaultDate }: { caseI
   return (
     <form
       action={formAction}
-      className="flex flex-wrap items-end gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]"
+      className="flex flex-wrap items-end gap-4 rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]"
     >
       <input type="hidden" name="caseId" value={caseId} />
       <input type="hidden" name="employeeId" value={employeeId} />
@@ -50,13 +50,13 @@ export function CaseAppointmentForm({ caseId, employeeId, defaultDate }: { caseI
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100"
       >
         {pending ? "Speichern…" : "+ Termin anlegen"}
       </button>
-      {state?.error && <p className="w-full text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
       {state?.konflikte && state.konflikte.length > 0 && (
-        <p className="w-full text-sm text-[var(--color-coral)]">
+        <p className="w-full text-sm text-[var(--pros-status-critical-text)]">
           Terminkonflikt mit {state.konflikte.length} bestehendem Termin – bitte im vollen Kalender (mit Übersteuerungs-Option) buchen.
         </p>
       )}

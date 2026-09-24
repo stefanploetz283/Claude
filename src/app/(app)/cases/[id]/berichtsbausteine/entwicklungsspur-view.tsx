@@ -16,26 +16,26 @@ export type BausteinAnsicht = {
   bezugDatum: string | null; // ISO, falls verknüpft
 };
 
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 export function EntwicklungsspurView({ bausteine }: { bausteine: BausteinAnsicht[] }) {
   const [ansicht, setAnsicht] = useState<"chronologisch" | "kapitel">("chronologisch");
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-1 self-start rounded-[var(--radius-control)] bg-[var(--color-bg)] p-1 text-sm">
+      <div className="flex gap-1 self-start rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] p-1 text-sm">
         <button
           onClick={() => setAnsicht("chronologisch")}
-          className={`rounded-[calc(var(--radius-control)-2px)] px-3.5 py-1.5 font-medium transition ${
-            ansicht === "chronologisch" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-soft)]" : "text-[var(--color-text-muted)]"
+          className={`rounded-[calc(var(--pros-r-sm)-2px)] px-3.5 py-1.5 font-medium transition ${
+            ansicht === "chronologisch" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--pros-shadow)]" : "text-[var(--color-text-muted)]"
           }`}
         >
           Chronologisch
         </button>
         <button
           onClick={() => setAnsicht("kapitel")}
-          className={`rounded-[calc(var(--radius-control)-2px)] px-3.5 py-1.5 font-medium transition ${
-            ansicht === "kapitel" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--shadow-soft)]" : "text-[var(--color-text-muted)]"
+          className={`rounded-[calc(var(--pros-r-sm)-2px)] px-3.5 py-1.5 font-medium transition ${
+            ansicht === "kapitel" ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--pros-shadow)]" : "text-[var(--color-text-muted)]"
           }`}
         >
           Nach Kapitel gruppiert
@@ -91,7 +91,7 @@ function KapitelBoard({ bausteine }: { bausteine: BausteinAnsicht[] }) {
         <div className="flex w-72 shrink-0 flex-col gap-2">
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-semibold text-[var(--color-text-muted)]">Nicht zugeordnet</span>
-            <span className="rounded-full bg-[var(--color-border)] px-2 py-0.5 text-xs font-semibold text-[var(--color-text)]">
+            <span className="rounded-full bg-[var(--pros-border-strong)] px-2 py-0.5 text-xs font-semibold text-[var(--color-text)]">
               {nichtZugeordnet.length}
             </span>
           </div>
@@ -113,7 +113,7 @@ function KapitelSpalte({ kapitel, bausteine }: { kapitel: BerichtsKapitel; baust
 
   return (
     <div
-      className={`flex w-72 shrink-0 flex-col gap-2 rounded-[var(--radius-card)] p-2 ${
+      className={`flex w-72 shrink-0 flex-col gap-2 rounded-[var(--pros-r-md)] p-2 ${
         leer ? "bg-[var(--color-warn-soft)]" : duenn ? "bg-[var(--color-warn-soft)]/50" : ""
       }`}
     >
@@ -121,7 +121,7 @@ function KapitelSpalte({ kapitel, bausteine }: { kapitel: BerichtsKapitel; baust
         <span className="text-xs font-semibold text-[var(--color-text)]">{info.label}</span>
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-            leer || duenn ? "bg-[var(--color-warn-text)] text-white" : "bg-[var(--color-border)] text-[var(--color-text)]"
+            leer || duenn ? "bg-[var(--color-warn-text)] text-white" : "bg-[var(--pros-border-strong)] text-[var(--color-text)]"
           }`}
         >
           {bausteine.length}
@@ -139,7 +139,7 @@ function KapitelSpalte({ kapitel, bausteine }: { kapitel: BerichtsKapitel; baust
 
 function BausteinKarte({ baustein }: { baustein: BausteinAnsicht }) {
   return (
-    <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-[var(--shadow-soft)]">
+    <div className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-3 shadow-[var(--pros-shadow)]">
       <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--color-text-muted)]">
         <span>{format(new Date(baustein.erfassungszeitpunkt), "dd.MM.yyyy", { locale: de })}</span>
         <span>· {baustein.erstellerName}</span>

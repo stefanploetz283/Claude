@@ -23,15 +23,15 @@ const STATUS_LABELS: Record<Entwurf["status"], string> = {
   KORREKTUR_ANGEFORDERT: "Korrektur angefordert",
 };
 const STATUS_CLS: Record<Entwurf["status"], string> = {
-  IN_BEARBEITUNG: "bg-[var(--color-border)] text-[var(--color-text)]",
+  IN_BEARBEITUNG: "bg-[var(--pros-border-strong)] text-[var(--color-text)]",
   WARTET_AUF_FREIGABE: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
   FREIGEGEBEN: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-  KORREKTUR_ANGEFORDERT: "bg-[var(--color-coral-soft)] text-[var(--color-coral)]",
+  KORREKTUR_ANGEFORDERT: "bg-[var(--color-coral-soft)] text-[var(--pros-status-critical-text)]",
 };
 
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entwurf: Entwurf | null }) {
   const [pruefung, setPruefung] = useState<VollstaendigkeitspruefungResult | null>(null);
@@ -103,17 +103,17 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
       )}
 
       {entwurf?.status === "KORREKTUR_ANGEFORDERT" && entwurf.correctionNote && (
-        <p className="mb-4 rounded-[var(--radius-control)] bg-[var(--color-coral-soft)] px-3.5 py-2.5 text-sm text-[var(--color-coral)]">
+        <p className="mb-4 rounded-[var(--pros-r-sm)] bg-[var(--color-coral-soft)] px-3.5 py-2.5 text-sm text-[var(--pros-status-critical-text)]">
           Korrekturhinweis: {entwurf.correctionNote}
         </p>
       )}
 
       {!entwurf?.status || entwurf.status === "IN_BEARBEITUNG" || entwurf.status === "KORREKTUR_ANGEFORDERT" ? (
-        <div className="mb-4 flex flex-col gap-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+        <div className="mb-4 flex flex-col gap-3 rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] p-4">
           <button
             onClick={handlePruefen}
             disabled={pending}
-            className="self-start rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+            className="self-start rounded-[var(--pros-r-sm)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
           >
             {pending ? "Wird geprüft…" : "Vollständigkeit prüfen"}
           </button>
@@ -121,7 +121,7 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
           {pruefung?.ok && (
             <div className="flex flex-col gap-3 text-sm">
               {!pruefung.manualVorhanden && (
-                <p className="text-[var(--color-coral)]">
+                <p className="text-[var(--pros-status-critical-text)]">
                   Für die Hilfeart dieses Falls ist noch kein Berichtsmanual hinterlegt (Angebotskatalog) - Generierung nicht möglich.
                 </p>
               )}
@@ -152,7 +152,7 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
               )}
 
               {pruefung.mehrereFachkraefte && (
-                <label className="flex items-start gap-2 rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-3 text-[var(--color-warn-text)]">
+                <label className="flex items-start gap-2 rounded-[var(--pros-r-sm)] bg-[var(--color-warn-soft)] p-3 text-[var(--color-warn-text)]">
                   <input
                     type="checkbox"
                     className="mt-0.5"
@@ -170,7 +170,7 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
               <button
                 onClick={handleGenerieren}
                 disabled={pending || !kannGenerieren}
-                className="self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                className="self-start rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 {pending ? "Wird generiert…" : entwurf ? "Erneut generieren" : "Abschlussbericht generieren"}
               </button>
@@ -196,14 +196,14 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
               <button
                 onClick={handleSpeichern}
                 disabled={pending}
-                className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+                className="rounded-[var(--pros-r-sm)] border border-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
               >
                 {pending ? "Speichern…" : "Änderungen speichern"}
               </button>
               <button
                 onClick={handleEinreichen}
                 disabled={pending}
-                className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
                 Zur Freigabe einreichen
               </button>
@@ -213,7 +213,7 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
         </div>
       )}
 
-      {error && <p className="mt-3 text-sm text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="mt-3 text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }

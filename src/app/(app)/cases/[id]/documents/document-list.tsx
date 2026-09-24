@@ -17,20 +17,20 @@ export function DocumentList({ caseId, documents }: { caseId: string; documents:
 
   return (
     <table className="w-full text-left text-sm">
-      <thead className="bg-black/5 text-xs uppercase text-black/50">
+      <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
         <tr>
-          <th className="px-4 py-2">Datei</th>
-          <th className="px-4 py-2">Kategorie</th>
-          <th className="px-4 py-2">Größe</th>
-          <th className="px-4 py-2">Hochgeladen am</th>
-          <th className="px-4 py-2">Von</th>
-          <th className="px-4 py-2"></th>
+          <th className="px-5 py-3">Datei</th>
+          <th className="px-5 py-3">Kategorie</th>
+          <th className="px-5 py-3">Größe</th>
+          <th className="px-5 py-3">Hochgeladen am</th>
+          <th className="px-5 py-3">Von</th>
+          <th className="px-5 py-3"></th>
         </tr>
       </thead>
       <tbody>
         {documents.map((d) => (
-          <tr key={d.id} className="border-t border-black/5">
-            <td className="px-4 py-2">
+          <tr key={d.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
+            <td className="px-5 py-3">
               <a
                 href={`/api/cases/${caseId}/documents/${d.id}/download`}
                 target="_blank"
@@ -40,26 +40,28 @@ export function DocumentList({ caseId, documents }: { caseId: string; documents:
                 {d.fileName}
               </a>
             </td>
-            <td className="px-4 py-2 text-black/60">{d.category ?? "–"}</td>
-            <td className="px-4 py-2 text-black/60">{d.sizeLabel}</td>
-            <td className="px-4 py-2 whitespace-nowrap text-black/60">{d.uploadedAt}</td>
-            <td className="px-4 py-2 text-black/60">{d.uploadedByName}</td>
-            <td className="px-4 py-2 text-right">
+            <td className="px-5 py-3 text-[var(--color-text-muted)]">{d.category ?? "–"}</td>
+            <td className="px-5 py-3 text-[var(--color-text-muted)]">{d.sizeLabel}</td>
+            <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{d.uploadedAt}</td>
+            <td className="px-5 py-3 text-[var(--color-text-muted)]">{d.uploadedByName}</td>
+            <td className="px-5 py-3 text-right">
               <button
                 disabled={pending}
                 onClick={() => {
-                  if (confirm(`"${d.fileName}" wirklich löschen?`)) startTransition(() => deleteDocument(d.id, caseId));
+                  if (confirm(`"${d.fileName}" endgültig löschen? Dies kann nicht rückgängig gemacht werden.`)) {
+                    startTransition(() => deleteDocument(d.id, caseId));
+                  }
                 }}
-                className="text-xs text-[var(--color-danger)] hover:underline disabled:opacity-50"
+                className="text-xs font-semibold text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
               >
-                Löschen
+                Endgültig löschen
               </button>
             </td>
           </tr>
         ))}
         {documents.length === 0 && (
           <tr>
-            <td colSpan={6} className="px-4 py-6 text-center text-black/40">
+            <td colSpan={6} className="px-4 py-10 text-center text-[var(--color-text-muted)]">
               Noch keine Dokumente hochgeladen.
             </td>
           </tr>

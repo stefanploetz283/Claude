@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { deleteCase } from "../actions";
+import { buttonDangerSolidCls } from "../case-ui";
 
 export function DeleteCaseButton({ caseId }: { caseId: string }) {
   const [pending, startTransition] = useTransition();
@@ -20,11 +21,11 @@ export function DeleteCaseButton({ caseId }: { caseId: string }) {
             });
           }
         }}
-        className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:brightness-95 disabled:opacity-50"
+        className={buttonDangerSolidCls}
       >
         {pending ? "Wird gelöscht…" : "Hilfe endgültig löschen"}
       </button>
-      {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }

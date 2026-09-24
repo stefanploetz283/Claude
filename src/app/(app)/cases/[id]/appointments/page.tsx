@@ -28,16 +28,16 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
         <h1 className="text-xl font-semibold text-[var(--color-text)]">
           {caseRecord.client.lastName}, {caseRecord.client.firstName}
         </h1>
-        <p className="mt-1 text-sm text-black/60">{caseRecord.helpType.name}</p>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{caseRecord.helpType.name}</p>
       </div>
 
       <CaseTabs caseId={id} />
 
       <CaseAppointmentForm caseId={id} employeeId={caseRecord.assignedEmployeeId} defaultDate={format(new Date(), "yyyy-MM-dd")} />
 
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+          <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
             <tr>
               <th className="px-4 py-2.5">Termin</th>
               <th className="px-4 py-2.5">Datum</th>
@@ -50,7 +50,7 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
           </thead>
           <tbody>
             {termine.map((t) => (
-              <tr key={t.id} className={`border-t border-[var(--color-border)] ${t.status === "AUSGEFALLEN" ? "opacity-50" : ""}`}>
+              <tr key={t.id} className={`border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40 ${t.status === "AUSGEFALLEN" ? "opacity-50" : ""}`}>
                 <td className="px-4 py-2.5 text-[var(--color-text)]">
                   <div className="font-medium">{terminHeading(t)}</div>
                   {t.terminname && t.terminArt && <div className="text-xs text-[var(--color-text-muted)]">{TERMINART_LABEL[t.terminArt]}</div>}

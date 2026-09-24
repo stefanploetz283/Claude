@@ -41,14 +41,14 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
         <h1 className="text-xl font-semibold text-[var(--color-text)]">
           {caseRecord.client.lastName}, {caseRecord.client.firstName}
         </h1>
-        <p className="mt-1 text-sm text-black/60">{caseRecord.helpType.name}</p>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{caseRecord.helpType.name}</p>
       </div>
 
       <CaseTabs caseId={id} />
 
       <UploadForm caseId={id} />
 
-      <div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <DocumentList caseId={id} documents={rows} />
       </div>
     </div>

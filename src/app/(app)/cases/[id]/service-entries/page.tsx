@@ -19,10 +19,10 @@ const APPROVAL_STATUS_LABELS: Record<string, string> = {
   KORREKTUR_ANGEFORDERT: "Korrektur angefordert",
 };
 const APPROVAL_STATUS_COLORS: Record<string, string> = {
-  IN_BEARBEITUNG: "bg-[var(--color-border)] text-[var(--color-text-muted)]",
+  IN_BEARBEITUNG: "bg-[var(--pros-border-strong)] text-[var(--color-text-muted)]",
   WARTET_AUF_FREIGABE: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
   FREIGEGEBEN: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-  KORREKTUR_ANGEFORDERT: "bg-[var(--color-coral)]/15 text-[var(--color-coral)]",
+  KORREKTUR_ANGEFORDERT: "bg-[var(--pros-status-critical-bg)] text-[var(--pros-status-critical-text)]",
 };
 
 export default async function ServiceEntriesPage({
@@ -86,13 +86,13 @@ export default async function ServiceEntriesPage({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <p className="mb-3 rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-4 py-2.5 text-sm text-[var(--color-primary)]">
+          <p className="mb-3 rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-4 py-2.5 text-sm text-[var(--color-primary)]">
             Hier dokumentierst du die <strong>Leistungen für das Jugendamt</strong> (erscheint im Leistungsnachweis/PDF-Export). Das
             ist etwas anderes als die interne <em>Zeiterfassung</em> im Menü oben.
           </p>
           <NewEntryForm caseId={id} activityOptions={activityOptions} />
 
-          <div className="mt-4 overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+          <div className="mt-4 overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
                 <tr>
@@ -144,16 +144,19 @@ export default async function ServiceEntriesPage({
               <Row
                 label="Verbleibend"
                 value={
-                  <span className={remainingPercent <= 10 ? "font-semibold text-[var(--color-coral)]" : "text-[var(--color-text)]"}>
+                  <span className={remainingPercent <= 10 ? "font-semibold text-[var(--pros-status-critical-text)]" : "text-[var(--color-text)]"}>
                     {remainingHours.toFixed(1)} Std.
                   </span>
                 }
               />
             </dl>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--color-primary-soft)]">
+            <div className="mt-3 h-[7px] w-full overflow-hidden rounded-full" style={{ background: "var(--pros-progress-track)" }}>
               <div
-                className={`h-full rounded-full ${remainingPercent <= 10 ? "bg-[var(--color-coral)]" : "bg-[var(--color-green-medium)]"}`}
-                style={{ width: `${Math.min(100, Math.max(0, (usedHours / contingent) * 100))}%` }}
+                className="h-full rounded-full transition-[width] duration-300 ease-[var(--pros-ease)]"
+                style={{
+                  width: `${Math.min(100, Math.max(0, (usedHours / contingent) * 100))}%`,
+                  background: remainingPercent <= 10 ? "var(--pros-status-critical-text)" : "var(--pros-progress-fill)",
+                }}
               />
             </div>
           </div>
@@ -162,7 +165,7 @@ export default async function ServiceEntriesPage({
             <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Monatsübersicht</h2>
             <ul className="flex flex-col gap-1 text-sm">
               {monthly.map((m) => (
-                <li key={m.month} className="flex justify-between border-b border-[var(--color-border)] py-1.5 last:border-0">
+                <li key={m.month} className="flex justify-between border-b border-[var(--pros-border-default)] py-1.5 last:border-0">
                   <span className="text-[var(--color-text-muted)]">{m.month}</span>
                   <span className="font-medium text-[var(--color-text)]">{m.hours.toFixed(2)} Std.</span>
                 </li>
@@ -184,7 +187,7 @@ export default async function ServiceEntriesPage({
               </label>
               <button
                 type="submit"
-                className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+                className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
               >
                 Als PDF exportieren
               </button>
@@ -203,21 +206,21 @@ export default async function ServiceEntriesPage({
             <div className="mb-3 flex items-center justify-between text-sm">
               <Link
                 href={`?pyear=${prevNote.year}&pmonth=${prevNote.month}`}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+                className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--pros-sage-pale)]"
               >
                 ← Vormonat
               </Link>
               <span className="font-semibold text-[var(--color-text)]">{noteMonthLabel}</span>
               <Link
                 href={`?pyear=${nextNote.year}&pmonth=${nextNote.month}`}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+                className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--pros-sage-pale)]"
               >
                 Folgemonat →
               </Link>
             </div>
 
             {approval?.status === "KORREKTUR_ANGEFORDERT" && approval.correctionNote && (
-              <p className="mb-3 rounded-[var(--radius-control)] bg-[var(--color-coral)]/10 px-3.5 py-2.5 text-sm text-[var(--color-text)]">
+              <p className="mb-3 rounded-[var(--pros-r-sm)] bg-[var(--pros-status-critical-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]">
                 <strong>Korrektur von {approval.reviewedBy?.name ?? "Admin"}:</strong> {approval.correctionNote}
               </p>
             )}
@@ -247,14 +250,14 @@ export default async function ServiceEntriesPage({
             <div className="mb-3 flex items-center justify-between text-sm">
               <Link
                 href={`?pyear=${prevNote.year}&pmonth=${prevNote.month}`}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+                className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--pros-sage-pale)]"
               >
                 ← Vormonat
               </Link>
               <span className="font-semibold text-[var(--color-text)]">{noteMonthLabel}</span>
               <Link
                 href={`?pyear=${nextNote.year}&pmonth=${nextNote.month}`}
-                className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
+                className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] px-2.5 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--pros-sage-pale)]"
               >
                 Folgemonat →
               </Link>
@@ -267,9 +270,9 @@ export default async function ServiceEntriesPage({
   );
 }
 
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 const fieldCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (

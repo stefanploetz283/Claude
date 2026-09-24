@@ -4,7 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { format } from "date-fns";
 import { updateServiceEntry, deleteServiceEntry } from "./actions";
 
-const inputCls = "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
+const inputCls = "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
 
 type Entry = {
   id: string;
@@ -35,7 +35,7 @@ export function EntryRow({
 
   if (editing) {
     return (
-      <tr className="border-t border-[var(--color-border)] bg-[var(--color-warn-soft)]/40">
+      <tr className="border-t border-[var(--pros-border-default)] bg-[var(--pros-status-attention-bg)]/40">
         <td colSpan={5} className="px-5 py-3.5">
           <form
             action={async (fd) => {
@@ -60,13 +60,13 @@ export function EntryRow({
                 ))}
               </select>
             )}
-            <button type="submit" disabled={formPending} className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-white">
+            <button type="submit" disabled={formPending} className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-white transition-transform duration-[170ms] ease-[var(--pros-ease)] active:scale-[0.97]">
               Speichern
             </button>
-            <button type="button" onClick={() => setEditing(false)} className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-3.5 py-1.5 text-xs font-medium text-[var(--color-text)]">
+            <button type="button" onClick={() => setEditing(false)} className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] px-3.5 py-1.5 text-xs font-medium text-[var(--color-text)] transition-transform duration-[170ms] ease-[var(--pros-ease)] active:scale-[0.97]">
               Abbrechen
             </button>
-            {state?.error && <p className="w-full text-xs text-[var(--color-coral)]">{state.error}</p>}
+            {state?.error && <p className="w-full text-xs text-[var(--pros-status-critical-text)]">{state.error}</p>}
           </form>
         </td>
       </tr>
@@ -74,7 +74,7 @@ export function EntryRow({
   }
 
   return (
-    <tr className="border-t border-[var(--color-border)] transition hover:bg-[var(--color-primary-soft)]/40">
+    <tr className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
       <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text)]">{format(new Date(entry.date), "dd.MM.yyyy")}</td>
       <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text)]">
         {entry.startTime}–{entry.endTime} ({(entry.durationMinutes / 60).toFixed(2)} Std.)
@@ -100,7 +100,7 @@ export function EntryRow({
                 startTransition(() => deleteServiceEntry(entry.id, caseId));
               }
             }}
-            className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+            className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
           >
             Löschen
           </button>
