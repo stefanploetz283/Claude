@@ -9,6 +9,8 @@ import { STANDORT_LABEL, terminHeading, terminSubline } from "@/lib/termine/labe
 import { Tageskalender, type KalenderBlock, type KalenderMitarbeiterin } from "./tageskalender";
 import { Wochenuebersicht, type WochenTermin } from "./wochenuebersicht";
 import type { Prisma, TerminKategorie, TerminArt } from "@prisma/client";
+import { filterFieldCls, buttonSecondaryCls, noticeWarnCls } from "../cases/case-ui";
+import { IconWarnTriangle } from "../cases/case-icons";
 
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await requireUser();
@@ -179,16 +181,10 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         </div>
         {isVerwaltend && (
           <div className="flex gap-2">
-            <Link
-              href="/calendar/wochenvorlagen"
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
-            >
+            <Link href="/calendar/wochenvorlagen" className={buttonSecondaryCls}>
               Wochenvorlagen
             </Link>
-            <Link
-              href="/calendar/raeume"
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]"
-            >
+            <Link href="/calendar/raeume" className={buttonSecondaryCls}>
               Räume
             </Link>
           </div>
@@ -196,26 +192,29 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       </div>
 
       {dueReminders.length > 0 && (
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-gold)]/40 bg-[var(--color-warn-soft)] p-4 text-sm text-[var(--color-warn-text)]">
-          <p className="mb-1 font-semibold">Bevorstehende Termine:</p>
-          {dueReminders.map((t) => (
-            <div key={t.id}>
-              ⏰ {t.titel} – {format(t.startsAt, "dd.MM.yyyy HH:mm", { locale: de })} ({t.employee.name})
-              {t.case && ` · ${t.case.client.lastName}, ${t.case.client.firstName}`}
-            </div>
-          ))}
+        <div className={`${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+          <p className="mb-1.5 font-semibold">Bevorstehende Termine:</p>
+          <div className="flex flex-col gap-1">
+            {dueReminders.map((t) => (
+              <div key={t.id} className="flex items-center gap-2">
+                <IconWarnTriangle />
+                {t.titel} – {format(t.startsAt, "dd.MM.yyyy HH:mm", { locale: de })} ({t.employee.name})
+                {t.case && ` · ${t.case.client.lastName}, ${t.case.client.firstName}`}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       <form method="get" className="flex flex-wrap items-center gap-2 text-sm">
         <input type="hidden" name="view" value={view} />
         <input type="hidden" name="date" value={format(refDate, "yyyy-MM-dd")} />
-        <select name="standort" defaultValue={standortFilter ?? ""} className={selectCls}>
+        <select name="standort" defaultValue={standortFilter ?? ""} className={filterFieldCls}>
           <option value="">Alle Standorte</option>
           <option value="NITTENDORF">Nittendorf</option>
           <option value="REGENSBURG">Regensburg</option>
         </select>
-        <select name="raumId" defaultValue={raumFilter ?? ""} className={selectCls}>
+        <select name="raumId" defaultValue={raumFilter ?? ""} className={filterFieldCls}>
           <option value="">Alle Räume</option>
           {raumOptions.map((r) => (
             <option key={r.id} value={r.id}>
@@ -223,24 +222,24 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             </option>
           ))}
         </select>
-        <button type="submit" className={btnCls}>
+        <button type="submit" className={buttonSecondaryCls}>
           Filtern
         </button>
       </form>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 text-sm">
-          <Link href={`/calendar?view=${view}&date=${format(prevDate, "yyyy-MM-dd")}`} className={btnCls}>
+          <Link href={`/calendar?view=${view}&date=${format(prevDate, "yyyy-MM-dd")}`} className={buttonSecondaryCls}>
             ← Zurück
           </Link>
           <span className="font-semibold text-[var(--color-text)]">
             {view === "day" ? format(refDate, "EEEE, dd.MM.yyyy", { locale: de }) : `KW ${format(refDate, "II/yyyy")}`}
           </span>
-          <Link href={`/calendar?view=${view}&date=${format(nextDate, "yyyy-MM-dd")}`} className={btnCls}>
+          <Link href={`/calendar?view=${view}&date=${format(nextDate, "yyyy-MM-dd")}`} className={buttonSecondaryCls}>
             Weiter →
           </Link>
         </div>
-        <div className="flex gap-1.5 text-sm">
+        <div className="flex gap-1.5 rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] p-1 text-sm">
           <Link href={`/calendar?view=day&date=${format(refDate, "yyyy-MM-dd")}`} className={tabCls(view === "day")}>
             Tag
           </Link>
@@ -271,11 +270,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   );
 }
 
-const selectCls = "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
-const btnCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]";
 function tabCls(active: boolean) {
-  return `rounded-[var(--radius-control)] px-4 py-1.5 font-medium transition ${
-    active ? "bg-[var(--color-primary)] text-white shadow-[var(--shadow-soft)]" : "border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-primary-soft)]"
+  return `rounded-[calc(var(--pros-r-sm)-2px)] px-4 py-1.5 font-medium transition-[background-color,color,box-shadow] duration-[170ms] ease-[var(--pros-ease)] ${
+    active ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-[var(--pros-shadow)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
   }`;
 }

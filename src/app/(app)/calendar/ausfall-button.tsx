@@ -19,7 +19,7 @@ export function AusfallButton({ terminId }: { terminId: string }) {
           });
         }
       }}
-      className="text-[10px] text-[var(--color-danger)] hover:underline disabled:opacity-50"
+      className="text-[10px] text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
     >
       Ausgefallen
     </button>

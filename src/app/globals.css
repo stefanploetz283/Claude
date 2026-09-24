@@ -138,3 +138,40 @@ select:focus-visible,
     animation: none;
   }
 }
+
+/* PROS-Modal/-Drawer-Einblendung (ProsModal) - Overlay fadet, Panel skaliert leicht auf statt aus
+   scale(0) zu erscheinen (Emil-Design-Eng: "nichts poppt aus dem Nichts"). */
+@keyframes pros-modal-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pros-modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pros-modal-overlay {
+  animation: pros-modal-overlay-enter 160ms var(--pros-ease) both;
+}
+
+.pros-modal-panel {
+  animation: pros-modal-panel-enter 180ms var(--pros-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pros-modal-overlay,
+  .pros-modal-panel {
+    animation: none;
+  }
+}

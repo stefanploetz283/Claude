@@ -5,8 +5,8 @@ import { createVorlage, updateVorlage, toggleVorlageAktiv, generiereSlotsJetzt, 
 import { WOCHENTAG_LABEL } from "@/lib/termine/labels";
 
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 type Mitarbeiterin = { id: string; name: string };
 type Raum = { id: string; name: string };
@@ -96,11 +96,11 @@ export function WochenvorlagenVerwaltung({ mitarbeiterinnen, raeume, vorlagen }:
           <button
             type="submit"
             disabled={createPending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+            className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100"
           >
             Anlegen
           </button>
-          {createState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{createState.error}</p>}
+          {createState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{createState.error}</p>}
         </form>
       </div>
 
@@ -133,11 +133,14 @@ export function WochenvorlagenVerwaltung({ mitarbeiterinnen, raeume, vorlagen }:
                       updateVorlage(undefined, fd);
                       setEditingId(null);
                     }}
-                    className="flex flex-wrap items-end gap-3 rounded-[var(--radius-control)] bg-[var(--color-bg)] p-3"
+                    className="flex flex-wrap items-end gap-3 rounded-[var(--pros-r-sm)] bg-[var(--pros-sage-pale)]/50 p-3"
                   >
                     <input type="hidden" name="id" value={v.id} />
                     <VorlageFelder raeume={raeume} defaults={v} />
-                    <button type="submit" className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white">
+                    <button
+                      type="submit"
+                      className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition-transform duration-[170ms] ease-[var(--pros-ease)] active:scale-[0.97]"
+                    >
                       Speichern
                     </button>
                     <button type="button" onClick={() => setEditingId(null)} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
@@ -145,7 +148,7 @@ export function WochenvorlagenVerwaltung({ mitarbeiterinnen, raeume, vorlagen }:
                     </button>
                   </form>
                 ) : (
-                  <div key={v.id} className={`flex items-center justify-between rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm ${!v.aktiv ? "opacity-50" : ""}`}>
+                  <div key={v.id} className={`flex items-center justify-between rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm transition-colors duration-150 hover:bg-[var(--pros-sage-pale)]/40 ${!v.aktiv ? "opacity-50" : ""}`}>
                     <span className="text-[var(--color-text)]">
                       {v.label ? `${v.label} · ` : ""}
                       {WOCHENTAG_LABEL[v.wochentag]} {v.startZeit}–{v.endZeit} · {v.slotDauerMinuten} Min./Slot

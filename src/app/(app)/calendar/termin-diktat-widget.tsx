@@ -7,6 +7,9 @@ import { KATEGORIE_OPTIONS, TERMINART_OPTIONS } from "@/lib/termine/labels";
 import type { TerminKategorie, TerminArt } from "@prisma/client";
 import type { CaseOption, RaumOption, MitarbeiterinOption } from "./buchungs-formular";
 import type { TerminKonflikt } from "@/lib/termine/konflikte";
+import { ProsMicButton } from "@/components/pros/pros-mic-button";
+import { inputCls, labelCls, buttonPrimaryCls, noticeWarnCls, buttonDangerSolidCls } from "../cases/case-ui";
+import { IconWarnTriangle } from "../cases/case-icons";
 
 type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
@@ -42,9 +45,7 @@ type Review = {
   candidates: TerminCaseCandidate[];
 };
 
-const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
+const fieldCls = `w-full ${inputCls}`;
 
 export function TerminDiktatWidget({
   currentUserId,
@@ -203,19 +204,7 @@ export function TerminDiktatWidget({
     <div className="flex flex-col gap-3">
       {(stage === "idle" || stage === "recording") && (
         <div className="flex flex-col items-center gap-4 py-6 text-center">
-          {stage === "recording" ? (
-            <button onClick={stopRecording} className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-coral)] text-white shadow-[var(--shadow-soft)]" aria-label="Aufnahme stoppen">
-              <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white" />
-            </button>
-          ) : (
-            <button onClick={startRecording} className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-soft)] hover:bg-[var(--color-primary-hover)]" aria-label="Aufnahme starten">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="9" y="2" width="6" height="12" rx="3" />
-                <path d="M5 10a7 7 0 0 0 14 0" />
-                <line x1="12" y1="19" x2="12" y2="22" />
-              </svg>
-            </button>
-          )}
+          <ProsMicButton recording={stage === "recording"} onClick={stage === "recording" ? stopRecording : startRecording} />
           <p className="text-sm text-[var(--color-text-muted)]">{stage === "recording" ? "Aufnahme läuft … zum Beenden klicken." : "Klicke zum Diktieren, z.B. „Elternberatung Familie Müller morgen 14 bis 15 Uhr“."}</p>
           {(transcript || interim) && (
             <p className="max-w-sm text-sm text-[var(--color-text)]">
@@ -223,7 +212,7 @@ export function TerminDiktatWidget({
               <span className="text-[var(--color-text-muted)]">{interim}</span>
             </p>
           )}
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
         </div>
       )}
 
@@ -235,7 +224,7 @@ export function TerminDiktatWidget({
           {canBookForOthers && (
             <label className="flex flex-col gap-1">
               <span className={labelCls}>Mitarbeiterin</span>
-              <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls}>
+              <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={fieldCls}>
                 {mitarbeiterinnen.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
@@ -246,7 +235,7 @@ export function TerminDiktatWidget({
           )}
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Terminkategorie</span>
-            <select value={review.kategorie} onChange={(e) => setReview({ ...review, kategorie: e.target.value as TerminKategorie })} className={inputCls}>
+            <select value={review.kategorie} onChange={(e) => setReview({ ...review, kategorie: e.target.value as TerminKategorie })} className={fieldCls}>
               {KATEGORIE_OPTIONS.map((k) => (
                 <option key={k.value} value={k.value}>
                   {k.label}
@@ -258,7 +247,7 @@ export function TerminDiktatWidget({
             <>
               <label className="flex flex-col gap-1">
                 <span className={labelCls}>Fall</span>
-                <select value={review.caseId} onChange={(e) => setReview({ ...review, caseId: e.target.value })} className={inputCls}>
+                <select value={review.caseId} onChange={(e) => setReview({ ...review, caseId: e.target.value })} className={fieldCls}>
                   <option value="">Bitte auswählen…</option>
                   {review.candidates.length > 0 && (
                     <optgroup label="Vorschläge">
@@ -280,7 +269,7 @@ export function TerminDiktatWidget({
               </label>
               <label className="flex flex-col gap-1">
                 <span className={labelCls}>Terminart</span>
-                <select value={review.terminArt ?? ""} onChange={(e) => setReview({ ...review, terminArt: (e.target.value || null) as TerminArt | null })} className={inputCls}>
+                <select value={review.terminArt ?? ""} onChange={(e) => setReview({ ...review, terminArt: (e.target.value || null) as TerminArt | null })} className={fieldCls}>
                   <option value="">Bitte auswählen…</option>
                   {TERMINART_OPTIONS.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -294,7 +283,7 @@ export function TerminDiktatWidget({
           {review.kategorie === "EINZELMASSNAHME" && (
             <label className="flex flex-col gap-1">
               <span className={labelCls}>Name/Aktenzeichen</span>
-              <input value={review.einzelmassnahmeBezeichnung ?? ""} onChange={(e) => setReview({ ...review, einzelmassnahmeBezeichnung: e.target.value })} className={inputCls} />
+              <input value={review.einzelmassnahmeBezeichnung ?? ""} onChange={(e) => setReview({ ...review, einzelmassnahmeBezeichnung: e.target.value })} className={fieldCls} />
             </label>
           )}
           <label className="flex flex-col gap-1">
@@ -303,26 +292,26 @@ export function TerminDiktatWidget({
               value={review.terminname}
               onChange={(e) => setReview({ ...review, terminname: e.target.value })}
               placeholder="z.B. Elterngespräch Trennungssituation"
-              className={inputCls}
+              className={fieldCls}
             />
           </label>
           <div className="flex gap-3">
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Datum</span>
-              <input type="date" value={review.date} onChange={(e) => setReview({ ...review, date: e.target.value })} className={inputCls} />
+              <input type="date" value={review.date} onChange={(e) => setReview({ ...review, date: e.target.value })} className={fieldCls} />
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Von</span>
-              <input type="time" value={review.startTime} onChange={(e) => setReview({ ...review, startTime: e.target.value })} className={inputCls} />
+              <input type="time" value={review.startTime} onChange={(e) => setReview({ ...review, startTime: e.target.value })} className={fieldCls} />
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Bis</span>
-              <input type="time" value={review.endTime} onChange={(e) => setReview({ ...review, endTime: e.target.value })} className={inputCls} />
+              <input type="time" value={review.endTime} onChange={(e) => setReview({ ...review, endTime: e.target.value })} className={fieldCls} />
             </label>
           </div>
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Raum (optional)</span>
-            <select value={raumId} onChange={(e) => setRaumId(e.target.value)} className={inputCls}>
+            <select value={raumId} onChange={(e) => setRaumId(e.target.value)} className={fieldCls}>
               <option value="">Kein Raum</option>
               {raumOptions.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -333,26 +322,25 @@ export function TerminDiktatWidget({
           </label>
 
           {konflikte.length > 0 && (
-            <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-4">
-              <p className="mb-2 text-sm font-semibold text-[var(--color-warn-text)]">⚠ Terminkonflikt erkannt</p>
-              <ul className="flex flex-col gap-1 text-sm text-[var(--color-warn-text)]">
+            <div className={noticeWarnCls}>
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--pros-status-attention-text)]">
+                <IconWarnTriangle /> Terminkonflikt erkannt
+              </p>
+              <ul className="flex flex-col gap-1 text-sm text-[var(--pros-status-attention-text)]">
                 {konflikte.map((k) => (
                   <li key={k.terminId}>
                     {k.ueberlappungMinuten} Min. Überschneidung mit „{k.titel}&quot; ({k.mitarbeiterinName})
                   </li>
                 ))}
               </ul>
-              <button onClick={() => confirmSave(true)} className="mt-3 rounded-[var(--radius-control)] bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+              <button onClick={() => confirmSave(true)} className={`mt-3 ${buttonDangerSolidCls}`}>
                 Trotzdem buchen
               </button>
             </div>
           )}
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
           {konflikte.length === 0 && (
-            <button
-              onClick={() => confirmSave(false)}
-              className="self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
-            >
+            <button onClick={() => confirmSave(false)} className={`self-start ${buttonPrimaryCls}`}>
               Übernehmen
             </button>
           )}
@@ -360,7 +348,7 @@ export function TerminDiktatWidget({
       )}
 
       {stage === "saving" && <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">Wird gespeichert …</p>}
-      {stage === "done" && <p className="py-8 text-center text-sm font-medium text-[var(--color-primary)]">✓ Termin gebucht.</p>}
+      {stage === "done" && <p className="py-8 text-center text-sm font-medium text-[var(--color-primary)]">Termin gebucht.</p>}
     </div>
   );
 }

@@ -37,7 +37,7 @@ export function AufgabenListe({ aufgaben, compact = false }: { aufgaben: Aufgabe
         return (
           <li
             key={a.id}
-            className="group flex items-center gap-3 rounded-[var(--radius-control)] px-2.5 py-2 transition-colors duration-150 hover:bg-[var(--color-bg)]"
+            className="group flex items-center gap-3 rounded-[var(--pros-r-sm)] px-2.5 py-2 transition-colors duration-150 hover:bg-[var(--pros-sage-pale)]/50"
           >
             <button
               type="button"
@@ -50,8 +50,8 @@ export function AufgabenListe({ aufgaben, compact = false }: { aufgaben: Aufgabe
               }
               aria-pressed={a.erledigt}
               aria-label={a.erledigt ? "Als offen markieren" : "Als erledigt markieren"}
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-[transform,background-color,border-color] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-90 ${
-                a.erledigt ? "border-[var(--color-primary)] bg-[var(--color-primary)]" : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-[transform,background-color,border-color] duration-150 ease-[var(--pros-ease)] active:scale-90 ${
+                a.erledigt ? "border-[var(--color-primary)] bg-[var(--color-primary)]" : "border-[var(--pros-border-strong)] hover:border-[var(--color-primary)]"
               }`}
             >
               {a.erledigt && (
@@ -67,7 +67,7 @@ export function AufgabenListe({ aufgaben, compact = false }: { aufgaben: Aufgabe
             </div>
 
             {faellig && !a.erledigt && (
-              <span className={`shrink-0 text-xs font-medium ${faellig.overdue ? "text-[var(--color-coral)]" : "text-[var(--color-text-muted)]"}`}>
+              <span className={`shrink-0 text-xs font-medium ${faellig.overdue ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-text-muted)]"}`}>
                 {faellig.text}
               </span>
             )}
@@ -83,7 +83,7 @@ export function AufgabenListe({ aufgaben, compact = false }: { aufgaben: Aufgabe
                   })
                 }
                 aria-label="Aufgabe löschen"
-                className="shrink-0 text-[var(--color-text-muted)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:text-[var(--color-coral)]"
+                className="shrink-0 text-[var(--color-text-muted)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:text-[var(--pros-status-critical-text)]"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />

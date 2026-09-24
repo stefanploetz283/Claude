@@ -28,18 +28,18 @@ export function Wochenuebersicht({ tage, termine }: { tage: { iso: string; label
       {tage.map((tag) => {
         const tagTermine = termine.filter((t) => t.tagIso === tag.iso).sort((a, b) => a.startMinute - b.startMinute);
         return (
-          <div key={tag.iso} className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+          <div key={tag.iso} className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
             <h3 className="mb-2 text-sm font-semibold text-[var(--color-primary)]">{tag.label}</h3>
-            {tagTermine.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">Keine Termine.</p>}
+            {tagTermine.length === 0 && <p className="text-sm text-[var(--pros-meta)]">Keine Termine.</p>}
             <ul className="flex flex-col gap-1.5">
               {tagTermine.map((t) => (
-                <li key={t.key} className="flex items-center gap-2.5 rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3.5 py-2 text-sm">
+                <li key={t.key} className="flex items-center gap-2.5 rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-3.5 py-2 text-sm transition-colors duration-150 hover:bg-[var(--pros-sage-pale)]/50">
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: t.mitarbeiterinColor }} />
                   <span className="font-semibold text-[var(--color-text)]">
                     {formatMinute(t.startMinute)}–{formatMinute(t.endMinute)}
                   </span>
                   <span className="text-[var(--color-text)]">{t.heading}</span>
-                  <span className="text-[var(--color-text-muted)]">
+                  <span className="text-[var(--pros-meta)]">
                     · {t.mitarbeiterinName}
                     {t.subline && ` · ${t.subline}`}
                     {t.raumName && ` · ${t.raumName}`}

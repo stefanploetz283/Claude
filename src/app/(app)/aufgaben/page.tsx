@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOwnAufgaben } from "@/lib/aufgaben";
 import { AufgabenListe, type AufgabeRow } from "./aufgaben-list";
 import { AufgabeForm } from "./aufgabe-form";
+import { cardCls } from "../cases/case-ui";
 
 export default async function AufgabenPage() {
   const user = await requireUser();
@@ -42,13 +43,13 @@ export default async function AufgabenPage() {
 
       <AufgabeForm caseOptions={caseOptions} />
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <div className={cardCls}>
         <AufgabenListe aufgaben={offen} />
       </div>
 
       {erledigt.length > 0 && (
-        <details className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-          <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)]">
+        <details className={cardCls}>
+          <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
             {erledigt.length} erledigte Aufgabe{erledigt.length === 1 ? "" : "n"} anzeigen
           </summary>
           <div className="mt-3">

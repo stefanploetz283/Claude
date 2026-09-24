@@ -5,8 +5,8 @@ import { createRaum, updateRaum, toggleRaumAktiv, type RaumActionState } from ".
 import { STANDORT_LABEL } from "@/lib/termine/labels";
 
 const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
+const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 type Raum = { id: string; name: string; standort: string | null; aktiv: boolean };
 
@@ -34,15 +34,15 @@ export function RaumVerwaltung({ raeume }: { raeume: Raum[] }) {
           <button
             type="submit"
             disabled={createPending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+            className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100"
           >
             Anlegen
           </button>
-          {createState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{createState.error}</p>}
+          {createState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{createState.error}</p>}
         </form>
       </div>
 
-      <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+      <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
             <tr>
@@ -76,7 +76,7 @@ function RaumZeile({ raum, editing, onEdit, onDoneEdit }: { raum: Raum; editing:
 
   if (editing) {
     return (
-      <tr className="border-t border-[var(--color-border)]">
+      <tr className="border-t border-[var(--pros-border-default)] bg-[var(--pros-sage-pale)]/40">
         <td colSpan={4} className="px-4 py-3">
           <form
             action={(fd) => {
@@ -92,13 +92,17 @@ function RaumZeile({ raum, editing, onEdit, onDoneEdit }: { raum: Raum; editing:
               <option value="NITTENDORF">Nittendorf</option>
               <option value="REGENSBURG">Regensburg</option>
             </select>
-            <button type="submit" disabled={updatePending} className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white">
+            <button
+              type="submit"
+              disabled={updatePending}
+              className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition-transform duration-[170ms] ease-[var(--pros-ease)] active:scale-[0.97]"
+            >
               Speichern
             </button>
             <button type="button" onClick={onDoneEdit} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
               Abbrechen
             </button>
-            {updateState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{updateState.error}</p>}
+            {updateState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{updateState.error}</p>}
           </form>
         </td>
       </tr>
@@ -106,7 +110,7 @@ function RaumZeile({ raum, editing, onEdit, onDoneEdit }: { raum: Raum; editing:
   }
 
   return (
-    <tr className={`border-t border-[var(--color-border)] ${!raum.aktiv ? "opacity-50" : ""}`}>
+    <tr className={`border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40 ${!raum.aktiv ? "opacity-50" : ""}`}>
       <td className="px-4 py-2.5 font-medium text-[var(--color-text)]">{raum.name}</td>
       <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{raum.standort ? STANDORT_LABEL[raum.standort] : "–"}</td>
       <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{raum.aktiv ? "Aktiv" : "Deaktiviert"}</td>

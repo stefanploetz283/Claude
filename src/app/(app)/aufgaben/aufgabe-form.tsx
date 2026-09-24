@@ -2,9 +2,7 @@
 
 import { useActionState, useRef } from "react";
 import { createAufgabe, type ActionState } from "./actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+import { inputCls, labelCls, buttonPrimaryCls, cardCls } from "../cases/case-ui";
 
 export function AufgabeForm({ caseOptions }: { caseOptions: { id: string; label: string }[] | null }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(createAufgabe, undefined);
@@ -17,19 +15,19 @@ export function AufgabeForm({ caseOptions }: { caseOptions: { id: string; label:
         formAction(formData);
         formRef.current?.reset();
       }}
-      className="flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-soft)]"
+      className={`flex flex-wrap items-end gap-3 ${cardCls}`}
     >
       <label className="flex min-w-[220px] flex-1 flex-col gap-1.5">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Neue Aufgabe</span>
-        <input name="titel" required placeholder="z.B. Jugendamt zurückrufen" className={inputCls} />
+        <span className={labelCls}>Neue Aufgabe</span>
+        <input name="titel" required placeholder="z.B. Jugendamt zurückrufen" className={`w-full ${inputCls}`} />
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Fällig am</span>
+        <span className={labelCls}>Fällig am</span>
         <input name="faelligAm" type="date" className={inputCls} />
       </label>
       {caseOptions && (
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-[var(--color-text-muted)]">Fall (optional)</span>
+          <span className={labelCls}>Fall (optional)</span>
           <select name="caseId" defaultValue="" className={inputCls}>
             <option value="">Kein Fallbezug</option>
             {caseOptions.map((c) => (
@@ -40,14 +38,10 @@ export function AufgabeForm({ caseOptions }: { caseOptions: { id: string; label:
           </select>
         </label>
       )}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-medium text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={buttonPrimaryCls}>
         {pending ? "Wird angelegt…" : "+ Aufgabe anlegen"}
       </button>
-      {state?.error && <p className="w-full text-sm font-medium text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="w-full text-sm font-medium text-[var(--pros-status-critical-text)]">{state.error}</p>}
     </form>
   );
 }

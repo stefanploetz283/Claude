@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NewEntryForm } from "../cases/[id]/service-entries/entry-form";
 import { extractServiceEntryFromVoice, type VoiceCaseCandidate } from "./voice-actions";
+import { ProsMicButton } from "@/components/pros/pros-mic-button";
+import { cardCls, inputCls as caseInputCls, buttonPrimaryCls, noticeInfoCls } from "../cases/case-ui";
 
 type CaseOption = { id: string; clientName: string; helpTypeName: string };
 
@@ -211,24 +213,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
   return (
     <div className="flex flex-col gap-4">
       <div className={`${cardCls} flex flex-col items-center gap-4 py-10 text-center`}>
-        {stage === "recording" ? (
-          <button
-            onClick={stopRecording}
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-coral)] text-white shadow-[var(--shadow-soft)] transition"
-            aria-label="Aufnahme stoppen"
-          >
-            <span className="h-4 w-4 animate-pulse rounded-full bg-white" />
-          </button>
-        ) : (
-          <button
-            onClick={startRecording}
-            disabled={stage === "processing"}
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            aria-label="Aufnahme starten"
-          >
-            <MicIcon />
-          </button>
-        )}
+        <ProsMicButton recording={stage === "recording"} onClick={stage === "recording" ? stopRecording : startRecording} disabled={stage === "processing"} size="lg" />
         <p className="text-sm text-[var(--color-text-muted)]">
           {stage === "recording" && "Aufnahme läuft ... zum Beenden klicken."}
           {stage === "processing" && "Diktat wird verarbeitet ..."}
@@ -241,7 +226,7 @@ export function VoiceEntryFlow({ caseOptions }: { caseOptions: CaseOption[] }) {
             <span className="text-[var(--color-text-muted)]">{interim}</span>
           </p>
         )}
-        {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+        {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
       </div>
 
       {stage === "review" && review && (
@@ -268,15 +253,15 @@ function ReviewPanel({
   return (
     <div className={cardCls}>
       {review.autoSelected ? (
-        <p className="mb-4 rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-2.5 text-sm text-[var(--color-primary)]">
+        <p className={`mb-4 ${noticeInfoCls} text-[var(--color-primary)]`}>
           Klient erkannt anhand von &quot;{review.clientNameHeard}&quot;. Bitte trotzdem prüfen.
         </p>
       ) : review.candidates.length > 0 ? (
-        <p className="mb-4 rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-2.5 text-sm text-[var(--color-primary)]">
+        <p className={`mb-4 ${noticeInfoCls} text-[var(--color-primary)]`}>
           Für &quot;{review.clientNameHeard}&quot; wurde kein eindeutiger Treffer gefunden. Bitte den richtigen Fall auswählen.
         </p>
       ) : (
-        <p className="mb-4 rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-2.5 text-sm text-[var(--color-primary)]">
+        <p className={`mb-4 ${noticeInfoCls} text-[var(--color-primary)]`}>
           Der Klient &quot;{review.clientNameHeard}&quot; konnte nicht zugeordnet werden. Bitte den Fall manuell auswählen.
         </p>
       )}
@@ -333,11 +318,7 @@ function ReviewPanel({
         </Field>
       </div>
 
-      <button
-        onClick={onConfirm}
-        disabled={!review.caseId}
-        className="mt-4 rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-      >
+      <button onClick={onConfirm} disabled={!review.caseId} className={`mt-4 ${buttonPrimaryCls}`}>
         Übernehmen
       </button>
     </div>
@@ -353,16 +334,4 @@ function Field({ label, children, grow }: { label: string; children: React.React
   );
 }
 
-function MicIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="12" rx="3" />
-      <path d="M5 10a7 7 0 0 0 14 0" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-    </svg>
-  );
-}
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
-const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+const inputCls = `w-full ${caseInputCls}`;

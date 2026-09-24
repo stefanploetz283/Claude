@@ -4,10 +4,10 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { buchenUeberSlot, buchenAdHoc, type BuchungActionState } from "./buchung-actions";
 import { KATEGORIE_OPTIONS, TERMINART_OPTIONS } from "@/lib/termine/labels";
 import type { TerminKategorie } from "@prisma/client";
+import { inputCls, labelCls, buttonPrimaryCls, buttonSecondaryCls, buttonDangerSolidCls, noticeWarnCls } from "../cases/case-ui";
+import { IconWarnTriangle } from "../cases/case-icons";
 
-const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
+const fieldCls = `w-full ${inputCls}`;
 
 export type CaseOption = { id: string; label: string; employeeId: string };
 export type RaumOption = { id: string; label: string; standort: string | null };
@@ -74,7 +74,7 @@ export function BuchungsFormular({
         <>
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Mitarbeiterin</span>
-            <select name="employeeId" required disabled={!canBookForOthers} defaultValue={canBookForOthers ? "" : currentUserId} className={inputCls}>
+            <select name="employeeId" required disabled={!canBookForOthers} defaultValue={canBookForOthers ? "" : currentUserId} className={fieldCls}>
               {!canBookForOthers && <option value={currentUserId}>Ich</option>}
               {canBookForOthers && <option value="">Bitte wählen…</option>}
               {canBookForOthers && mitarbeiterinnen.map((m) => (
@@ -87,15 +87,15 @@ export function BuchungsFormular({
           <div className="flex gap-3">
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Datum</span>
-              <input name="date" type="date" required defaultValue={adHoc.defaultDate} className={inputCls} />
+              <input name="date" type="date" required defaultValue={adHoc.defaultDate} className={fieldCls} />
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Von</span>
-              <input name="startTime" type="time" required className={inputCls} />
+              <input name="startTime" type="time" required className={fieldCls} />
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className={labelCls}>Bis</span>
-              <input name="endTime" type="time" required className={inputCls} />
+              <input name="endTime" type="time" required className={fieldCls} />
             </label>
           </div>
         </>
@@ -103,7 +103,7 @@ export function BuchungsFormular({
 
       <label className="flex flex-col gap-1">
         <span className={labelCls}>Terminkategorie</span>
-        <select name="kategorie" value={kategorie} onChange={(e) => setKategorie(e.target.value as TerminKategorie)} className={inputCls}>
+        <select name="kategorie" value={kategorie} onChange={(e) => setKategorie(e.target.value as TerminKategorie)} className={fieldCls}>
           {KATEGORIE_OPTIONS.map((k) => (
             <option key={k.value} value={k.value}>
               {k.label}
@@ -116,7 +116,7 @@ export function BuchungsFormular({
         <>
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Fall *</span>
-            <select name="caseId" required className={inputCls}>
+            <select name="caseId" required className={fieldCls}>
               <option value="">Bitte wählen…</option>
               {caseOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -127,7 +127,7 @@ export function BuchungsFormular({
           </label>
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Terminart *</span>
-            <select name="terminArt" required className={inputCls}>
+            <select name="terminArt" required className={fieldCls}>
               <option value="">Bitte wählen…</option>
               {TERMINART_OPTIONS.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -142,7 +142,7 @@ export function BuchungsFormular({
       {kategorie === "EINZELMASSNAHME" && (
         <label className="flex flex-col gap-1">
           <span className={labelCls}>Name/Aktenzeichen *</span>
-          <input name="einzelmassnahmeBezeichnung" required placeholder="z.B. Gesprächsweisung JGH, Az. …" className={inputCls} />
+          <input name="einzelmassnahmeBezeichnung" required placeholder="z.B. Gesprächsweisung JGH, Az. …" className={fieldCls} />
         </label>
       )}
 
@@ -152,7 +152,7 @@ export function BuchungsFormular({
           name="terminname"
           required={kategorie === "INTERNER_TERMIN"}
           placeholder={kategorie === "INTERNER_TERMIN" ? "z.B. Teambesprechung" : "z.B. Elterngespräch Trennungssituation"}
-          className={inputCls}
+          className={fieldCls}
         />
         {kategorie === "FALL_TERMIN" && (
           <span className="text-[11px] text-[var(--color-text-muted)]">Wird im Kalender als Überschrift angezeigt (sonst die Terminart).</span>
@@ -161,7 +161,7 @@ export function BuchungsFormular({
 
       <label className="flex flex-col gap-1">
         <span className={labelCls}>Raum {slot ? "(überschreibt Standard-Raum der Vorlage)" : ""}</span>
-        <select name="raumId" defaultValue={slot?.standardRaumId ?? ""} className={inputCls}>
+        <select name="raumId" defaultValue={slot?.standardRaumId ?? ""} className={fieldCls}>
           <option value="">Kein Raum</option>
           {raumOptions.map((r) => (
             <option key={r.id} value={r.id}>
@@ -173,13 +173,15 @@ export function BuchungsFormular({
 
       <label className="flex flex-col gap-1">
         <span className={labelCls}>Notiz (optional)</span>
-        <input name="note" className={inputCls} />
+        <input name="note" className={fieldCls} />
       </label>
 
       {zeigeKonflikt && (
-        <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-4">
-          <p className="mb-2 text-sm font-semibold text-[var(--color-warn-text)]">⚠ Terminkonflikt erkannt</p>
-          <ul className="flex flex-col gap-1 text-sm text-[var(--color-warn-text)]">
+        <div className={noticeWarnCls}>
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--pros-status-attention-text)]">
+            <IconWarnTriangle /> Terminkonflikt erkannt
+          </p>
+          <ul className="flex flex-col gap-1 text-sm text-[var(--pros-status-attention-text)]">
             {konflikte.map((k) => (
               <li key={k.terminId}>
                 {k.ueberlappungMinuten} Min. Überschneidung mit „{k.titel}&quot; ({k.mitarbeiterinName})
@@ -187,30 +189,22 @@ export function BuchungsFormular({
             ))}
           </ul>
           {canOverrideConflicts ? (
-            <button
-              type="button"
-              onClick={() => setOverride(true)}
-              className="mt-3 rounded-[var(--radius-control)] bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-            >
+            <button type="button" onClick={() => setOverride(true)} className={`mt-3 ${buttonDangerSolidCls}`}>
               Trotzdem buchen
             </button>
           ) : (
-            <p className="mt-2 text-xs text-[var(--color-warn-text)]">Bitte eine andere Zeit/einen anderen Raum wählen.</p>
+            <p className="mt-2 text-xs text-[var(--pros-status-attention-text)]">Bitte eine andere Zeit/einen anderen Raum wählen.</p>
           )}
         </div>
       )}
 
-      {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
 
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={pending || zeigeKonflikt}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending || zeigeKonflikt} className={buttonPrimaryCls}>
           {pending ? "Speichere…" : "Termin buchen"}
         </button>
-        <button type="button" onClick={onDone} className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-5 py-2.5 text-sm font-medium text-[var(--color-text)]">
+        <button type="button" onClick={onDone} className={buttonSecondaryCls}>
           Abbrechen
         </button>
       </div>
