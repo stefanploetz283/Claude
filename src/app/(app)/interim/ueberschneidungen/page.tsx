@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { scanAlleUeberschneidungen } from "../actions";
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls } from "../interim-ui";
 
 export default async function UeberschneidungenPage() {
   const konflikte = await scanAlleUeberschneidungen();
@@ -32,7 +31,7 @@ export default async function UeberschneidungenPage() {
               <span className="font-semibold">{k.fallB}</span>
               <span className="text-[var(--color-text-muted)]">{k.zeitraumB} Uhr</span>
             </div>
-            <p className="mt-1.5 text-xs font-semibold text-[var(--color-coral)]">{k.ueberlappungMinuten} Minuten Überschneidung</p>
+            <p className="mt-1.5 text-xs font-semibold text-[var(--pros-status-critical-text)]">{k.ueberlappungMinuten} Minuten Überschneidung</p>
           </div>
         ))}
         {konflikte.length === 0 && (

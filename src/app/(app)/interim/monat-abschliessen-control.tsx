@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getMonatsZusammenfassung, schliesseMonatAb, oeffneMonatWieder } from "./actions";
+import { noticeWarnCls, buttonDangerSolidCls } from "./interim-ui";
 
 /** Wiederverwendet auf dem Interims-Dashboard und auf der Export-Seite eines Falls (Prompt Punkt 1:
  * "sichtbar auf der Interimsmodus-Dashboard-/Exportseite"). */
@@ -33,25 +34,21 @@ export function MonatAbschliessenControl({ jahr, monat, label }: { jahr: number;
 
   if (zusammenfassung) {
     return (
-      <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-3.5">
-        <p className="mb-2 text-sm text-[var(--color-warn-text)]">
+      <div className={`dash-card-enter ${noticeWarnCls}`}>
+        <p className="mb-2 text-sm text-[var(--pros-status-attention-text)]">
           <strong>{label}</strong> abschließen? {zusammenfassung.anzahlEintraege} dokumentierte{" "}
           {zusammenfassung.anzahlEintraege === 1 ? "Eintrag" : "Einträge"}. Der Monat wird danach primär read-only, bis er wieder
           geöffnet wird.
         </p>
         <div className="flex items-center gap-2.5">
-          <button
-            disabled={pending}
-            onClick={handleBestaetigen}
-            className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          >
+          <button disabled={pending} onClick={handleBestaetigen} className={`${buttonDangerSolidCls} px-3.5 py-1.5 text-xs`}>
             {pending ? "Wird abgeschlossen…" : "Ja, Monat abschließen"}
           </button>
           <button onClick={() => setZusammenfassung(null)} className="text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
             Abbrechen
           </button>
         </div>
-        {error && <p className="mt-2 text-xs text-[var(--color-coral)]">{error}</p>}
+        {error && <p className="mt-2 text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
       </div>
     );
   }
@@ -61,11 +58,11 @@ export function MonatAbschliessenControl({ jahr, monat, label }: { jahr: number;
       <button
         disabled={pending}
         onClick={handleAnfordern}
-        className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+        className="rounded-[var(--pros-r-sm)] border border-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-primary)] transition-[background-color,color,transform] duration-[170ms] ease-[var(--pros-ease)] hover:bg-[var(--color-primary)] hover:text-white active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100"
       >
         {pending ? "…" : `${label} abschließen`}
       </button>
-      {error && <p className="mt-2 text-xs text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="mt-2 text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }
@@ -92,23 +89,19 @@ export function MonatWiederOeffnenButton({ jahr, monat, label }: { jahr: number;
 
   if (bestaetigen) {
     return (
-      <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-3">
-        <p className="mb-2 text-xs text-[var(--color-warn-text)]">
+      <div className="dash-card-enter rounded-[var(--pros-r-sm)] bg-[var(--pros-status-attention-bg)] p-3">
+        <p className="mb-2 text-xs text-[var(--pros-status-attention-text)]">
           <strong>{label}</strong> wieder öffnen? Der Monat wird wieder editierbar, Dashboard-Kontingente können sich ändern.
         </p>
         <div className="flex items-center gap-2.5">
-          <button
-            disabled={pending}
-            onClick={handleBestaetigen}
-            className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          >
+          <button disabled={pending} onClick={handleBestaetigen} className={`${buttonDangerSolidCls} px-3 py-1.5 text-xs`}>
             {pending ? "Wird geöffnet…" : "Ja, wieder öffnen"}
           </button>
           <button onClick={() => setBestaetigen(false)} className="text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
             Abbrechen
           </button>
         </div>
-        {error && <p className="mt-2 text-xs text-[var(--color-coral)]">{error}</p>}
+        {error && <p className="mt-2 text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
       </div>
     );
   }

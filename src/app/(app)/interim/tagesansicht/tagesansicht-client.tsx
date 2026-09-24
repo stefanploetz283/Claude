@@ -3,9 +3,8 @@
 import { useEffect, useState, useTransition } from "react";
 import { getTagesUebersicht, type TagesEintrag } from "../actions";
 import { toDateInputValue } from "@/lib/date";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+import { inputCls, cardCls } from "../interim-ui";
+import { IconWarnTriangle } from "../interim-icons";
 
 export function TagesansichtClient() {
   const [date, setDate] = useState(toDateInputValue(new Date()));
@@ -42,8 +41,10 @@ export function TagesansichtClient() {
           {entries.map((e) => (
             <div
               key={e.id}
-              className={`rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-soft)] ${
-                e.ueberschneidung ? "border-[var(--color-coral)] bg-[var(--color-warn-soft)]" : "border-[var(--color-border)] bg-[var(--color-surface)]"
+              className={`rounded-[var(--pros-r-md)] border p-4 shadow-[var(--pros-shadow)] transition-[transform,box-shadow] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:shadow-[var(--pros-shadow-hover)] ${
+                e.ueberschneidung
+                  ? "border-[var(--pros-status-critical-text)] bg-[var(--pros-status-critical-bg)]"
+                  : "border-[var(--pros-border-strong)] bg-[var(--color-surface)]"
               }`}
             >
               <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -52,16 +53,16 @@ export function TagesansichtClient() {
                 </span>
                 <span className="text-[var(--color-text-muted)]">·</span>
                 <span className="font-medium text-[var(--color-primary)]">{e.fallName}</span>
-                {e.ueberschneidung && <span className="ml-auto text-xs font-semibold text-[var(--color-coral)]">⚠ Überschneidung</span>}
+                {e.ueberschneidung && (
+                  <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--pros-status-critical-text)]">
+                    <IconWarnTriangle /> Überschneidung
+                  </span>
+                )}
               </div>
               <p className="mt-1.5 text-sm text-[var(--color-text)]">{e.content}</p>
             </div>
           ))}
-          {entries.length === 0 && (
-            <p className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-sm text-[var(--color-text-muted)]">
-              Keine Einträge an diesem Tag.
-            </p>
-          )}
+          {entries.length === 0 && <p className={`${cardCls} text-sm text-[var(--color-text-muted)]`}>Keine Einträge an diesem Tag.</p>}
         </div>
       )}
     </div>

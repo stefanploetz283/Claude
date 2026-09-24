@@ -5,10 +5,7 @@ import { useActionState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { updateInterimCase } from "../actions";
-
-const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, buttonSecondaryCls, groupPillCls } from "../interim-ui";
 
 export type InterimCaseDetails = {
   id: string;
@@ -26,9 +23,17 @@ export type InterimCaseDetails = {
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4">
+    <div className="flex justify-between gap-4 border-b border-[var(--pros-border-default)] py-1.5 last:border-b-0">
       <dt className="text-[var(--color-text-muted)]">{label}</dt>
-      <dd className="text-right text-[var(--color-text)]">{value}</dd>
+      <dd className="text-right font-medium text-[var(--color-text)]">{value}</dd>
+    </div>
+  );
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-1 first:mt-0">
+      <span className={groupPillCls}>{children}</span>
     </div>
   );
 }
@@ -48,8 +53,6 @@ export function CaseDetailsCard({ data }: { data: InterimCaseDetails }) {
     }
   }, [state, pending]);
 
-  const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
-
   if (!editing) {
     return (
       <div className={cardCls}>
@@ -59,20 +62,32 @@ export function CaseDetailsCard({ data }: { data: InterimCaseDetails }) {
             Bearbeiten
           </button>
         </div>
-        <dl className="flex flex-col gap-2 text-sm">
-          <Row label="Familienname" value={data.familienname} />
-          <Row label="Vorname" value={data.vorname} />
-          <Row label="Straße, Hausnummer" value={data.strasseHausnummer} />
-          <Row label="PLZ, Ort" value={data.plzOrt} />
+        <dl className="flex flex-col gap-1 text-sm">
+          <GroupLabel>Angebot</GroupLabel>
           <Row
             label="Angebotsart"
             value={data.angebotsart === "PROS" ? "PROS" : "Erziehungsbeistandschaft"}
           />
+
+          <GroupLabel>Person</GroupLabel>
+          <Row label="Familienname" value={data.familienname} />
+          <Row label="Vorname" value={data.vorname} />
+
+          <GroupLabel>Anschrift</GroupLabel>
+          <Row label="Straße, Hausnummer" value={data.strasseHausnummer} />
+          <Row label="PLZ, Ort" value={data.plzOrt} />
+
+          <GroupLabel>Zuständigkeit</GroupLabel>
           <Row label="Sachbearbeiter(in) SPFD" value={data.sachbearbeiterSpfd} />
+          <Row label="Leistungserbringer(in)" value={data.leistungserbringer} />
+
+          <GroupLabel>Konditionen</GroupLabel>
           <Row label="Bewilligte Wochenstunden" value={`${data.bewilligteWochenstunden} Std.`} />
           <Row label="Honorar pro Stunde" value={`${data.honorarProStunde} €`} />
-          <Row label="Leistungserbringer(in)" value={data.leistungserbringer} />
-          <Row label="Angelegt am" value={format(data.createdAt, "dd.MM.yyyy", { locale: de })} />
+
+          <div className="mt-1">
+            <Row label="Angelegt am" value={format(data.createdAt, "dd.MM.yyyy", { locale: de })} />
+          </div>
         </dl>
       </div>
     );
@@ -89,32 +104,39 @@ export function CaseDetailsCard({ data }: { data: InterimCaseDetails }) {
         className="flex flex-col gap-3"
       >
         <input type="hidden" name="id" value={data.id} />
+        <GroupLabel>Angebot</GroupLabel>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Angebotsart</span>
-          <select name="angebotsart" defaultValue={data.angebotsart} required className={inputCls}>
+          <select name="angebotsart" defaultValue={data.angebotsart} required className={`w-full ${inputCls}`}>
             <option value="ERZIEHUNGSBEISTANDSCHAFT">Erziehungsbeistandschaft</option>
             <option value="PROS">PROS</option>
           </select>
         </label>
+
+        <GroupLabel>Person</GroupLabel>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Familienname des Kindes/Jugendlichen</span>
-          <input name="familienname" defaultValue={data.familienname} required className={inputCls} />
+          <input name="familienname" defaultValue={data.familienname} required className={`w-full ${inputCls}`} />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Vorname</span>
-          <input name="vorname" defaultValue={data.vorname} required className={inputCls} />
+          <input name="vorname" defaultValue={data.vorname} required className={`w-full ${inputCls}`} />
         </label>
+
+        <GroupLabel>Anschrift</GroupLabel>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Straße, Hausnummer</span>
-          <input name="strasseHausnummer" defaultValue={data.strasseHausnummer} required className={inputCls} />
+          <input name="strasseHausnummer" defaultValue={data.strasseHausnummer} required className={`w-full ${inputCls}`} />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>PLZ, Ort</span>
-          <input name="plzOrt" defaultValue={data.plzOrt} required className={inputCls} />
+          <input name="plzOrt" defaultValue={data.plzOrt} required className={`w-full ${inputCls}`} />
         </label>
+
+        <GroupLabel>Zuständigkeit &amp; Konditionen</GroupLabel>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Sachbearbeiter(in) SPFD</span>
-          <input name="sachbearbeiterSpfd" defaultValue={data.sachbearbeiterSpfd} required className={inputCls} />
+          <input name="sachbearbeiterSpfd" defaultValue={data.sachbearbeiterSpfd} required className={`w-full ${inputCls}`} />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Bewilligte Wochenstunden lt. Bescheid</span>
@@ -125,33 +147,25 @@ export function CaseDetailsCard({ data }: { data: InterimCaseDetails }) {
             step="0.01"
             defaultValue={data.bewilligteWochenstunden}
             required
-            className={inputCls}
+            className={`w-full ${inputCls}`}
           />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Honorar pro Stunde (€)</span>
-          <input name="honorarProStunde" type="number" min="0" step="0.01" defaultValue={data.honorarProStunde} required className={inputCls} />
+          <input name="honorarProStunde" type="number" min="0" step="0.01" defaultValue={data.honorarProStunde} required className={`w-full ${inputCls}`} />
         </label>
         <label className="flex flex-col gap-1.5">
           <span className={labelCls}>Leistungserbringer(in)</span>
-          <input name="leistungserbringer" defaultValue={data.leistungserbringer} className={inputCls} />
+          <input name="leistungserbringer" defaultValue={data.leistungserbringer} className={`w-full ${inputCls}`} />
         </label>
 
-        {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+        {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
 
         <div className="flex items-center gap-2">
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className={buttonPrimaryCls}>
             {pending ? "Wird gespeichert…" : "Speichern"}
           </button>
-          <button
-            type="button"
-            onClick={() => setEditing(false)}
-            className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)]"
-          >
+          <button type="button" onClick={() => setEditing(false)} className={buttonSecondaryCls}>
             Abbrechen
           </button>
         </div>

@@ -141,7 +141,8 @@ export default async function AlleFaellePage({
 
       <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[var(--color-sage)] text-xs font-semibold uppercase tracking-wide text-white">
+          {/* Weiß auf Salbei unterschreitet WCAG AA (~2.8:1) - dunkler Text (~4.6:1) besteht. */}
+          <thead className="bg-[var(--color-sage)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text)]">
             <tr>
               <th className="px-5 py-3">Klient</th>
               <th className="px-5 py-3">Hilfeart</th>

@@ -10,13 +10,12 @@ import { ExportControls } from "./export-controls";
 import { CaseDetailsCard } from "./case-details-card";
 import { ladeGeschlosseneMonateListe } from "../actions";
 import { istMonatGeschlossen } from "@/lib/interim/monatsabschluss";
+import { cardCls } from "../interim-ui";
 
 const ANGEBOTSART_LABELS: Record<string, string> = {
   ERZIEHUNGSBEISTANDSCHAFT: "Erziehungsbeistandschaft",
   PROS: "PROS",
 };
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
 
 export default async function InterimCaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireInterimAdmin();
@@ -60,7 +59,7 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">
             {interimCase.familienname}, {interimCase.vorname}
           </h1>
-          <span className="rounded-full bg-[var(--color-primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
+          <span className="rounded-full bg-[var(--pros-sage-pale)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
             {ANGEBOTSART_LABELS[interimCase.angebotsart]}
           </span>
         </div>
@@ -99,7 +98,7 @@ export default async function InterimCaseDetailPage({ params }: { params: Promis
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-[var(--color-text)]">Einträge</h2>
-        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+        <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
           <InterimEntriesList caseId={interimCase.id} entries={entryRows} />
         </div>
       </div>

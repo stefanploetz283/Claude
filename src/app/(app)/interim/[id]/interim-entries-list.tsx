@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { deleteInterimEntry, updateInterimEntry, clearUeberschneidungMarkierung, type Ueberschneidung } from "../actions";
+import { buttonPrimaryCls, buttonDangerSolidCls } from "../interim-ui";
+import { IconWarnTriangle, IconLock } from "../interim-icons";
 
 export type InterimEntryRow = {
   id: string;
@@ -15,8 +17,8 @@ export type InterimEntryRow = {
   readOnly: boolean;
 };
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
+const cellInputCls =
+  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
 
 export function InterimEntriesList({ caseId, entries }: { caseId: string; entries: InterimEntryRow[] }) {
   const [rowPending, startRowTransition] = useTransition();
@@ -24,9 +26,9 @@ export function InterimEntriesList({ caseId, entries }: { caseId: string; entrie
 
   return (
     <div>
-      {deleteError && <p className="border-b border-[var(--color-border)] px-5 py-2.5 text-xs text-[var(--color-coral)]">{deleteError}</p>}
+      {deleteError && <p className="border-b border-[var(--pros-border-default)] px-5 py-2.5 text-xs text-[var(--pros-status-critical-text)]">{deleteError}</p>}
       <table className="w-full text-left text-sm">
-        <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
+        <thead className="bg-[var(--pros-sage-pale)] text-[11px] font-semibold tracking-wide text-[var(--color-primary)] uppercase">
           <tr>
             <th className="px-5 py-3">Datum</th>
             <th className="px-5 py-3">Zeit</th>
@@ -125,21 +127,24 @@ function EntryRow({
 
   if (!editing) {
     return (
-      <tr className="border-t border-[var(--color-border)]">
+      <tr className="border-t border-[var(--pros-border-default)] transition-colors duration-[170ms] ease-[var(--pros-ease)] hover:bg-[var(--pros-sage-pale)]/40">
         <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{entry.date}</td>
         <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{entry.timeLabel}</td>
         <td className="px-5 py-3 text-[var(--color-text)]">
           {entry.ueberschneidungBestaetigt && (
-            <span title="Zeitüberschneidung bestätigt - noch nicht behoben" className="mr-1.5 text-[var(--color-coral)]">
-              ⚠
+            <span title="Zeitüberschneidung bestätigt - noch nicht behoben" className="mr-1.5 inline-flex align-[-2px] text-[var(--pros-status-critical-text)]">
+              <IconWarnTriangle />
             </span>
           )}
           {entry.content}
         </td>
         <td className="px-5 py-3 text-right whitespace-nowrap">
           {entry.readOnly ? (
-            <span title="Der Monat dieses Eintrags ist abgeschlossen - erst nach Wieder-öffnen bearbeitbar." className="text-xs font-medium text-[var(--color-text-muted)]">
-              🔒 Monat abgeschlossen
+            <span
+              title="Der Monat dieses Eintrags ist abgeschlossen - erst nach Wieder-öffnen bearbeitbar."
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)]"
+            >
+              <IconLock /> Monat abgeschlossen
             </span>
           ) : (
             <>
@@ -147,7 +152,7 @@ function EntryRow({
                 <button
                   disabled={rowPending}
                   onClick={onClearMarkierung}
-                  className="mr-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+                  className="mr-3 text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
                 >
                   Markierung entfernen
                 </button>
@@ -160,7 +165,7 @@ function EntryRow({
                 onClick={() => {
                   if (confirm("Eintrag wirklich löschen?")) onDelete();
                 }}
-                className="ml-3 text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+                className="ml-3 text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
               >
                 Löschen
               </button>
@@ -172,28 +177,28 @@ function EntryRow({
   }
 
   return (
-    <tr className="border-t border-[var(--color-border)] bg-[var(--color-warn-soft)]/40">
+    <tr className="border-t border-[var(--pros-border-default)] bg-[var(--pros-status-attention-bg)]/40">
       <td colSpan={4} className="px-5 py-3">
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-start gap-2.5">
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={cellInputCls} />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className={`${inputCls} ${timeInvalid ? "border-[var(--color-coral)]" : ""}`}
+                  className={`${cellInputCls} ${timeInvalid ? "border-[var(--pros-status-critical-text)]" : ""}`}
                 />
                 <span className="text-[var(--color-text-muted)]">–</span>
                 <input
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className={`${inputCls} ${timeInvalid ? "border-[var(--color-coral)]" : ""}`}
+                  className={`${cellInputCls} ${timeInvalid ? "border-[var(--pros-status-critical-text)]" : ""}`}
                 />
               </div>
-              {timeInvalid && <p className="text-xs text-[var(--color-coral)]">Ende muss nach Beginn liegen.</p>}
+              {timeInvalid && <p className="text-xs text-[var(--pros-status-critical-text)]">Ende muss nach Beginn liegen.</p>}
             </div>
           </div>
           <div className="flex flex-col gap-1">
@@ -201,16 +206,18 @@ function EntryRow({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={3}
-              className={`w-full ${inputCls} ${contentInvalid ? "border-[var(--color-coral)]" : ""}`}
+              className={`w-full ${cellInputCls} ${contentInvalid ? "border-[var(--pros-status-critical-text)]" : ""}`}
             />
-            {contentInvalid && <p className="text-xs text-[var(--color-coral)]">Inhalt darf nicht leer sein.</p>}
+            {contentInvalid && <p className="text-xs text-[var(--pros-status-critical-text)]">Inhalt darf nicht leer sein.</p>}
           </div>
-          {error && <p className="text-xs text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
 
           {conflicts && (
-            <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-3">
-              <p className="mb-1.5 text-xs font-semibold text-[var(--color-warn-text)]">⚠ Zeitüberschneidung erkannt</p>
-              <ul className="flex flex-col gap-0.5 text-xs text-[var(--color-warn-text)]">
+            <div className="rounded-[var(--pros-r-sm)] bg-[var(--pros-status-attention-bg)] p-3">
+              <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--pros-status-attention-text)]">
+                <IconWarnTriangle /> Zeitüberschneidung erkannt
+              </p>
+              <ul className="flex flex-col gap-0.5 text-xs text-[var(--pros-status-attention-text)]">
                 {conflicts.map((c, i) => (
                   <li key={i}>
                     {c.ueberlappungMinuten} Minuten Überschneidung mit Fall {c.andererFallName}, {c.andererZeitraumLabel}
@@ -222,18 +229,14 @@ function EntryRow({
 
           <div className="flex items-center gap-2.5">
             {conflicts ? (
-              <button
-                disabled={savePending}
-                onClick={() => save(true)}
-                className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-              >
+              <button disabled={savePending} onClick={() => save(true)} className={`${buttonDangerSolidCls} px-3.5 py-1.5 text-xs`}>
                 {savePending ? "Speichern…" : "Trotzdem speichern"}
               </button>
             ) : (
               <button
                 disabled={savePending || timeInvalid || contentInvalid}
                 onClick={() => save(false)}
-                className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                className={`${buttonPrimaryCls} px-3.5 py-1.5 text-xs`}
               >
                 {savePending ? "Speichern…" : "Speichern"}
               </button>

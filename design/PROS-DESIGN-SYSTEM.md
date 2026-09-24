@@ -148,6 +148,41 @@ sichtbar in:
 Handschrift-Akzente, kleine Unterstreichungs-Striche, Fokusring, einzelne Notice-Icons,
 Benachrichtigungs-Punkt, seltene Hervorhebungen in Timeline/Kalender.
 
+### 4.1 Brand-Color-Contrast-Matrix (verbindlich)
+
+Verbindliche Vordergrund-/Hintergrund-Matrix für die acht PROS-Markenfarben, berechnet nach der
+WCAG-2.1-Kontrastformel (mind. AA für normalen Text: 4,5:1; großer/fetter Text ab ~18,7px oder
+grafische Objekte/Icons: 3:1). „Dunkler Text" = `--color-text` (`#2E3330`). Werte gerundet.
+
+| Hintergrund | + Weiß | + Petrol | + dunkler Text | + Gold |
+|---|---|---|---|---|
+| **Petrol** `#0B3D46` | 11,9 ✅ | — (gleiche Familie) | — (gleiche Familie) | 5,6 ✅ |
+| **Salbei** `#8AA187` | 2,8 ❌ | 4,25 ⚠️ (nur groß/Icon) | 4,6 ✅ (knapp) | 1,3 ❌ |
+| **Salbei Soft** `#DCE6D7` | 1,3 ❌ | 9,2 ✅ | 10,0 ✅ | 1,7 ❌ |
+| **Salbei Pale** `#EEF2EA` | 1,1 ❌ | 10,5 ✅ | 11,4 ✅ | 1,9 ❌ |
+| **Gold** `#E3A72C` | 2,1 ❌ | 5,6 ✅ | 6,0 ✅ | — (gleiche Familie) |
+| **Gold Soft** `#F7E6B9` | 1,2 ❌ | 9,6 ✅ | 10,4 ✅ | 1,7 ❌ |
+| **Warmweiß/Card** `#FEFCF6` | 1,0 ❌ | 11,6 ✅ | 12,5 ✅ | 2,1 ❌ |
+| **Weiß** `#FFFFFF` | — (gleiche Familie) | 11,9 ✅ | 12,9 ✅ | 2,1 ❌ |
+
+**Ableitung:**
+- **Weiß als Vordergrund funktioniert nur auf Petrol.** Auf allen anderen sieben Flächen
+  (inkl. Gold und Salbei) unterschreitet Weiß WCAG AA — Weiß ist **ausschließlich** für Text/Icons
+  auf Petrol-Flächen zulässig.
+- **Petrol als Vordergrund funktioniert auf allen hellen/weichen Flächen** (Salbei Soft, Salbei
+  Pale, Gold, Gold Soft, Warmweiß/Card, Weiß) mit großem Sicherheitsabstand. Auf **rohem,
+  gesättigtem Salbei** liegt Petrol bei 4,25:1 und **unterschreitet knapp** die 4,5:1-Schwelle für
+  normalen Text — auf rohem Salbei-Hintergrund nur für großen/fetten Text (≥ 18,7px) oder reine
+  Icons (3:1-Schwelle) verwenden, für normalen Fließtext auf rohem Salbei stattdessen dunklen Text.
+- **Dunkler Text funktioniert auf allen hellen/weichen Flächen sowie (knapp, 4,6:1) auf rohem
+  Salbei.** Das ist die sichere Wahl für Text auf rohem, gesättigtem Salbei-Hintergrund.
+- **Gold als Vordergrund funktioniert nur auf Petrol.** Gold-Text auf jeder hellen Fläche (Salbei
+  Soft/Pale, Gold Soft, Warmweiß, Weiß) liegt zwischen 1,1 und 1,9:1 und ist **immer unzulässig**.
+- **Gold und Salbei als Hintergrund sind niemals mit Weiß kombinierbar** — dort ausschließlich
+  Petrol bzw. dunkler Text verwenden.
+
+**Kurzregel:** *Weiß nur auf Petrol. Gold nur auf Petrol. Petrol/dunkler Text überall sonst.*
+
 **WARMWEISS** (`--pros-canvas` / `--pros-card`) = primärer Arbeitsraum. Der Großteil der
 Fläche ist warmes Cremeweiß, nicht Petrol und nicht Salbei — die Farben setzen Akzente auf
 einem ruhigen hellen Grund.
@@ -302,7 +337,7 @@ vier weitere Zustände ergänzt (⚠ extrapoliert, an bestehende Tonalität ange
 | Critical | `--pros-critical-bg` `#FBE3DE` | `--pros-critical-text` `#E04C39` | Text direkt (`.kpi-note.alert`), Fläche ⚠ extrapoliert |
 | Info | `#E6EFEF` (wie Stable, petrol-neutral) | `#285F63` | ⚠ extrapoliert, teilt sich Ton mit Stable |
 | Paused | `--pros-sage-pale` `#EEF2EA` | `--pros-muted` `#6F7E7B` | ⚠ extrapoliert |
-| Archived | `#EDEDE8` | `#8A8A82` | ⚠ extrapoliert, bewusst entsättigt |
+| Archived | `#E2E0D8` | `#756F60` | ⚠ extrapoliert, bewusst entsättigt; in der Interim-Umsetzung gegenüber der ersten Fassung (`#EDEDE8`/`#8A8A82`) abgedunkelt, weil der Kontrast auf den warmweißen Cards (`--color-surface: #fefcf6`) sonst zu gering war |
 
 **Regel:** Keine grellen Ampelfarben. Critical nutzt gedecktes Terrakotta/Rot, nie reines
 Signalrot. Statusflächen sind grundsätzlich hell, Text/Icon dunkler und kräftiger als die

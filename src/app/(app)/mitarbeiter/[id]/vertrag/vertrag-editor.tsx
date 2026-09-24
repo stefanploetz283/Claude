@@ -26,6 +26,9 @@ export type VertragEmployee = {
 
 const AMPEL_COLOR: Record<string, string> = { gruen: "var(--color-primary)", gelb: "var(--color-gold)", rot: "var(--color-coral)" };
 const AMPEL_LABEL: Record<string, string> = { gruen: "Grün", gelb: "Gelb", rot: "Rot" };
+// Weiß auf Gold (gelb) unterschreitet WCAG AA (~2.1:1) - dort Petrol statt Weiß, gruen/rot behalten
+// ausreichend Kontrast mit Weiß.
+const AMPEL_TEXT_COLOR: Record<string, string> = { gruen: "white", gelb: "var(--color-primary)", rot: "white" };
 const WOCHENTAG_NAMEN = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
 
 function toDateInputValue(date: Date): string {
@@ -110,7 +113,10 @@ export function VertragEditor({
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[var(--color-text)]">Vertragsdaten</h2>
-          <span className="rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ background: AMPEL_COLOR[result.ampel] }}>
+          <span
+            className="rounded-full px-3 py-1 text-xs font-semibold"
+            style={{ background: AMPEL_COLOR[result.ampel], color: AMPEL_TEXT_COLOR[result.ampel] }}
+          >
             {AMPEL_LABEL[result.ampel]}
           </span>
         </div>

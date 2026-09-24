@@ -4,14 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { pruefeMonatsUeberschneidungen, istMonatBereitsAbgeschlossen, type UeberschneidungsKonflikt } from "../actions";
 import { MonatAbschliessenControl } from "../monat-abschliessen-control";
+import { inputCls, buttonGoldCls, buttonDangerSolidCls, buttonSecondaryCls, noticeWarnCls } from "../interim-ui";
+import { IconWarnTriangle } from "../interim-icons";
 
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
   "Juli", "August", "September", "Oktober", "November", "Dezember",
 ];
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function ExportControls({ caseId }: { caseId: string }) {
   const now = new Date();
@@ -90,21 +89,17 @@ export function ExportControls({ caseId }: { caseId: string }) {
             </option>
           ))}
         </select>
-        <button
-          onClick={handleExportClick}
-          disabled={pending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-gold)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90 disabled:opacity-50"
-        >
+        <button onClick={handleExportClick} disabled={pending} className={buttonGoldCls}>
           {pending ? "Wird geprüft…" : "Als Monatsabrechnung exportieren"}
         </button>
       </div>
 
       {konflikte && (
-        <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-4">
-          <p className="mb-2 text-sm font-semibold text-[var(--color-warn-text)]">
-            ⚠ Für diesen Monat bestehen noch ungeklärte Zeitüberschneidungen
+        <div className={`dash-card-enter ${noticeWarnCls}`}>
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--pros-status-attention-text)]">
+            <IconWarnTriangle /> Für diesen Monat bestehen noch ungeklärte Zeitüberschneidungen
           </p>
-          <ul className="mb-3 flex flex-col gap-1 text-sm text-[var(--color-warn-text)]">
+          <ul className="mb-3 flex flex-col gap-1 text-sm text-[var(--pros-status-attention-text)]">
             {konflikte.map((k, i) => (
               <li key={i}>
                 {k.date}: {k.fallA} ({k.zeitraumA}) ↔ {k.fallB} ({k.zeitraumB}) – {k.ueberlappungMinuten} Min.
@@ -118,14 +113,11 @@ export function ExportControls({ caseId }: { caseId: string }) {
                 downloadExport();
               }}
               disabled={pending}
-              className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+              className={buttonDangerSolidCls}
             >
               Trotzdem exportieren
             </button>
-            <Link
-              href={`/interim/${caseId}`}
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-bg)]"
-            >
+            <Link href={`/interim/${caseId}`} className={buttonSecondaryCls}>
               Zur Korrektur springen
             </Link>
             <button onClick={() => setKonflikte(null)} className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
@@ -140,7 +132,9 @@ export function ExportControls({ caseId }: { caseId: string }) {
       )}
 
       {error && (
-        <p className="rounded-[var(--radius-control)] bg-[#FBE4E1] px-3.5 py-2.5 text-sm font-medium text-[#B23B2E]">⚠ {error}</p>
+        <p className="flex items-center gap-1.5 rounded-[var(--pros-r-sm)] bg-[var(--pros-status-critical-bg)] px-3.5 py-2.5 text-sm font-medium text-[var(--pros-status-critical-text)]">
+          <IconWarnTriangle /> {error}
+        </p>
       )}
     </div>
   );

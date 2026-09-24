@@ -6,6 +6,9 @@ import { NewEmployeeForm } from "./new-employee-form";
 const ROLE_LABELS: Record<string, string> = { ADMIN: "Admin", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" };
 const PALETTE = ["var(--color-primary)", "var(--color-gold)", "var(--color-coral)", "var(--color-sage)"];
 const SOFT_PALETTE = ["var(--color-primary-soft)", "var(--color-gold-soft)", "var(--color-coral-soft)", "var(--color-primary-soft)"];
+// Weiß auf Gold (Index 1) unterschreitet WCAG AA (~2.1:1) - Avatar-Initialen dort in Petrol statt
+// Weiß, alle anderen Palettefarben bleiben bei Weiß (ausreichend Kontrast).
+const AVATAR_TEXT_PALETTE = ["white", "var(--color-primary)", "white", "white"];
 
 export default async function MitarbeiterListPage() {
   await requireAdminOrVerwaltung();
@@ -44,6 +47,7 @@ export default async function MitarbeiterListPage() {
         {employees.map((e, i) => {
           const color = PALETTE[i % PALETTE.length];
           const soft = SOFT_PALETTE[i % SOFT_PALETTE.length];
+          const avatarText = AVATAR_TEXT_PALETTE[i % AVATAR_TEXT_PALETTE.length];
           return (
             <Link
               key={e.id}
@@ -52,8 +56,8 @@ export default async function MitarbeiterListPage() {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                  style={{ background: color }}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold"
+                  style={{ background: color, color: avatarText }}
                 >
                   {initials(e.name)}
                 </div>
@@ -64,7 +68,9 @@ export default async function MitarbeiterListPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: soft, color }}>
+                {/* Petrol-Text statt der gesättigten Palettenfarbe selbst - Gold-Text auf Gold-Soft
+                    (~1.7:1) und Salbei-Text auf Primary-Soft (~2.3:1) unterschritten WCAG AA. */}
+                <span className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: soft, color: "var(--color-primary)" }}>
                   {ROLE_LABELS[e.role] ?? e.role}
                 </span>
                 <span

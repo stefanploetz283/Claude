@@ -6,6 +6,9 @@ import { requireInterimAdmin } from "@/lib/rbac";
 import { getAktuellerOffenerMonat, getMonatsabschlussHistorie } from "./actions";
 import { monatsRichtwertStunden } from "@/lib/interim/monatsabschluss";
 import { MonatAbschliessenControl, MonatWiederOeffnenButton } from "./monat-abschliessen-control";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { cardCls, cardInteractiveCls, buttonSecondaryCls, buttonGoldCls, buttonSageOutlineCls } from "./interim-ui";
+import { IconSearchCheck } from "./interim-icons";
 
 const ANGEBOTSART_LABELS: Record<string, string> = {
   ERZIEHUNGSBEISTANDSCHAFT: "Erziehungsbeistandschaft",
@@ -14,8 +17,6 @@ const ANGEBOTSART_LABELS: Record<string, string> = {
 
 type MonthBucket = { key: string; label: string; hours: number; jahr: number; monat: number };
 type CaseHours = { total: number; months: MonthBucket[] };
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
 
 export default async function InterimPage() {
   await requireInterimAdmin();
@@ -69,22 +70,14 @@ export default async function InterimPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <Link
-            href="/interim/tagesansicht"
-            className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-primary)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
-          >
+          <Link href="/interim/tagesansicht" className={buttonSecondaryCls}>
             Tagesansicht
           </Link>
-          <Link
-            href="/interim/ueberschneidungen"
-            className="rounded-[var(--radius-control)] border border-[var(--color-coral)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-coral)] shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
-          >
+          <Link href="/interim/ueberschneidungen" className={`${buttonSageOutlineCls} inline-flex items-center gap-2`}>
+            <IconSearchCheck />
             Zeitüberschneidungen prüfen
           </Link>
-          <Link
-            href="/interim/new"
-            className="rounded-[var(--radius-control)] bg-[var(--color-gold)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90"
-          >
+          <Link href="/interim/new" className={buttonGoldCls}>
             + Neuen Fall anlegen
           </Link>
         </div>
@@ -107,9 +100,9 @@ export default async function InterimPage() {
           const fruehereMonate = (hours?.months ?? []).filter((m) => m.key !== offenerMonatKey);
 
           return (
-            <div key={c.id} className={`${cardCls} transition hover:-translate-y-0.5 hover:shadow-md`}>
+            <div key={c.id} className={cardInteractiveCls}>
               <Link href={`/interim/${c.id}`}>
-                <span className="mb-2 inline-block rounded-full bg-[var(--color-primary-soft)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-primary)]">
+                <span className="mb-2 inline-block rounded-full bg-[var(--pros-sage-pale)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-primary)]">
                   {ANGEBOTSART_LABELS[c.angebotsart]}
                 </span>
                 <h3 className="text-sm font-semibold text-[var(--color-text)]">
@@ -118,7 +111,7 @@ export default async function InterimPage() {
                 <p className="mt-1 text-xs text-[var(--color-text-muted)]">{c.plzOrt}</p>
               </Link>
 
-              <div className="mt-3 border-t border-[var(--color-border)] pt-2.5">
+              <div className="mt-3 border-t border-[var(--pros-border-default)] pt-2.5">
                 <p className="text-xs font-medium text-[var(--color-text-muted)]">{offenerMonat.label} (offen)</p>
                 <p className="text-sm font-semibold text-[var(--color-text)]">
                   {(offenerMonatBucket?.hours ?? 0).toFixed(2)} Std. dokumentiert{" "}
@@ -129,21 +122,15 @@ export default async function InterimPage() {
               {fruehereMonate.length > 0 && (
                 <details className="mt-2.5">
                   <summary className="cursor-pointer text-xs font-medium text-[var(--color-primary)]">Frühere Monate</summary>
-                  <ul className="mt-1.5 flex flex-col gap-1 text-xs text-[var(--color-text-muted)]">
+                  <ul className="mt-1.5 flex flex-col gap-1.5 text-xs text-[var(--color-text-muted)]">
                     {fruehereMonate.map((m) => (
                       <li key={m.key} className="flex items-center justify-between gap-2">
                         <span>
                           {m.label}: {m.hours.toFixed(2)} Std.
                         </span>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            geschlosseneMonateSet.has(`${m.jahr}-${m.monat}`)
-                              ? "bg-[var(--color-border)] text-[var(--color-text)]"
-                              : "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
-                          }`}
-                        >
-                          {geschlosseneMonateSet.has(`${m.jahr}-${m.monat}`) ? "abgeschlossen" : "offen"}
-                        </span>
+                        <ProsStatusPill tone={geschlosseneMonateSet.has(`${m.jahr}-${m.monat}`) ? "archived" : "stable"}>
+                          {geschlosseneMonateSet.has(`${m.jahr}-${m.monat}`) ? "Abgeschlossen" : "Offen"}
+                        </ProsStatusPill>
                       </li>
                     ))}
                   </ul>
@@ -166,13 +153,9 @@ export default async function InterimPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[var(--color-text)]">{h.label}</span>
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        h.status === "ABGESCHLOSSEN" ? "bg-[var(--color-border)] text-[var(--color-text)]" : "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
-                      }`}
-                    >
-                      {h.status === "ABGESCHLOSSEN" ? "abgeschlossen" : "wieder geöffnet"}
-                    </span>
+                    <ProsStatusPill tone={h.status === "ABGESCHLOSSEN" ? "archived" : "stable"}>
+                      {h.status === "ABGESCHLOSSEN" ? "Abgeschlossen" : "Wieder geöffnet"}
+                    </ProsStatusPill>
                   </div>
                   <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
                     Abgeschlossen am {h.abgeschlossenAmLabel} von {h.abgeschlossenVonName}

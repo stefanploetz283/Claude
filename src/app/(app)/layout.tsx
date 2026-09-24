@@ -10,9 +10,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await requireUser();
   const settings = await getSettings();
 
-  const unreadCount = await prisma.messageRecipient.count({
-    where: { recipientId: user.id, readAt: null },
-  });
+  const [unreadCount, dbUser] = await Promise.all([
+    prisma.messageRecipient.count({ where: { recipientId: user.id, readAt: null } }),
+    prisma.user.findUnique({ where: { id: user.id }, select: { avatarUrl: true } }),
+  ]);
+  // Liegt jetzt auf Layout-Ebene statt nur auf /heute, weil das Profilbild (samt Upload) über den
+  // App-weiten Sidebar-Profilbereich erreichbar ist, nicht mehr nur im Hero einer einzelnen Seite.
+  const avatarSrc = dbUser?.avatarUrl ? `/api/users/${user.id}/avatar` : null;
 
   return (
     <div
@@ -31,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         logoUrl={settings.logoUrl ? "/api/settings/logo" : null}
         practiceName={settings.practiceName}
         userName={user.name ?? user.email ?? "?"}
+        avatarUrl={avatarSrc}
       />
       <AppBody>{children}</AppBody>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />

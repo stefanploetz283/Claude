@@ -38,7 +38,8 @@ export const BERICHTS_KAPITEL_INFO: Record<
     label: "Erkennen",
     hauptkapitel: "2. Entwicklungsprozess",
     leitfrage: "Was wurde sichtbar, als die Situation gemeinsam betrachtet wurde?",
-    badgeCls: "bg-[var(--color-sage)] text-white",
+    // Weiß auf Salbei unterschreitet WCAG AA (~2.8:1) - dunkler Text (~4.6:1) besteht.
+    badgeCls: "bg-[var(--color-sage)] text-[var(--color-text)]",
   },
   VERSTAENDIGEN: {
     label: "Verständigen",
@@ -50,7 +51,7 @@ export const BERICHTS_KAPITEL_INFO: Record<
     label: "Verändern",
     hauptkapitel: "2. Entwicklungsprozess",
     leitfrage: "Welche Veränderungen fördern neue Formen von Regulation?",
-    badgeCls: "bg-[var(--color-gold)] text-white",
+    badgeCls: "bg-[var(--color-gold)] text-[var(--color-primary)]",
   },
   STABILISIEREN: {
     label: "Stabilisieren",

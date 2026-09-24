@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { extractInterimEntryFromVoice } from "@/lib/interim/extraction";
 import { createInterimEntry, type Ueberschneidung } from "../actions";
+import { cardCls, inputCls, buttonPrimaryCls, buttonSecondaryCls, buttonDangerSolidCls } from "../interim-ui";
+import { IconWarnTriangle, IconCheck } from "../interim-icons";
 
 type SpeechRecognitionResultLike = { isFinal: boolean; 0: { transcript: string } };
 type SpeechRecognitionEventLike = { resultIndex: number; results: ArrayLike<SpeechRecognitionResultLike> };
@@ -29,10 +31,6 @@ const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
 type Stage = "idle" | "recording" | "processing" | "review" | "conflict" | "saving" | "done";
 type ReviewData = { date: string; startTime: string; endTime: string; content: string };
-
-const inputCls =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
 
 export function InterimDictateWidget({ caseId }: { caseId: string }) {
   const [stage, setStage] = useState<Stage>("idle");
@@ -170,7 +168,7 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
           {stage === "recording" ? (
             <button
               onClick={stopRecording}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-coral)] text-white shadow-[var(--shadow-soft)]"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--pros-status-critical-text)] text-white shadow-[var(--pros-shadow)] transition-transform duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.95]"
               aria-label="Aufnahme stoppen"
             >
               <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white" />
@@ -178,7 +176,7 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
           ) : (
             <button
               onClick={startRecording}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-primary)] text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.95]"
               aria-label="Aufnahme starten"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -197,26 +195,26 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
               <span className="text-[var(--color-text-muted)]">{interim}</span>
             </p>
           )}
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
         </div>
       )}
 
       {stage === "processing" && <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">Diktat wird verarbeitet …</p>}
 
       {stage === "review" && review && (
-        <div className="flex flex-col gap-3">
+        <div className="dash-card-enter flex flex-col gap-3">
           <div className="flex gap-3">
             <label className="flex flex-1 flex-col gap-1.5">
               <span className="text-xs font-medium text-[var(--color-text-muted)]">Datum</span>
-              <input type="date" value={review.date} onChange={(e) => setReview({ ...review, date: e.target.value })} className={inputCls} />
+              <input type="date" value={review.date} onChange={(e) => setReview({ ...review, date: e.target.value })} className={`w-full ${inputCls}`} />
             </label>
             <label className="flex flex-1 flex-col gap-1.5">
               <span className="text-xs font-medium text-[var(--color-text-muted)]">Beginn</span>
-              <input type="time" value={review.startTime} onChange={(e) => setReview({ ...review, startTime: e.target.value })} className={inputCls} />
+              <input type="time" value={review.startTime} onChange={(e) => setReview({ ...review, startTime: e.target.value })} className={`w-full ${inputCls}`} />
             </label>
             <label className="flex flex-1 flex-col gap-1.5">
               <span className="text-xs font-medium text-[var(--color-text-muted)]">Ende</span>
-              <input type="time" value={review.endTime} onChange={(e) => setReview({ ...review, endTime: e.target.value })} className={inputCls} />
+              <input type="time" value={review.endTime} onChange={(e) => setReview({ ...review, endTime: e.target.value })} className={`w-full ${inputCls}`} />
             </label>
           </div>
           <label className="flex flex-col gap-1.5">
@@ -225,18 +223,15 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
               rows={4}
               value={review.content}
               onChange={(e) => setReview({ ...review, content: e.target.value })}
-              className={inputCls}
+              className={`w-full ${inputCls}`}
             />
           </label>
-          {error && <p className="text-sm text-[var(--color-coral)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--pros-status-critical-text)]">{error}</p>}
           <div className="flex gap-2">
-            <button
-              onClick={() => confirmSave(false)}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
-            >
+            <button onClick={() => confirmSave(false)} className={`${buttonPrimaryCls} px-5`}>
               Übernehmen
             </button>
-            <button onClick={resetAll} className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-5 py-2.5 text-sm font-medium text-[var(--color-text)]">
+            <button onClick={resetAll} className={`${buttonSecondaryCls} px-5`}>
               Verwerfen
             </button>
           </div>
@@ -244,10 +239,12 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
       )}
 
       {stage === "conflict" && review && (
-        <div className="flex flex-col gap-3">
-          <div className="rounded-[var(--radius-control)] bg-[var(--color-warn-soft)] p-4">
-            <p className="mb-2 text-sm font-semibold text-[var(--color-warn-text)]">⚠ Zeitüberschneidung erkannt</p>
-            <ul className="flex flex-col gap-1 text-sm text-[var(--color-warn-text)]">
+        <div className="dash-card-enter flex flex-col gap-3">
+          <div className="rounded-[var(--pros-r-sm)] bg-[var(--pros-status-attention-bg)] p-4">
+            <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[var(--pros-status-attention-text)]">
+              <IconWarnTriangle /> Zeitüberschneidung erkannt
+            </p>
+            <ul className="flex flex-col gap-1 text-sm text-[var(--pros-status-attention-text)]">
               {conflicts.map((c, i) => (
                 <li key={i}>
                   {c.ueberlappungMinuten} Minuten Überschneidung mit Fall {c.andererFallName}, {c.andererZeitraumLabel}
@@ -256,16 +253,10 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
             </ul>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => confirmSave(true)}
-              className="rounded-[var(--radius-control)] bg-[var(--color-coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:opacity-90"
-            >
+            <button onClick={() => confirmSave(true)} className={`${buttonDangerSolidCls} px-5`}>
               Trotzdem speichern
             </button>
-            <button
-              onClick={() => setStage("review")}
-              className="rounded-[var(--radius-control)] border border-[var(--color-border)] px-5 py-2.5 text-sm font-medium text-[var(--color-text)]"
-            >
+            <button onClick={() => setStage("review")} className={`${buttonSecondaryCls} px-5`}>
               Zurück und korrigieren
             </button>
           </div>
@@ -273,7 +264,11 @@ export function InterimDictateWidget({ caseId }: { caseId: string }) {
       )}
 
       {stage === "saving" && <p className="py-8 text-center text-sm text-[var(--color-text-muted)]">Wird gespeichert …</p>}
-      {stage === "done" && <p className="py-8 text-center text-sm font-medium text-[var(--color-primary)]">✓ Eintrag gespeichert.</p>}
+      {stage === "done" && (
+        <p className="dash-card-enter flex items-center justify-center gap-1.5 py-8 text-center text-sm font-medium text-[var(--color-primary)]">
+          <IconCheck /> Eintrag gespeichert.
+        </p>
+      )}
     </div>
   );
 }
