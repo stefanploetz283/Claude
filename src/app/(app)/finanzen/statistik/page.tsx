@@ -8,6 +8,8 @@ import {
   getHoursPerEmployee,
   getCasesWithLowContingent,
 } from "@/lib/statistics";
+import { cardCls, filterFieldCls, buttonSecondaryCls } from "@/app/(app)/cases/case-ui";
+import { ProsProgress } from "@/components/pros/pros-progress";
 
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -53,14 +55,14 @@ export default async function StatisticsPage({
           <form method="get" className="flex items-center gap-2 text-sm">
             <input type="hidden" name="teamMonth" value={teamMonth} />
             <input type="hidden" name="teamYear" value={teamYear} />
-            <select name="year" defaultValue={year} className={selectCls}>
+            <select name="year" defaultValue={year} className={filterFieldCls}>
               {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
                 <option key={y} value={y}>
                   {y}
                 </option>
               ))}
             </select>
-            <button type="submit" className={btnCls}>
+            <button type="submit" className={buttonSecondaryCls}>
               Anzeigen
             </button>
           </form>
@@ -74,10 +76,10 @@ export default async function StatisticsPage({
                 <li key={h.helpType}>
                   <div className="flex justify-between">
                     <span className="text-[var(--color-text)]">{h.helpType}</span>
-                    <span className="font-medium text-[var(--color-text-muted)]">{h.count}</span>
+                    <span className="font-medium tabular-nums text-[var(--color-text-muted)]">{h.count}</span>
                   </div>
-                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-[var(--color-primary-soft)]">
-                    <div className="h-full rounded-full bg-[var(--color-green-medium)]" style={{ width: `${totalCases ? (h.count / totalCases) * 100 : 0}%` }} />
+                  <div className="mt-1.5">
+                    <ProsProgress percent={totalCases ? (h.count / totalCases) * 100 : 0} />
                   </div>
                 </li>
               ))}
@@ -87,7 +89,7 @@ export default async function StatisticsPage({
 
           <div className={cardCls}>
             <h3 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Durchschnittliche Falldauer</h3>
-            <p className="text-3xl font-bold text-[var(--color-text)]">
+            <p className="text-3xl font-bold tabular-nums text-[var(--color-text)]">
               {avgDuration.count > 0 ? Math.round(avgDuration.averageDays) : "–"}
               <span className="ml-1 text-base font-normal text-[var(--color-text-muted)]">Tage</span>
             </p>
@@ -100,7 +102,7 @@ export default async function StatisticsPage({
               {monthlyUtilization.map((m) => (
                 <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
                   <div
-                    className="w-full rounded-t bg-[var(--color-primary)]"
+                    className="w-full rounded-t-[var(--pros-r-sm)] bg-[var(--color-primary)]"
                     style={{ height: `${(m.hours / maxUtilization) * 100}%`, minHeight: m.hours > 0 ? "2px" : 0 }}
                     title={`${MONTH_NAMES[m.month - 1]}: ${m.hours.toFixed(1)} Std.`}
                   />
@@ -117,21 +119,21 @@ export default async function StatisticsPage({
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Team-Auswertung</h2>
           <form method="get" className="flex items-center gap-2 text-sm">
             <input type="hidden" name="year" value={year} />
-            <select name="teamMonth" defaultValue={teamMonth} className={selectCls}>
+            <select name="teamMonth" defaultValue={teamMonth} className={filterFieldCls}>
               {MONTH_NAMES.map((m, i) => (
                 <option key={m} value={i + 1}>
                   {m}
                 </option>
               ))}
             </select>
-            <select name="teamYear" defaultValue={teamYear} className={selectCls}>
+            <select name="teamYear" defaultValue={teamYear} className={filterFieldCls}>
               {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
                 <option key={y} value={y}>
                   {y}
                 </option>
               ))}
             </select>
-            <button type="submit" className={btnCls}>
+            <button type="submit" className={buttonSecondaryCls}>
               Anzeigen
             </button>
           </form>
@@ -142,20 +144,17 @@ export default async function StatisticsPage({
             Gesamtstunden aller Mitarbeiter – {MONTH_NAMES[teamMonth - 1]} {teamYear}
           </h3>
           <p className="mb-3 text-sm text-[var(--color-text-muted)]">
-            Gesamt: <span className="font-semibold text-[var(--color-text)]">{hoursPerEmployee.reduce((s, e) => s + e.hours, 0).toFixed(1)} Std.</span>
+            Gesamt: <span className="font-semibold tabular-nums text-[var(--color-text)]">{hoursPerEmployee.reduce((s, e) => s + e.hours, 0).toFixed(1)} Std.</span>
           </p>
           <ul className="flex flex-col gap-3 text-sm">
             {hoursPerEmployee.map((e) => (
               <li key={e.name}>
                 <div className="flex justify-between">
                   <span className="text-[var(--color-text)]">{e.name}</span>
-                  <span className="font-medium text-[var(--color-text-muted)]">{e.hours.toFixed(1)} Std.</span>
+                  <span className="font-medium tabular-nums text-[var(--color-text-muted)]">{e.hours.toFixed(1)} Std.</span>
                 </div>
-                <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-[var(--color-primary-soft)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--color-green-medium)]"
-                    style={{ width: `${Math.min(100, Math.max(0, (e.hours / maxEmployeeHours) * 100))}%` }}
-                  />
+                <div className="mt-1.5">
+                  <ProsProgress percent={Math.min(100, Math.max(0, (e.hours / maxEmployeeHours) * 100))} />
                 </div>
               </li>
             ))}
@@ -166,7 +165,7 @@ export default async function StatisticsPage({
 
       <section className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold text-[var(--color-text)]">Fälle mit knappem Kontingent (team-übergreifend)</h2>
-        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+        <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
           <table className="w-full text-left text-sm">
             <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
               <tr>
@@ -178,7 +177,7 @@ export default async function StatisticsPage({
             </thead>
             <tbody>
               {lowContingentCases.map((r) => (
-                <tr key={r.case.id} className="border-t border-[var(--color-border)]">
+                <tr key={r.case.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                   <td className="px-5 py-3">
                     <Link href={`/cases/${r.case.id}`} className="font-medium text-[var(--color-primary)] hover:underline">
                       {r.case.client.lastName}, {r.case.client.firstName}
@@ -186,7 +185,7 @@ export default async function StatisticsPage({
                   </td>
                   <td className="px-5 py-3 text-[var(--color-text)]">{r.case.helpType.name}</td>
                   <td className="px-5 py-3 text-[var(--color-text)]">{r.case.assignedEmployee.name}</td>
-                  <td className="px-5 py-3 font-semibold text-[var(--color-coral)]">
+                  <td className="px-5 py-3 font-semibold tabular-nums text-[var(--pros-status-critical-text)]">
                     {r.remainingHours.toFixed(1)} Std. ({r.remainingPercent.toFixed(0)} %)
                   </td>
                 </tr>
@@ -205,8 +204,3 @@ export default async function StatisticsPage({
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
-const selectCls = "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
-const btnCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]";

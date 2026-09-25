@@ -9,11 +9,7 @@ import {
   type CsvAnalyseState,
   type CsvImportState,
 } from "./finom-import-actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
 const SPALTEN_FELDER: { key: string; label: string; required?: boolean }[] = [
   { key: "datumSpalte", label: "Datum", required: true },
@@ -59,14 +55,10 @@ export function FinomCsvImport() {
             <span className={labelCls}>CSV-Datei</span>
             <input name="csv" type="file" accept=".csv" required className="text-sm" />
           </label>
-          <button
-            type="submit"
-            disabled={previewPending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-          >
+          <button type="submit" disabled={previewPending} className={buttonPrimaryCls}>
             {previewPending ? "Lese Datei…" : "Datei einlesen"}
           </button>
-          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--color-coral)]">{previewState.error}</p>}
+          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{previewState.error}</p>}
         </form>
       )}
 
@@ -98,18 +90,14 @@ export function FinomCsvImport() {
             })}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              disabled={analysePending}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
+            <button type="submit" disabled={analysePending} className={buttonPrimaryCls}>
               {analysePending ? "Analysiere…" : "Weiter zur Prüfung"}
             </button>
             <button type="button" onClick={reset} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
               Abbrechen
             </button>
           </div>
-          {analyseState && "error" in analyseState && <p className="text-sm text-[var(--color-coral)]">{analyseState.error}</p>}
+          {analyseState && "error" in analyseState && <p className="text-sm text-[var(--pros-status-critical-text)]">{analyseState.error}</p>}
         </form>
       )}
 
@@ -123,8 +111,8 @@ export function FinomCsvImport() {
               ["Duplikate", analyseState.analyse.duplikate],
               ["unlesbar", analyseState.analyse.unlesbar],
             ].map(([label, wert]) => (
-              <div key={label as string} className="rounded-[var(--radius-control)] bg-[var(--color-bg)] px-2.5 py-2">
-                <span className="font-semibold text-[var(--color-text)]">{wert as number}</span> <span className="text-[var(--color-text-muted)]">{label as string}</span>
+              <div key={label as string} className="rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-2.5 py-2">
+                <span className="font-semibold tabular-nums text-[var(--color-text)]">{wert as number}</span> <span className="text-[var(--color-text-muted)]">{label as string}</span>
               </div>
             ))}
           </div>
@@ -133,7 +121,7 @@ export function FinomCsvImport() {
             überspringen (z.B. Kontoumbuchung). Duplikate sind ausgeblendet.
           </p>
 
-          <div className="overflow-x-auto rounded-[var(--radius-control)] border border-[var(--color-border)]">
+          <div className="overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--color-bg)] text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                 <tr>
@@ -149,14 +137,17 @@ export function FinomCsvImport() {
                 {analyseState.analyse.zeilen
                   .filter((z) => !z.istDuplikat)
                   .map((z, i) => (
-                    <tr key={z.dedupKey} className={`border-t border-[var(--color-border)] ${z.eindeutig ? "" : "bg-[var(--color-gold-soft)]"}`}>
+                    <tr
+                      key={z.dedupKey}
+                      className={`border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40 ${z.eindeutig ? "" : "bg-[var(--pros-status-attention-bg)]/40"}`}
+                    >
                       <td className="px-2.5 py-1.5">
                         <input type="checkbox" name={`uebernehmen:${i}`} defaultChecked />
                         <input type="hidden" name="zeile" value={JSON.stringify({ datum: z.datum, betrag: z.betrag, beschreibung: z.beschreibung, dedupKey: z.dedupKey })} />
                       </td>
                       <td className="px-2.5 py-1.5 whitespace-nowrap text-[var(--color-text-muted)]">{new Date(z.datum).toLocaleDateString("de-DE")}</td>
                       <td className="px-2.5 py-1.5 text-[var(--color-text)]">{z.beschreibung}</td>
-                      <td className="px-2.5 py-1.5 text-right font-semibold text-[var(--color-text)]">{eur(z.betrag)}</td>
+                      <td className="px-2.5 py-1.5 text-right font-semibold tabular-nums text-[var(--color-text)]">{eur(z.betrag)}</td>
                       <td className="px-2.5 py-1.5">
                         <select name={`kategorie:${i}`} defaultValue={z.vorschlagKategorieId ?? "__none__"} className={inputCls}>
                           <option value="__none__">— keine —</option>
@@ -177,24 +168,20 @@ export function FinomCsvImport() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              disabled={importPending}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
+            <button type="submit" disabled={importPending} className={buttonPrimaryCls}>
               {importPending ? "Importiere…" : "Import bestätigen"}
             </button>
             <button type="button" onClick={reset} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
               Abbrechen
             </button>
           </div>
-          {importState?.error && <p className="text-sm text-[var(--color-coral)]">{importState.error}</p>}
+          {importState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{importState.error}</p>}
         </form>
       )}
 
       {step === "done" && importState?.importiert != null && (
         <div className="mt-3 flex flex-col gap-2">
-          <p className="rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
+          <p className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
             {importState.importiert} Buchung(en) importiert, davon {importState.nichtEingeplant} ohne Position (nicht eingeplant).
             {importState.uebersprungen ? ` ${importState.uebersprungen} übersprungen.` : ""}
             {importState.duplikate ? ` ${importState.duplikate} Duplikate.` : ""}

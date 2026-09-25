@@ -13,9 +13,9 @@ export const QUELLE_AUSGABE_LABEL: Record<string, string> = {
 
 /** Ampel-Optik analog zum Betriebscockpit (AMPEL_STYLES dort), hier lokal gehalten - kein Refactor. */
 export const AMPEL_STYLE: Record<AmpelStatus, { bg: string; text: string; label: string }> = {
-  gruen: { bg: "var(--color-primary-soft)", text: "var(--color-primary)", label: "im Rahmen" },
-  gelb: { bg: "#FBF1DC", text: "#8A5A12", label: "70–100 %" },
-  rot: { bg: "#FBE4E1", text: "#B23B2E", label: "über Budget" },
+  gruen: { bg: "var(--pros-status-active-bg)", text: "var(--pros-status-active-text)", label: "im Rahmen" },
+  gelb: { bg: "var(--pros-status-attention-bg)", text: "var(--pros-status-attention-text)", label: "70–100 %" },
+  rot: { bg: "var(--pros-status-critical-bg)", text: "var(--pros-status-critical-text)", label: "über Budget" },
 };
 
 /** Für das PDF (kein CSS-Variablen-Kontext): feste Hex-Werte. */

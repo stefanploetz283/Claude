@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 import { previewExcelImport, confirmExcelImport, type ExcelPreviewState, type ExcelImportState } from "./excel-import-actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, buttonPrimaryCls, noticeWarnCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 function eur(n: number) {
   return n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
@@ -48,14 +46,10 @@ export function ExcelImport({ jahr }: { jahr: number }) {
             <span className="text-xs font-medium text-[var(--color-text-muted)]">Datei</span>
             <input name="datei" type="file" accept=".xlsx" required className="text-sm" />
           </label>
-          <button
-            type="submit"
-            disabled={previewPending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-          >
+          <button type="submit" disabled={previewPending} className={buttonPrimaryCls}>
             {previewPending ? "Lese Datei…" : "Datei einlesen"}
           </button>
-          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--color-coral)]">{previewState.error}</p>}
+          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{previewState.error}</p>}
         </form>
       )}
 
@@ -64,7 +58,8 @@ export function ExcelImport({ jahr }: { jahr: number }) {
           <input type="hidden" name="jahr" value={previewState.jahr} />
 
           {previewState.warnungen.map((w, i) => (
-            <p key={i} className="rounded-[var(--radius-control)] border border-[var(--color-gold)] bg-[var(--color-gold-soft)] px-3 py-2 text-xs text-[#8A5A12]">
+            <p key={i} className={`flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+              <IconWarnTriangle />
               {w}
             </p>
           ))}
@@ -84,10 +79,10 @@ export function ExcelImport({ jahr }: { jahr: number }) {
                 const abw = block.abweichung;
                 const abwOk = abw == null || Math.abs(abw) <= 0.02;
                 return (
-                  <div key={block.blockName} className="overflow-x-auto rounded-[var(--radius-control)] border border-[var(--color-border)]">
+                  <div key={block.blockName} className="overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
                     <div className="flex flex-wrap items-baseline justify-between gap-2 bg-[var(--color-bg)] px-3 py-2">
                       <span className="text-sm font-semibold text-[var(--color-text)]">{block.blockName}</span>
-                      <span className={`text-xs ${abwOk ? "text-[var(--color-text-muted)]" : "font-semibold text-[var(--color-coral)]"}`}>
+                      <span className={`text-xs tabular-nums ${abwOk ? "text-[var(--color-text-muted)]" : "font-semibold text-[var(--pros-status-critical-text)]"}`}>
                         Summe Einzelposten {eur(block.summeEinzelposten)}
                         {block.zwischensumme != null && <> · Zwischensumme lt. Excel {eur(block.zwischensumme)}</>}
                         {abw != null && Math.abs(abw) > 0.005 && <> · Abweichung {eur(abw)}</>}
@@ -107,7 +102,7 @@ export function ExcelImport({ jahr }: { jahr: number }) {
                         {block.positionen.map((p, pi) => {
                           const idx = blockStartIdx[bi] + pi;
                           return (
-                            <tr key={idx} className="border-t border-[var(--color-border)]">
+                            <tr key={idx} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                               <td className="px-2.5 py-1.5">
                                 <input type="checkbox" name="uebernehmen" value={idx} defaultChecked />
                               </td>
@@ -122,7 +117,7 @@ export function ExcelImport({ jahr }: { jahr: number }) {
                           );
                         })}
                         {block.positionen.length === 0 && (
-                          <tr className="border-t border-[var(--color-border)]">
+                          <tr className="border-t border-[var(--pros-border-default)]">
                             <td colSpan={4} className="px-2.5 py-2 text-xs text-[var(--color-text-muted)]">
                               Keine Einzelpositionen erkannt.
                             </td>
@@ -145,11 +140,7 @@ export function ExcelImport({ jahr }: { jahr: number }) {
               </label>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="submit"
-                  disabled={importPending}
-                  className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-                >
+                <button type="submit" disabled={importPending} className={buttonPrimaryCls}>
                   {importPending ? "Speichere…" : "Positionen übernehmen"}
                 </button>
                 <button type="button" onClick={reset} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
@@ -158,13 +149,13 @@ export function ExcelImport({ jahr }: { jahr: number }) {
               </div>
             </>
           )}
-          {importState?.error && <p className="text-sm text-[var(--color-coral)]">{importState.error}</p>}
+          {importState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{importState.error}</p>}
         </form>
       )}
 
       {step === "done" && importState && (
         <div className="mt-3 flex flex-col gap-2">
-          <p className="rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
+          <p className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
             {importState.angelegt ?? 0} Position(en) neu angelegt, {importState.aktualisiert ?? 0} aktualisiert
             {importState.ersetzt ? `, ${importState.ersetzt} entfernt (nicht mehr in der Kalkulation)` : ""} (Budgetjahr {importState.jahr}).
           </p>

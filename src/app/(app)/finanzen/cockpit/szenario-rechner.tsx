@@ -43,7 +43,7 @@ export function SzenarioRechner({
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-sm">
         <span className="text-[var(--color-text-muted)]">Angenommene Quote</span>
-        <span className="font-semibold text-[var(--color-text)]">{angenommeneQuoteProzent} %</span>
+        <span className="font-semibold tabular-nums text-[var(--color-text)]">{angenommeneQuoteProzent} %</span>
       </div>
       <input
         type="range"
@@ -55,7 +55,7 @@ export function SzenarioRechner({
         className="w-full accent-[var(--color-primary)]"
       />
       {ergebnis != null ? (
-        <p className={`text-lg font-bold ${ergebnis < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-primary)]"}`}>
+        <p className={`text-lg font-bold tabular-nums ${ergebnis < 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-primary)]"}`}>
           {ergebnis >= 0 ? "+" : ""}
           {eur(ergebnis)} {ergebnis < 0 ? "Verlust" : "Gewinn"}
         </p>

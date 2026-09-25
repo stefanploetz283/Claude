@@ -43,7 +43,7 @@ export function MitarbeiterTabelle({ zeilen }: { zeilen: MitarbeiterZeile[] }) {
   });
 
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-soft)]">
+    <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
       <table className="w-full text-left text-sm">
         <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
           <tr>
@@ -59,14 +59,14 @@ export function MitarbeiterTabelle({ zeilen }: { zeilen: MitarbeiterZeile[] }) {
         </thead>
         <tbody>
           {sorted.map((z) => (
-            <tr key={z.employeeId} className="border-t border-[var(--color-border)]">
+            <tr key={z.employeeId} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
               <td className="px-5 py-3 text-[var(--color-text)]">{z.employeeName}</td>
-              <td className="px-5 py-3 text-right text-[var(--color-text)]">{z.flsStunden.toFixed(1)}</td>
-              <td className="px-5 py-3 text-right font-semibold text-[var(--color-text)]">
+              <td className="px-5 py-3 text-right tabular-nums text-[var(--color-text)]">{z.flsStunden.toFixed(1)}</td>
+              <td className="px-5 py-3 text-right font-semibold tabular-nums text-[var(--color-text)]">
                 {z.beitragEuro.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
               </td>
-              <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">{z.anteilProzent.toFixed(1)} %</td>
-              <td className="px-5 py-3 text-right text-[var(--color-text-muted)]">
+              <td className="px-5 py-3 text-right tabular-nums text-[var(--color-text-muted)]">{z.anteilProzent.toFixed(1)} %</td>
+              <td className="px-5 py-3 text-right tabular-nums text-[var(--color-text-muted)]">
                 {z.istQuoteProzent != null ? `${z.istQuoteProzent.toFixed(1)} %` : "–"}
               </td>
             </tr>

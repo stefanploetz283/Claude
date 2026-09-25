@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { monthDateRange, monthDateInputRange } from "@/lib/date";
 import { HourlyRateForm } from "./hourly-rate-form";
+import { cardCls, cardInteractiveCls, buttonPrimaryCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 
 export default async function RechnungenPage() {
   await requireAdminOrVerwaltung();
@@ -64,19 +66,17 @@ export default async function RechnungenPage() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((c) => (
-          <div key={c.approvalId} className={cardCls}>
+          <div key={c.approvalId} className={cardInteractiveCls}>
             <h3 className="text-sm font-semibold text-[var(--color-text)]">{c.clientName}</h3>
             <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
               {c.helpTypeName} · {c.employeeName}
             </p>
             <div className="mt-3 flex items-center justify-between text-sm">
               <span className="text-[var(--color-text-muted)]">{c.monthLabel}</span>
-              <span className="font-semibold text-[var(--color-text)]">{c.totalHours.toFixed(2)} Std.</span>
+              <span className="font-semibold tabular-nums text-[var(--color-text)]">{c.totalHours.toFixed(2)} Std.</span>
             </div>
             <div className="mt-1 mb-3">
-              <span className="rounded-full bg-[var(--color-primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
-                bereit zur Rechnungsstellung
-              </span>
+              <ProsStatusPill tone="stable">bereit zur Rechnungsstellung</ProsStatusPill>
             </div>
 
             {c.invoiceNumber ? (
@@ -88,7 +88,7 @@ export default async function RechnungenPage() {
                   href={`/api/cases/${c.caseId}/invoice/pdf?from=${c.fromStr}&to=${c.toStr}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-4 py-2.5 text-center text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
+                  className={`text-center ${buttonOutlineCls}`}
                 >
                   PDF erneut öffnen
                 </a>
@@ -98,7 +98,7 @@ export default async function RechnungenPage() {
                 href={`/api/cases/${c.caseId}/invoice/pdf?from=${c.fromStr}&to=${c.toStr}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2.5 text-center text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)]"
+                className={`block text-center ${buttonPrimaryCls}`}
               >
                 Rechnung als PDF erstellen
               </a>
@@ -114,5 +114,3 @@ export default async function RechnungenPage() {
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";

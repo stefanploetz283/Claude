@@ -12,7 +12,7 @@ const TABS = [
 export function BudgetrechnerNav() {
   const pathname = usePathname();
   return (
-    <nav className="flex flex-wrap gap-1 border-b border-[var(--color-border)]">
+    <nav className="flex flex-wrap gap-1 border-b border-[var(--pros-border-default)]">
       {TABS.map((t) => {
         const active = t.exact ? pathname === t.href : pathname.startsWith(t.href);
         return (

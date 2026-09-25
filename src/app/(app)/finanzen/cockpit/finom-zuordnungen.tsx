@@ -2,9 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { addEmpfaengerZuordnung, deleteEmpfaengerZuordnung, addKategorieMapping, deleteKategorieMapping } from "./csv-import-actions";
+import { cardCls, inputCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
 const KATEGORIEN = [
   { value: "PERSONALKOSTEN", label: "Personalkosten" },
   { value: "RAUMKOSTEN", label: "Raumkosten" },
@@ -80,7 +79,7 @@ export function FinomZuordnungen({
 function DeleteButton({ onDelete }: { onDelete: () => Promise<void> }) {
   const [pending, startTransition] = useTransition();
   return (
-    <button disabled={pending} onClick={() => startTransition(onDelete)} className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50">
+    <button disabled={pending} onClick={() => startTransition(onDelete)} className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50">
       Löschen
     </button>
   );
@@ -92,7 +91,7 @@ function AddEmpfaengerForm() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-[var(--color-border)] pt-2">
+    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-[var(--pros-border-default)] pt-2">
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Empfänger-Name oder IBAN" className={`flex-1 ${inputCls}`} />
       <select value={kategorie} onChange={(e) => setKategorie(e.target.value)} className={inputCls}>
         <option value="">– keine – (ignorieren)</option>
@@ -111,7 +110,7 @@ function AddEmpfaengerForm() {
             setKategorie("");
           })
         }
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className={buttonPrimaryCls}
       >
         Hinzufügen
       </button>
@@ -125,7 +124,7 @@ function AddKategorieMappingForm() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-[var(--color-border)] pt-2">
+    <div className="mt-2 flex flex-wrap items-end gap-2 border-t border-[var(--pros-border-default)] pt-2">
       <input value={bezeichnung} onChange={(e) => setBezeichnung(e.target.value)} placeholder="Finom-Kategorie (z.B. Miscellaneous)" className={`flex-1 ${inputCls}`} />
       <select value={kategorie} onChange={(e) => setKategorie(e.target.value)} className={inputCls}>
         <option value="">Praxis-Kategorie wählen…</option>
@@ -144,12 +143,10 @@ function AddKategorieMappingForm() {
             setKategorie("");
           })
         }
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className={buttonPrimaryCls}
       >
         Hinzufügen
       </button>
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";

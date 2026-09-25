@@ -3,11 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { addVorsorgeaufwandEintrag, deleteVorsorgeaufwandEintrag, updateSteuereinstellungen, type ActionState } from "./steuer-actions";
 import { toDateInputValue } from "@/lib/date";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
 const VORSORGE_ARTEN = [
   { value: "RUERUP_RENTE", label: "Rürup-Rente" },
@@ -62,23 +58,19 @@ export function SteuereinstellungenForm({
                 <input name="ehepartnerEinkommenJahr" type="number" min="0" step="0.01" defaultValue={ehepartnerEinkommenJahr ?? ""} className={inputCls} />
               </label>
             </div>
-            <p className="rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text-muted)]">
+            <p className="rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text-muted)]">
               Bei Zusammenveranlagung sinkt der effektive Steuersatz durch den Splitting-Tarif spürbar. Der oben eingestellte
               Grenzsteuersatz sollte das bereits berücksichtigen — am zuverlässigsten über einen externen Splitting-Rechner (z. B. den
               offiziellen BMF-Steuerrechner) regelmäßig kalibrieren, nicht durch dieses Cockpit selbst berechnet.
             </p>
-            <button
-              type="submit"
-              disabled={einstellungenPending}
-              className="self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
+            <button type="submit" disabled={einstellungenPending} className={`self-start ${buttonPrimaryCls}`}>
               {einstellungenPending ? "Speichern…" : "Speichern"}
             </button>
-            {einstellungenState?.error && <p className="text-sm text-[var(--color-coral)]">{einstellungenState.error}</p>}
-            {einstellungenState?.success && <p className="text-sm text-[var(--color-green-medium)]">{einstellungenState.success}</p>}
+            {einstellungenState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{einstellungenState.error}</p>}
+            {einstellungenState?.success && <p className="text-sm text-[var(--pros-status-active-text)]">{einstellungenState.success}</p>}
           </form>
 
-          <div className="border-t border-[var(--color-border)] pt-4">
+          <div className="border-t border-[var(--pros-border-default)] pt-4">
             <p className="mb-2 text-xs font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">
               Vorsorgeaufwendungen (jeweils aktuellster Eintrag je Art zählt)
             </p>
@@ -88,7 +80,7 @@ export function SteuereinstellungenForm({
               ))}
               {vorsorgeEintraege.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">Noch keine Einträge.</p>}
             </div>
-            <form action={vorsorgeAction} className="mt-3 flex flex-wrap items-end gap-2 border-t border-[var(--color-border)] pt-3">
+            <form action={vorsorgeAction} className="mt-3 flex flex-wrap items-end gap-2 border-t border-[var(--pros-border-default)] pt-3">
               <label className="flex flex-col gap-1">
                 <span className={labelCls}>Art</span>
                 <select name="art" required className={inputCls}>
@@ -107,14 +99,10 @@ export function SteuereinstellungenForm({
                 <span className={labelCls}>Gültig ab</span>
                 <input name="gueltigAb" type="date" defaultValue={toDateInputValue(new Date())} required className={inputCls} />
               </label>
-              <button
-                type="submit"
-                disabled={vorsorgePending}
-                className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-              >
+              <button type="submit" disabled={vorsorgePending} className={buttonPrimaryCls}>
                 {vorsorgePending ? "Speichern…" : "Hinzufügen"}
               </button>
-              {vorsorgeState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{vorsorgeState.error}</p>}
+              {vorsorgeState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{vorsorgeState.error}</p>}
             </form>
           </div>
         </div>
@@ -129,7 +117,7 @@ function VorsorgeRow({ eintrag }: { eintrag: VorsorgeEintragRow }) {
   return (
     <div className="flex items-center justify-between gap-2 text-sm">
       <span className="text-[var(--color-text)]">{label}</span>
-      <span className="text-[var(--color-text-muted)]">
+      <span className="tabular-nums text-[var(--color-text-muted)]">
         {eintrag.betragMonatlich.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}/Monat · gültig ab{" "}
         {new Date(eintrag.gueltigAb).toLocaleDateString("de-DE")}
       </span>
@@ -140,7 +128,7 @@ function VorsorgeRow({ eintrag }: { eintrag: VorsorgeEintragRow }) {
             await deleteVorsorgeaufwandEintrag(eintrag.id);
           })
         }
-        className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+        className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
       >
         Löschen
       </button>

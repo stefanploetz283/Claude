@@ -2,7 +2,7 @@
 
 export function SelectAllCheckbox() {
   return (
-    <label className="flex items-center gap-2 font-medium">
+    <label className="flex items-center gap-2 font-medium text-[var(--color-text)]">
       <input
         type="checkbox"
         onChange={(e) => {

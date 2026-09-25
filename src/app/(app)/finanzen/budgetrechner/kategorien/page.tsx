@@ -4,8 +4,7 @@ import { getBudgetJahre } from "@/lib/budgetrechner/calc";
 import { BudgetrechnerNav } from "../budgetrechner-nav";
 import { KategorieVerwaltung, type KategorieRow } from "../kategorie-verwaltung";
 import { ExcelImport } from "../excel-import";
-
-const selectCls = "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
+import { filterFieldCls, buttonSecondaryCls } from "@/app/(app)/cases/case-ui";
 
 export default async function BudgetKategorienPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdminOrVerwaltung();
@@ -42,14 +41,14 @@ export default async function BudgetKategorienPage({ searchParams }: { searchPar
           <label className="text-[var(--color-text-muted)]" htmlFor="jahr">
             Budgetjahr
           </label>
-          <select id="jahr" name="jahr" defaultValue={jahr} className={selectCls}>
+          <select id="jahr" name="jahr" defaultValue={jahr} className={filterFieldCls}>
             {jahre.map((j) => (
               <option key={j} value={j}>
                 {j}
               </option>
             ))}
           </select>
-          <button type="submit" className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]">
+          <button type="submit" className={buttonSecondaryCls}>
             Anzeigen
           </button>
         </form>

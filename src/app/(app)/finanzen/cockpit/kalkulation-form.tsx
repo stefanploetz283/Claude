@@ -3,10 +3,7 @@
 import { useActionState, useState } from "react";
 import { createPraxisKalkulationVersion, type ActionState } from "./actions";
 import { toDateInputValue } from "@/lib/date";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
 export type KalkulationWerte = {
   gueltigAb: string;
@@ -117,19 +114,13 @@ export function KalkulationForm({ aktuelleWerte }: { aktuelleWerte: KalkulationW
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="mt-2 self-start rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className={`mt-2 self-start ${buttonPrimaryCls}`}>
             {pending ? "Speichern…" : "Neue Version speichern"}
           </button>
-          {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
-          {state?.success && <p className="text-sm text-[var(--color-green-medium)]">{state.success}</p>}
+          {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
+          {state?.success && <p className="text-sm text-[var(--pros-status-active-text)]">{state.success}</p>}
         </form>
       )}
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";

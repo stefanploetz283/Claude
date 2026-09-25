@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { assignBuchungManually, ignoreBuchungManually } from "./csv-import-actions";
+import { cardCls, inputCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
 
 const KATEGORIEN = [
   { value: "PERSONALKOSTEN", label: "Personalkosten" },
@@ -48,15 +49,15 @@ function BuchungRow({ buchung }: { buchung: ZuKlaerenBuchung }) {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-control)] border border-[var(--color-border)] p-2.5 text-sm">
+    <div className="flex flex-wrap items-center gap-2 rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] p-2.5 text-sm">
       <div className="min-w-[10rem] flex-1">
         <p className="font-medium text-[var(--color-text)]">{buchung.empfaengerName || buchung.verwendungszweck || "Unbekannt"}</p>
-        <p className="text-xs text-[var(--color-text-muted)]">
+        <p className="text-xs tabular-nums text-[var(--color-text-muted)]">
           {new Date(buchung.datum).toLocaleDateString("de-DE")} ·{" "}
           {buchung.betrag.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}
         </p>
       </div>
-      <select value={kategorie} onChange={(e) => setKategorie(e.target.value)} className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm">
+      <select value={kategorie} onChange={(e) => setKategorie(e.target.value)} className={inputCls}>
         <option value="">Kategorie wählen…</option>
         {KATEGORIEN.map((k) => (
           <option key={k.value} value={k.value}>
@@ -76,7 +77,7 @@ function BuchungRow({ buchung }: { buchung: ZuKlaerenBuchung }) {
             setError(result?.error ?? null);
           })
         }
-        className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+        className={buttonOutlineCls}
       >
         Zuordnen
       </button>
@@ -91,9 +92,7 @@ function BuchungRow({ buchung }: { buchung: ZuKlaerenBuchung }) {
       >
         Ignorieren
       </button>
-      {error && <p className="w-full text-xs text-[var(--color-coral)]">{error}</p>}
+      {error && <p className="w-full text-xs text-[var(--pros-status-critical-text)]">{error}</p>}
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";

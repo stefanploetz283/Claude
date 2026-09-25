@@ -2,8 +2,8 @@
 
 import { useTransition } from "react";
 import { markInvoiceAsBezahlt } from "./steuer-actions";
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 
 export type OffeneRechnung = {
   id: string;
@@ -14,10 +14,10 @@ export type OffeneRechnung = {
   tageOffen: number;
 };
 
-function alterAmpelCls(tageOffen: number): string {
-  if (tageOffen > 60) return "bg-[var(--color-coral-soft)] text-[var(--color-coral)]";
-  if (tageOffen > 30) return "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]";
-  return "bg-[var(--color-primary-soft)] text-[var(--color-primary)]";
+function alterAmpelTone(tageOffen: number): "critical" | "attention" | "active" {
+  if (tageOffen > 60) return "critical";
+  if (tageOffen > 30) return "attention";
+  return "active";
 }
 
 export function Forderungsmanagement({ rechnungen }: { rechnungen: OffeneRechnung[] }) {
@@ -54,12 +54,12 @@ export function Forderungsmanagement({ rechnungen }: { rechnungen: OffeneRechnun
 function RechnungRow({ rechnung }: { rechnung: OffeneRechnung }) {
   const [pending, startTransition] = useTransition();
   return (
-    <tr className="border-t border-[var(--color-border)]">
+    <tr className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
       <td className="py-2 pr-3 text-[var(--color-text)]">{rechnung.number}</td>
       <td className="py-2 pr-3 text-[var(--color-text)]">{rechnung.clientName}</td>
-      <td className="py-2 pr-3 text-right text-[var(--color-text)]">{rechnung.totalAmount.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</td>
+      <td className="py-2 pr-3 text-right tabular-nums text-[var(--color-text)]">{rechnung.totalAmount.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</td>
       <td className="py-2 pr-3 text-right">
-        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${alterAmpelCls(rechnung.tageOffen)}`}>{rechnung.tageOffen} Tage</span>
+        <ProsStatusPill tone={alterAmpelTone(rechnung.tageOffen)}>{rechnung.tageOffen} Tage</ProsStatusPill>
       </td>
       <td className="py-2 pr-3 text-right">
         <button
@@ -69,7 +69,7 @@ function RechnungRow({ rechnung }: { rechnung: OffeneRechnung }) {
               await markInvoiceAsBezahlt(rechnung.id);
             })
           }
-          className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+          className={buttonOutlineCls}
         >
           Als bezahlt markieren
         </button>

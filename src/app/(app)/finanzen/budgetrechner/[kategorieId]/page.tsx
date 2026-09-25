@@ -4,8 +4,7 @@ import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { jahrBounds, ampelVerbrauch } from "@/lib/budgetrechner/calc";
 import { AMPEL_STYLE, QUELLE_AUSGABE_LABEL, QUELLE_KATEGORIE_LABEL, eur, prozentText } from "@/lib/budgetrechner/labels";
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls } from "@/app/(app)/cases/case-ui";
 
 export default async function BudgetKategorieDetail({ params }: { params: Promise<{ kategorieId: string }> }) {
   await requireAdminOrVerwaltung();
@@ -42,21 +41,21 @@ export default async function BudgetKategorieDetail({ params }: { params: Promis
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Jahresbudget</p>
-          <p className="text-xl font-bold text-[var(--color-text)]">{eur(jahresbudget)}</p>
+          <p className="text-xl font-bold tabular-nums text-[var(--color-text)]">{eur(jahresbudget)}</p>
         </div>
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Verbraucht</p>
-          <p className="text-xl font-bold text-[var(--color-text)]">{eur(verbraucht)}</p>
+          <p className="text-xl font-bold tabular-nums text-[var(--color-text)]">{eur(verbraucht)}</p>
         </div>
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Rest</p>
-          <p className={`text-xl font-bold ${jahresbudget - verbraucht < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-text)]"}`}>
+          <p className={`text-xl font-bold tabular-nums ${jahresbudget - verbraucht < 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-text)]"}`}>
             {eur(jahresbudget - verbraucht)}
           </p>
         </div>
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Auslastung</p>
-          <span className="inline-block rounded-full px-2.5 py-1 text-sm font-bold" style={{ background: style.bg, color: style.text }}>
+          <span className="inline-block rounded-full px-2.5 py-1 text-sm font-bold tabular-nums" style={{ background: style.bg, color: style.text }}>
             {prozentText(prozent)}
           </span>
         </div>
@@ -79,11 +78,11 @@ export default async function BudgetKategorieDetail({ params }: { params: Promis
               </thead>
               <tbody>
                 {relevant.map((a) => (
-                  <tr key={a.id} className="border-t border-[var(--color-border)]">
+                  <tr key={a.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                     <td className="py-2 pr-3 whitespace-nowrap text-[var(--color-text-muted)]">{a.datum.toLocaleDateString("de-DE")}</td>
                     <td className="py-2 pr-3 text-[var(--color-text)]">{a.beschreibung}</td>
                     <td className="py-2 pr-3 text-xs text-[var(--color-text-muted)]">{QUELLE_AUSGABE_LABEL[a.quelle] ?? a.quelle}</td>
-                    <td className="py-2 pr-3 text-right font-semibold text-[var(--color-text)]">{eur(a.betrag.toNumber())}</td>
+                    <td className="py-2 pr-3 text-right font-semibold tabular-nums text-[var(--color-text)]">{eur(a.betrag.toNumber())}</td>
                   </tr>
                 ))}
               </tbody>
@@ -102,10 +101,10 @@ export default async function BudgetKategorieDetail({ params }: { params: Promis
             <table className="w-full text-left text-sm">
               <tbody>
                 {nichtRelevant.map((a) => (
-                  <tr key={a.id} className="border-t border-[var(--color-border)]">
+                  <tr key={a.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                     <td className="py-2 pr-3 whitespace-nowrap text-[var(--color-text-muted)]">{a.datum.toLocaleDateString("de-DE")}</td>
                     <td className="py-2 pr-3 text-[var(--color-text)]">{a.beschreibung}</td>
-                    <td className="py-2 pr-3 text-right text-[var(--color-text-muted)]">{eur(a.betrag.toNumber())}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-[var(--color-text-muted)]">{eur(a.betrag.toNumber())}</td>
                   </tr>
                 ))}
               </tbody>

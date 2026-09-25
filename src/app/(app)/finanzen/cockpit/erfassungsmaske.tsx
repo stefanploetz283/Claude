@@ -3,10 +3,8 @@
 import { useActionState } from "react";
 import { addIstKostenEintrag, addLiquiditaetsEintrag, type ActionState } from "./actions";
 import { toDateInputValue } from "@/lib/date";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
 const KATEGORIEN: { value: string; label: string }[] = [
   { value: "PERSONALKOSTEN", label: "Personalkosten" },
   { value: "RAUMKOSTEN", label: "Raumkosten" },
@@ -25,7 +23,7 @@ export function Erfassungsmaske() {
         Manuelles Nachtragen von Ist-Kosten (für Ausgaben, die nicht über Finom laufen) und der verfügbaren liquiden Mittel.
       </p>
 
-      <form action={kostenAction} className="flex flex-wrap items-end gap-2 border-b border-[var(--color-border)] pb-4">
+      <form action={kostenAction} className="flex flex-wrap items-end gap-2 border-b border-[var(--pros-border-default)] pb-4">
         <label className="flex flex-col gap-1">
           <span className={labelCls}>Datum</span>
           <input name="datum" type="date" defaultValue={toDateInputValue(new Date())} required className={inputCls} />
@@ -52,15 +50,11 @@ export function Erfassungsmaske() {
           <span className={labelCls}>Beleg-Referenz (optional)</span>
           <input name="belegReferenz" className={`w-32 ${inputCls}`} />
         </label>
-        <button
-          type="submit"
-          disabled={kostenPending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={kostenPending} className={buttonPrimaryCls}>
           {kostenPending ? "Speichern…" : "Kosten-Eintrag speichern"}
         </button>
-        {kostenState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{kostenState.error}</p>}
-        {kostenState?.success && <p className="w-full text-sm text-[var(--color-green-medium)]">{kostenState.success}</p>}
+        {kostenState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{kostenState.error}</p>}
+        {kostenState?.success && <p className="w-full text-sm text-[var(--pros-status-active-text)]">{kostenState.success}</p>}
       </form>
 
       <form action={liquiAction} className="mt-4 flex flex-wrap items-end gap-2">
@@ -72,18 +66,12 @@ export function Erfassungsmaske() {
           <span className={labelCls}>Verfügbare liquide Mittel (€)</span>
           <input name="verfuegbareLiquideMittel" type="number" min="0" step="0.01" required className={`w-40 ${inputCls}`} />
         </label>
-        <button
-          type="submit"
-          disabled={liquiPending}
-          className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3.5 py-2 text-sm font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
-        >
+        <button type="submit" disabled={liquiPending} className={buttonOutlineCls}>
           {liquiPending ? "Speichern…" : "Liquiditäts-Eintrag speichern"}
         </button>
-        {liquiState?.error && <p className="w-full text-sm text-[var(--color-coral)]">{liquiState.error}</p>}
-        {liquiState?.success && <p className="w-full text-sm text-[var(--color-green-medium)]">{liquiState.success}</p>}
+        {liquiState?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{liquiState.error}</p>}
+        {liquiState?.success && <p className="w-full text-sm text-[var(--pros-status-active-text)]">{liquiState.success}</p>}
       </form>
     </div>
   );
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";

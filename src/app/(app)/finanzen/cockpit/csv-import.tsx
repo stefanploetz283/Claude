@@ -2,11 +2,7 @@
 
 import { useActionState } from "react";
 import { previewCsvImport, confirmCsvImport, type PreviewState, type ImportState } from "./csv-import-actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
 const SPALTEN_FELDER: { key: keyof NonNullable<Extract<PreviewState, { headers: string[] }>>["vorschlag"] | string; label: string; required?: boolean }[] = [
   { key: "datumSpalte", label: "Datum", required: true },
@@ -42,14 +38,10 @@ export function CsvImport() {
             <span className={labelCls}>CSV-Datei</span>
             <input name="csv" type="file" accept=".csv" required className="text-sm" />
           </label>
-          <button
-            type="submit"
-            disabled={previewPending}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-          >
+          <button type="submit" disabled={previewPending} className={buttonPrimaryCls}>
             {previewPending ? "Lese Datei…" : "Datei einlesen"}
           </button>
-          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--color-coral)]">{previewState.error}</p>}
+          {previewState && "error" in previewState && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{previewState.error}</p>}
         </form>
       )}
 
@@ -83,7 +75,7 @@ export function CsvImport() {
             })}
           </div>
 
-          <div className="overflow-x-auto rounded-[var(--radius-control)] border border-[var(--color-border)]">
+          <div className="overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--color-bg)]">
                 <tr>
@@ -96,9 +88,9 @@ export function CsvImport() {
               </thead>
               <tbody>
                 {previewState.previewRows.map((row, i) => (
-                  <tr key={i} className="border-t border-[var(--color-border)]">
+                  <tr key={i} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                     {row.map((cell, j) => (
-                      <td key={j} className="px-2.5 py-1.5 text-[var(--color-text)]">
+                      <td key={j} className="px-2.5 py-1.5 tabular-nums text-[var(--color-text)]">
                         {cell}
                       </td>
                     ))}
@@ -109,24 +101,20 @@ export function CsvImport() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="submit"
-              disabled={importPending}
-              className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-            >
+            <button type="submit" disabled={importPending} className={buttonPrimaryCls}>
               {importPending ? "Importiere…" : "Import bestätigen"}
             </button>
             <button type="button" onClick={reset} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
               Abbrechen
             </button>
           </div>
-          {importState?.error && <p className="text-sm text-[var(--color-coral)]">{importState.error}</p>}
+          {importState?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{importState.error}</p>}
         </form>
       )}
 
       {step === "done" && importState?.summary && (
         <div className="flex flex-col gap-2">
-          <p className="rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
+          <p className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
             {importState.summary.neu} neue Buchung(en) importiert, davon {importState.summary.automatischZugeordnet} automatisch zugeordnet,{" "}
             {importState.summary.zuKlaeren} auf der „Bitte zuordnen&quot;-Liste
             {importState.summary.ignoriert > 0 && `, ${importState.summary.ignoriert} ignoriert (Gehalt/private Entnahme)`}.

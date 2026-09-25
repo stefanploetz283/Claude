@@ -2,11 +2,8 @@
 
 import { useActionState, useMemo, useState, useTransition } from "react";
 import { addPrivaterAbzugEintrag, deletePrivaterAbzugEintrag, updatePrivaterAbzugKonfiguration, type ActionState } from "./steuer-actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 const KATEGORIEN = [
   { value: "HANDWERKERLEISTUNGEN", label: "Handwerkerleistungen (Arbeitslohn-Anteil)" },
@@ -79,16 +76,12 @@ export function PrivaterAbzugAssistent({
           <span className={labelCls}>Notiz (optional)</span>
           <input name="notiz" className={inputCls} />
         </label>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending} className={buttonPrimaryCls}>
           {pending ? "Speichern…" : "Hinzufügen"}
         </button>
       </form>
 
-      <p className="mt-2 text-sm text-[var(--color-text)]">
+      <p className="mt-2 text-sm tabular-nums text-[var(--color-text)]">
         {vorschau != null ? (
           <>
             Berechneter Abzug: <span className="font-semibold">{vorschau.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</span>
@@ -100,22 +93,24 @@ export function PrivaterAbzugAssistent({
         )}
       </p>
       {kategorie === "SCHULGELD" && (
-        <p className="mt-1 text-xs text-[var(--color-warn-text)]">⚠ Abhängig von Schulart/Anerkennung, mit Steuerberater prüfen.</p>
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--pros-status-attention-text)]">
+          <IconWarnTriangle /> Abhängig von Schulart/Anerkennung, mit Steuerberater prüfen.
+        </p>
       )}
-      {state?.error && <p className="mt-2 text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="mt-2 text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
 
-      <div className="mt-4 flex flex-col gap-2 border-t border-[var(--color-border)] pt-3">
+      <div className="mt-4 flex flex-col gap-2 border-t border-[var(--pros-border-default)] pt-3">
         {eintraege.map((e) => (
           <EintragRow key={e.id} eintrag={e} />
         ))}
         {eintraege.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">Noch keine Einträge für {jahr}.</p>}
-        <div className="mt-1 flex justify-between border-t border-[var(--color-border)] pt-2 text-sm font-semibold text-[var(--color-text)]">
+        <div className="mt-1 flex justify-between border-t border-[var(--pros-border-default)] pt-2 text-sm font-semibold text-[var(--color-text)]">
           <span>Summe (fließt in Steuerrücklage ein)</span>
-          <span>{summePrivaterAbzuegeJahr.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</span>
+          <span className="tabular-nums">{summePrivaterAbzuegeJahr.toLocaleString("de-DE", { style: "currency", currency: "EUR" })}</span>
         </div>
       </div>
 
-      <div className="mt-4 border-t border-[var(--color-border)] pt-3">
+      <div className="mt-4 border-t border-[var(--pros-border-default)] pt-3">
         <button onClick={() => setKonfigOpen((o) => !o)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
           {konfigOpen ? "Prozentsätze/Deckel ausblenden" : "Prozentsätze/Deckel bearbeiten"}
         </button>
@@ -140,7 +135,7 @@ function EintragRow({ eintrag }: { eintrag: PrivaterAbzugEintragRow }) {
         {eintrag.notiz && <span className="ml-2 text-xs text-[var(--color-text-muted)]">({eintrag.notiz})</span>}
       </div>
       <div className="flex items-center gap-3">
-        <span className="text-[var(--color-text-muted)]">
+        <span className="tabular-nums text-[var(--color-text-muted)]">
           {eintrag.eingegebenerBetrag.toLocaleString("de-DE", { style: "currency", currency: "EUR" })} →{" "}
           {eintrag.berechneterAbzug != null ? eintrag.berechneterAbzug.toLocaleString("de-DE", { style: "currency", currency: "EUR" }) : "individuell zu prüfen"}
         </span>
@@ -151,7 +146,7 @@ function EintragRow({ eintrag }: { eintrag: PrivaterAbzugEintragRow }) {
               await deletePrivaterAbzugEintrag(eintrag.id);
             })
           }
-          className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+          className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
         >
           Löschen
         </button>
@@ -177,7 +172,7 @@ function KonfigurationRow({ konfiguration }: { konfiguration: PrivaterAbzugKonfi
             await updatePrivaterAbzugKonfiguration(konfiguration.kategorie, prozentsatz, deckel);
           })
         }
-        className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
+        className={buttonOutlineCls}
       >
         Speichern
       </button>

@@ -2,11 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { createKategorie, updateKategorie, deleteKategorie, type KategorieActionState } from "./kategorie-actions";
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
 
 export type KategorieRow = {
   id: string;
@@ -54,15 +50,15 @@ export function KategorieVerwaltung({ jahr, kategorien }: { jahr: number; katego
             )}
             {kategorien.map((k) =>
               editId === k.id ? (
-                <tr key={k.id} className="border-t border-[var(--color-border)] align-top">
+                <tr key={k.id} className="border-t border-[var(--pros-border-default)] align-top">
                   <td colSpan={5} className="py-3">
                     <EditForm row={k} onDone={() => setEditId(null)} />
                   </td>
                 </tr>
               ) : (
-                <tr key={k.id} className="border-t border-[var(--color-border)]">
+                <tr key={k.id} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                   <td className="py-2 pr-3 text-[var(--color-text)]">{k.name}</td>
-                  <td className="py-2 pr-3 text-right font-semibold text-[var(--color-text)]">{eur(k.jahresbudget)}</td>
+                  <td className="py-2 pr-3 text-right font-semibold tabular-nums text-[var(--color-text)]">{eur(k.jahresbudget)}</td>
                   <td className="py-2 pr-3 text-xs text-[var(--color-text-muted)]">{k.stichwoerter.join(", ") || "–"}</td>
                   <td className="py-2 pr-3 text-xs text-[var(--color-text-muted)]">
                     {k.quelle === "excel_import" ? "Entgeltkalkulation" : "manuell"}
@@ -71,7 +67,7 @@ export function KategorieVerwaltung({ jahr, kategorien }: { jahr: number; katego
                     <button onClick={() => setEditId(k.id)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
                       Bearbeiten
                     </button>
-                    <span className="mx-1.5 text-[var(--color-border)]">·</span>
+                    <span className="mx-1.5 text-[var(--pros-border-strong)]">·</span>
                     <DeleteButton id={k.id} name={k.name} anzahlAusgaben={k.anzahlAusgaben} />
                   </td>
                 </tr>
@@ -82,7 +78,7 @@ export function KategorieVerwaltung({ jahr, kategorien }: { jahr: number; katego
       </div>
 
       {/* Neue Position */}
-      <form action={createAction} className="mt-5 border-t border-[var(--color-border)] pt-4">
+      <form action={createAction} className="mt-5 border-t border-[var(--pros-border-default)] pt-4">
         <p className="mb-2 text-xs font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">Neue Position anlegen</p>
         <input type="hidden" name="jahr" value={jahr} />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -99,15 +95,11 @@ export function KategorieVerwaltung({ jahr, kategorien }: { jahr: number; katego
             <input name="stichwoerter" className={inputCls} placeholder="amazon, bücher" />
           </label>
         </div>
-        <button
-          type="submit"
-          disabled={createPending}
-          className="mt-3 rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={createPending} className={`mt-3 ${buttonPrimaryCls}`}>
           {createPending ? "Speichern…" : "Position anlegen"}
         </button>
-        {createState?.error && <p className="mt-2 text-sm text-[var(--color-coral)]">{createState.error}</p>}
-        {createState?.success && <p className="mt-2 text-sm text-[var(--color-primary)]">{createState.success}</p>}
+        {createState?.error && <p className="mt-2 text-sm text-[var(--pros-status-critical-text)]">{createState.error}</p>}
+        {createState?.success && <p className="mt-2 text-sm text-[var(--pros-status-active-text)]">{createState.success}</p>}
       </form>
     </div>
   );
@@ -137,18 +129,14 @@ function EditForm({ row, onDone }: { row: KategorieRow; onDone: () => void }) {
         </label>
       </div>
       <div className="flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending} className={buttonPrimaryCls}>
           {pending ? "Speichern…" : "Speichern"}
         </button>
         <button type="button" onClick={onDone} className="text-sm font-medium text-[var(--color-text-muted)] hover:underline">
           Abbrechen
         </button>
       </div>
-      {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && <p className="text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
     </form>
   );
 }
@@ -165,7 +153,7 @@ function DeleteButton({ id, name, anzahlAusgaben }: { id: string; name: string; 
             : `Position „${name}" löschen?`;
         if (confirm(hinweis)) startTransition(async () => void (await deleteKategorie(id)));
       }}
-      className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
+      className="text-xs font-medium text-[var(--pros-status-critical-text)] hover:underline disabled:opacity-50"
     >
       Löschen
     </button>

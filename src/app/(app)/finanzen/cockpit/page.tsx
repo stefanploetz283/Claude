@@ -33,14 +33,14 @@ import { FinomZuordnungen } from "./finom-zuordnungen";
 import { SteuereinstellungenForm, type VorsorgeEintragRow } from "./steuereinstellungen-form";
 import { PrivaterAbzugAssistent, type PrivaterAbzugKonfigurationRow, type PrivaterAbzugEintragRow } from "./privater-abzug-assistent";
 import { Forderungsmanagement, type OffeneRechnung } from "./forderungsmanagement";
+import { cardCls, inputCls, buttonSecondaryCls, noticeWarnCls, noticeCriticalCls } from "@/app/(app)/cases/case-ui";
+import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 
 const MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
-const AMPEL_STYLES: Record<AmpelStatus, { bg: string; text: string; label: string }> = {
-  gruen: { bg: "var(--color-primary-soft)", text: "var(--color-primary)", label: "Im Ziel" },
-  gelb: { bg: "#FBF1DC", text: "#8A5A12", label: "Warnung" },
-  rot: { bg: "#FBE4E1", text: "#B23B2E", label: "Kritisch" },
-};
+const AMPEL_TONE: Record<AmpelStatus, "active" | "attention" | "critical"> = { gruen: "active", gelb: "attention", rot: "critical" };
+const AMPEL_LABEL: Record<AmpelStatus, string> = { gruen: "Im Ziel", gelb: "Warnung", rot: "Kritisch" };
 
 const TREND_ICON: Record<Trend, string> = { hoch: "↑", stabil: "→", runter: "↓" };
 
@@ -49,19 +49,14 @@ function eur(value: number): string {
 }
 
 function AmpelKachel({ label, wert, ampel, trend }: { label: string; wert: string; ampel: AmpelStatus | null; trend: Trend | null }) {
-  const style = ampel ? AMPEL_STYLES[ampel] : null;
   return (
     <div className={cardCls}>
       <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">{label}</p>
       <div className="flex items-center gap-2">
-        <p className="text-2xl font-bold text-[var(--color-text)]">{wert}</p>
+        <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">{wert}</p>
         {trend && <span className="text-lg text-[var(--color-text-muted)]" title={`Trend: ${trend}`}>{TREND_ICON[trend]}</span>}
       </div>
-      {style && (
-        <span className="mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: style.bg, color: style.text }}>
-          {style.label}
-        </span>
-      )}
+      {ampel && <ProsStatusPill tone={AMPEL_TONE[ampel]} className="mt-2">{AMPEL_LABEL[ampel]}</ProsStatusPill>}
     </div>
   );
 }
@@ -251,8 +246,8 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
             <Link
               key={t.type}
               href={`/finanzen/cockpit?type=${t.type}&year=${year}&index=1`}
-              className={`rounded-[var(--radius-control)] px-3.5 py-1.5 text-sm font-medium transition ${
-                periodType === t.type ? "bg-[var(--color-primary)] text-white" : "border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-primary-soft)]"
+              className={`rounded-[var(--pros-r-sm)] px-3.5 py-1.5 text-sm font-medium transition ${
+                periodType === t.type ? "bg-[var(--color-primary)] text-white" : "border border-[var(--pros-border-strong)] text-[var(--color-text)] hover:bg-[var(--color-primary-soft)]"
               }`}
             >
               {t.label}
@@ -264,7 +259,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
       <form method="get" className="flex flex-wrap items-center gap-2 text-sm">
         <input type="hidden" name="type" value={periodType} />
         {periodType !== "year" && (
-          <select name="index" defaultValue={periodIndex} className={selectCls}>
+          <select name="index" defaultValue={periodIndex} className={inputCls}>
             {periodType === "month"
               ? MONTH_NAMES.map((m, i) => (
                   <option key={m} value={i + 1}>
@@ -278,38 +273,42 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
                 ))}
           </select>
         )}
-        <select name="year" defaultValue={year} className={selectCls}>
+        <select name="year" defaultValue={year} className={inputCls}>
           {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((y) => (
             <option key={y} value={y}>
               {y}
             </option>
           ))}
         </select>
-        <button type="submit" className={btnCls}>
+        <button type="submit" className={buttonSecondaryCls}>
           Anzeigen
         </button>
       </form>
 
       {!kalkulation && (
-        <div className="rounded-[var(--radius-control)] border border-[var(--color-gold)] bg-[#FBF1DC] px-4 py-3 text-sm text-[#8A5A12]">
+        <p className={`flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+          <IconWarnTriangle />
           Noch keine Kalkulationsversion hinterlegt — bitte unten die Referenzwerte aus der Entgeltkalkulation eintragen, damit Ampeln,
           Break-Even und Szenario-Rechner berechnet werden können.
-        </div>
+        </p>
       )}
       {erfassungsluecke && kalkulation && (
-        <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
+        <p className={`flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+          <IconWarnTriangle />
           Seit mehr als 6 Wochen wurden weder Ist-Kosten noch ein Liquiditäts-Eintrag noch ein CSV-Import nachgetragen.
-        </div>
+        </p>
       )}
       {bitteZuordnenStau && (
-        <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
+        <p className={`flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
+          <IconWarnTriangle />
           {zuKlaerenCount} unkategorisierte Finom-Buchungen warten auf der „Bitte zuordnen&quot;-Liste.
-        </div>
+        </p>
       )}
       {ueberfaelligeRechnungVorhanden && (
-        <div className="rounded-[var(--radius-control)] bg-[#FBE4E1] px-4 py-3 text-sm font-semibold text-[#B23B2E]">
+        <p className={`flex items-center gap-2 font-semibold ${noticeCriticalCls} text-[var(--pros-status-critical-text)]`}>
+          <IconWarnTriangle />
           Mindestens eine Rechnung ist seit über 60 Tagen offen — siehe Forderungsmanagement weiter unten.
-        </div>
+        </p>
       )}
 
       {/* 1. Ampel-Kopfzeile mit Trendpfeilen */}
@@ -340,9 +339,10 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
         />
       </div>
       {faktorHochgerechnet != null && kalkulation && ampelFaktor(faktorHochgerechnet, kalkulation.mindestFaktorSteuerberater.toNumber()) === "rot" && (
-        <div className="rounded-[var(--radius-control)] bg-[#FBE4E1] px-4 py-3 text-sm font-semibold text-[#B23B2E]">
+        <p className={`flex items-center gap-2 font-semibold ${noticeCriticalCls} text-[var(--pros-status-critical-text)]`}>
+          <IconWarnTriangle />
           Faktor-Warnung: Faktor_hochgerechnet {faktorHochgerechnet.toFixed(2)} liegt unter dem Mindestwert {kalkulation.mindestFaktorSteuerberater.toString()} — unabhängig vom Status der anderen Ampeln.
-        </div>
+        </p>
       )}
 
       {/* 2. Quote-Verlauf */}
@@ -358,7 +358,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
                   y={0}
                   width={chartW / quoteTrendMonatlich.length}
                   height={chartH}
-                  fill="var(--color-border)"
+                  fill="var(--pros-border-strong)"
                   opacity={0.4}
                 />
               ) : null
@@ -377,7 +377,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
             <span className="inline-block h-0.5 w-4" style={{ borderTop: "1.5px dashed var(--color-gold)" }} /> Ziel
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-3 w-4 bg-[var(--color-border)] opacity-40" /> Betriebsferien
+            <span className="inline-block h-3 w-4 bg-[var(--pros-border-strong)] opacity-40" /> Betriebsferien
           </span>
         </div>
       </div>
@@ -399,11 +399,11 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
               </thead>
               <tbody>
                 {kostenSollIst.zeilen.map((z) => (
-                  <tr key={z.kategorie} className="border-t border-[var(--color-border)]">
+                  <tr key={z.kategorie} className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
                     <td className="py-2 pr-3 text-[var(--color-text)]">{z.label}</td>
-                    <td className="py-2 pr-3 text-right text-[var(--color-text-muted)]">{eur(z.geplantJahr)}</td>
-                    <td className="py-2 pr-3 text-right text-[var(--color-text)]">{eur(z.hochrechnungJahr)}</td>
-                    <td className={`py-2 pr-3 text-right font-semibold ${z.abweichungEuro > 0 ? "text-[var(--color-coral)]" : "text-[var(--color-primary)]"}`}>
+                    <td className="py-2 pr-3 text-right tabular-nums text-[var(--color-text-muted)]">{eur(z.geplantJahr)}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-[var(--color-text)]">{eur(z.hochrechnungJahr)}</td>
+                    <td className={`py-2 pr-3 text-right font-semibold tabular-nums ${z.abweichungEuro > 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-primary)]"}`}>
                       {z.abweichungEuro >= 0 ? "+" : ""}
                       {eur(z.abweichungEuro)} ({z.abweichungProzent >= 0 ? "+" : ""}
                       {z.abweichungProzent.toFixed(1)} %)
@@ -428,17 +428,17 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Hochrechnung Umsatz/Jahr</p>
-          <p className="text-2xl font-bold text-[var(--color-text)]">{eur(hochrechnungUmsatzJahr)}</p>
+          <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">{eur(hochrechnungUmsatzJahr)}</p>
         </div>
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Hochrechnung Gewinn/Jahr</p>
-          <p className={`text-2xl font-bold ${hochrechnungGewinnJahr != null && hochrechnungGewinnJahr < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-text)]"}`}>
+          <p className={`text-2xl font-bold tabular-nums ${hochrechnungGewinnJahr != null && hochrechnungGewinnJahr < 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-text)]"}`}>
             {hochrechnungGewinnJahr != null ? eur(hochrechnungGewinnJahr) : "–"}
           </p>
         </div>
         <div className={cardCls}>
           <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">Faktor hochgerechnet</p>
-          <p className="text-2xl font-bold text-[var(--color-text)]">{faktorHochgerechnet != null ? faktorHochgerechnet.toFixed(2) : "–"}</p>
+          <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">{faktorHochgerechnet != null ? faktorHochgerechnet.toFixed(2) : "–"}</p>
           {kalkulation && (
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">
               Ziel {kalkulation.zielFaktor.toString()} · Mindest {kalkulation.mindestFaktorSteuerberater.toString()}
@@ -453,20 +453,20 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs font-medium text-[var(--color-text-muted)]">Empfohlene Steuerrücklage</p>
-            <p className="text-2xl font-bold text-[var(--color-text)]">{eur(steuerruecklage.empfohleneSteuerruecklage)}</p>
+            <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">{eur(steuerruecklage.empfohleneSteuerruecklage)}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-[var(--color-text-muted)]">Freier Gewinn nach Rücklage</p>
-            <p className={`text-2xl font-bold ${steuerruecklage.freierGewinnNachRuecklage < 0 ? "text-[var(--color-coral)]" : "text-[var(--color-text)]"}`}>
+            <p className={`text-2xl font-bold tabular-nums ${steuerruecklage.freierGewinnNachRuecklage < 0 ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-text)]"}`}>
               {eur(steuerruecklage.freierGewinnNachRuecklage)}
             </p>
           </div>
         </div>
-        <p className="mt-3 text-xs text-[var(--color-text-muted)]">
+        <p className="mt-3 text-xs tabular-nums text-[var(--color-text-muted)]">
           Zu versteuerndes Einkommen (geschätzt): {eur(steuerruecklage.zuVersteuerndesEinkommen)} · Einkommensteuer: {eur(steuerruecklage.einkommensteuer)} · Soli:{" "}
           {eur(steuerruecklage.soli)}
         </p>
-        <p className="mt-2 rounded-[var(--radius-control)] bg-[var(--color-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text-muted)]">
+        <p className="mt-2 rounded-[var(--pros-r-sm)] bg-[var(--color-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text-muted)]">
           Dies ist eine Näherung, kein exaktes Finanzamts-Ergebnis — das deutsche Einkommensteuerrecht hat progressive Stufen,
           Freibeträge, ggf. Kirchensteuer und Gewerbesteuer-Anrechnung, die diese vereinfachte Rechnung nicht vollständig abbildet.
           Ersetzt nicht die Abstimmung mit dem Steuerberater.
@@ -510,17 +510,14 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
             </div>
             <div>
               <p className="text-xs font-medium text-[var(--color-text-muted)]">Liquiditäts-Reichweite</p>
-              <p className="text-xl font-bold text-[var(--color-text)]">{liquiditaetsReichweiteMonate != null ? `${liquiditaetsReichweiteMonate.toFixed(1)} Monate` : "–"}</p>
+              <p className="text-xl font-bold tabular-nums text-[var(--color-text)]">{liquiditaetsReichweiteMonate != null ? `${liquiditaetsReichweiteMonate.toFixed(1)} Monate` : "–"}</p>
               {liquiditaetsReichweiteMonate != null && (
-                <span
-                  className="mt-2 inline-block rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{ background: AMPEL_STYLES[ampelLiquiditaet(liquiditaetsReichweiteMonate)].bg, color: AMPEL_STYLES[ampelLiquiditaet(liquiditaetsReichweiteMonate)].text }}
-                >
-                  {AMPEL_STYLES[ampelLiquiditaet(liquiditaetsReichweiteMonate)].label}
-                </span>
+                <ProsStatusPill tone={AMPEL_TONE[ampelLiquiditaet(liquiditaetsReichweiteMonate)]} className="mt-2">
+                  {AMPEL_LABEL[ampelLiquiditaet(liquiditaetsReichweiteMonate)]}
+                </ProsStatusPill>
               )}
               {letzteLiquiditaet && (
-                <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                <p className="mt-1 text-xs tabular-nums text-[var(--color-text-muted)]">
                   Stand {letzteLiquiditaet.datum.toLocaleDateString("de-DE")}: {eur(letzteLiquiditaet.betrag)}
                 </p>
               )}
@@ -534,7 +531,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-[var(--color-text)]">Auslastungsvorschau</h3>
-            <p className="text-2xl font-bold text-[var(--color-text)]">
+            <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">
               Team-Auslastung nächste 8 Wochen: {teamUtilization.auslastungProzent != null ? `${teamUtilization.auslastungProzent.toFixed(0)} %` : "–"}
             </p>
           </div>
@@ -570,19 +567,19 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
             const diff = m.erwarteterGeldeingang - m.erwarteteAusgaben;
             const knapp = diff < 0;
             return (
-              <div key={m.monatLabel} className="rounded-[var(--radius-control)] border border-[var(--color-border)] p-3.5">
+              <div key={m.monatLabel} className="rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] p-3.5">
                 <p className="text-sm font-semibold text-[var(--color-text)]">{m.monatLabel}</p>
                 <div className="mt-2 flex flex-col gap-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[var(--color-text-muted)]">Geldeingang</span>
-                    <span className="text-[var(--color-text)]">{eur(m.erwarteterGeldeingang)}</span>
+                    <span className="tabular-nums text-[var(--color-text)]">{eur(m.erwarteterGeldeingang)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--color-text-muted)]">Ausgaben</span>
-                    <span className="text-[var(--color-text)]">{eur(m.erwarteteAusgaben)}</span>
+                    <span className="tabular-nums text-[var(--color-text)]">{eur(m.erwarteteAusgaben)}</span>
                   </div>
                 </div>
-                <p className={`mt-2 text-sm font-semibold ${knapp ? "text-[var(--color-coral)]" : "text-[var(--color-primary)]"}`}>
+                <p className={`mt-2 text-sm font-semibold tabular-nums ${knapp ? "text-[var(--pros-status-critical-text)]" : "text-[var(--color-primary)]"}`}>
                   {diff >= 0 ? "+" : ""}
                   {eur(diff)}
                   {knapp && " · Lücke"}
@@ -602,7 +599,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
           </div>
           <a
             href={`/api/cockpit/report/pdf?type=${periodType}&year=${year}&index=${periodIndex}`}
-            className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
+            className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,box-shadow,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
           >
             PDF exportieren
           </a>
@@ -617,8 +614,3 @@ function periodLabel(type: PeriodType, year: number, index: number): string {
   if (type === "quarter") return `Q${index} ${year}`;
   return `${year}`;
 }
-
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
-const selectCls = "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text)]";
-const btnCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-1.5 text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-primary-soft)]";
