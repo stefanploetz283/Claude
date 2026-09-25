@@ -74,7 +74,7 @@ export async function buchenUeberSlot(_prev: BuchungActionState, formData: FormD
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Termin", entityId: ergebnis.terminId, details: `Slot-Buchung (${felder.kategorie})` });
   revalidatePath(KALENDER_PFAD);
-  if (felder.caseId) revalidatePath(`/cases/${felder.caseId}/appointments`);
+  if (felder.kategorie === "FALL_TERMIN" && felder.caseId) revalidatePath(`/cases/${felder.caseId}/appointments`);
 }
 
 /** Freie Ad-hoc-Zeiteingabe außerhalb eines generierten Slots (v.a. interne Termine/Ausnahmen). */
@@ -121,7 +121,7 @@ export async function buchenAdHoc(_prev: BuchungActionState, formData: FormData)
 
   await logAccess({ userId: user.id, action: "CREATE", entityType: "Termin", entityId: ergebnis.terminId, details: `Ad-hoc-Buchung (${felder.kategorie})` });
   revalidatePath(KALENDER_PFAD);
-  if (felder.caseId) revalidatePath(`/cases/${felder.caseId}/appointments`);
+  if (felder.kategorie === "FALL_TERMIN" && felder.caseId) revalidatePath(`/cases/${felder.caseId}/appointments`);
 }
 
 /** Termin als ausgefallen markieren statt zu löschen - Historie bleibt für die Auslastungsauswertung erhalten. */

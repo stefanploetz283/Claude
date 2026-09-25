@@ -95,7 +95,9 @@ export async function validiereUndBuche(
           eingabe.terminname?.trim() ||
           (eingabe.terminArt ? TERMINART_LABEL[eingabe.terminArt] : KATEGORIE_LABEL[eingabe.kategorie]),
         terminname: eingabe.terminname?.trim() || null,
-        caseId: eingabe.caseId,
+        // Fallbezug nur bei Fall-Terminen: bei anderen Kategorien wird eine mitgesendete caseId verworfen,
+        // da die Fallzugriffsprüfung der Aufrufer nur für FALL_TERMIN greift.
+        caseId: eingabe.kategorie === "FALL_TERMIN" ? eingabe.caseId : null,
         einzelmassnahmeBezeichnung: eingabe.einzelmassnahmeBezeichnung,
         employeeId: eingabe.employeeId,
         bookedById: eingabe.bookedById,
