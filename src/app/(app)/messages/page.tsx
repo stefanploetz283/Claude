@@ -2,6 +2,14 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/rbac";
+import { ProsCard } from "@/components/pros/pros-card";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { IconPlus } from "@/components/pros/pros-icons";
+import { buttonPrimaryCls, pageTitleCls, tabBarCls, tabBaseCls, tabActiveCls, tabIdleCls } from "@/app/(app)/cases/case-ui";
+
+// Zeilen-Link über die volle Kartenbreite: der Fokusring liegt innen, damit ihn overflow-hidden nicht abschneidet.
+const rowLinkCls =
+  "flex items-center justify-between gap-4 px-5 py-3.5 transition-colors duration-[170ms] ease-[var(--pros-ease)] focus-visible:[outline-offset:-3px]";
 
 export default async function MessagesPage({
   searchParams,
@@ -32,67 +40,75 @@ export default async function MessagesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Nachrichten</h1>
-        <Link href="/messages/new" className="rounded-md bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90">
-          + Neue Nachricht
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className={pageTitleCls}>Nachrichten</h1>
+        <Link href="/messages/new" className={`${buttonPrimaryCls} inline-flex items-center gap-2`}>
+          <IconPlus size={16} />
+          Neue Nachricht
         </Link>
       </div>
 
-      <div className="flex gap-1 text-sm">
-        <Link href="/messages?tab=inbox" className={`rounded-md px-3 py-1 ${tab === "inbox" ? "bg-[var(--color-primary)] text-white" : "border border-black/15"}`}>
+      <nav aria-label="Nachrichten" className={tabBarCls}>
+        <Link href="/messages?tab=inbox" aria-current={tab === "inbox" ? "page" : undefined} className={`${tabBaseCls} ${tab === "inbox" ? tabActiveCls : tabIdleCls}`}>
           Posteingang
         </Link>
-        <Link href="/messages?tab=sent" className={`rounded-md px-3 py-1 ${tab === "sent" ? "bg-[var(--color-primary)] text-white" : "border border-black/15"}`}>
+        <Link href="/messages?tab=sent" aria-current={tab === "sent" ? "page" : undefined} className={`${tabBaseCls} ${tab === "sent" ? tabActiveCls : tabIdleCls}`}>
           Gesendet
         </Link>
-      </div>
+      </nav>
 
-      <div className="overflow-hidden rounded-lg border border-black/10 bg-white">
+      <ProsCard className="overflow-hidden">
         {tab === "inbox" ? (
           <ul>
-            {inboxItems.map((item) => (
-              <li key={item.id} className="border-b border-black/5 last:border-0">
-                <Link href={`/messages/${item.messageId}`} className={`flex items-center justify-between gap-4 px-4 py-3 hover:bg-black/[0.02] ${!item.readAt ? "bg-[var(--color-bg)]" : ""}`}>
-                  <div>
-                    <p className={!item.readAt ? "font-semibold" : ""}>
-                      {item.message.subject}
-                      {item.message.isBroadcast && <span className="ml-2 rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-normal">Rundschreiben</span>}
-                    </p>
-                    <p className="text-xs text-black/50">
-                      Von {item.message.sender.name}
-                      {item.message.case && ` · Fall: ${item.message.case.client.lastName}, ${item.message.case.client.firstName}`}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs text-black/40">{format(item.message.createdAt, "dd.MM.yyyy HH:mm")}</span>
-                </Link>
-              </li>
-            ))}
-            {inboxItems.length === 0 && <li className="px-4 py-8 text-center text-black/40">Keine Nachrichten.</li>}
+            {inboxItems.map((item) => {
+              const unread = !item.readAt;
+              return (
+                <li key={item.id} className="border-t border-[var(--pros-border-default)] first:border-t-0">
+                  <Link
+                    href={`/messages/${item.messageId}`}
+                    className={`${rowLinkCls} ${unread ? "bg-[var(--pros-sage-pale)] hover:bg-[var(--pros-sage-soft)]/60" : "hover:bg-[var(--pros-sage-pale)]/60"}`}
+                  >
+                    <div className="min-w-0">
+                      <p className={`text-sm text-[var(--color-text)] ${unread ? "font-semibold" : ""}`}>
+                        {unread && <span className="sr-only">Ungelesen: </span>}
+                        {item.message.subject}
+                        {item.message.isBroadcast && <ProsStatusPill tone="stable" className="ml-2 align-middle">Rundschreiben</ProsStatusPill>}
+                      </p>
+                      <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+                        Von {item.message.sender.name}
+                        {item.message.case && ` · Fall: ${item.message.case.client.lastName}, ${item.message.case.client.firstName}`}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs text-[var(--color-text-muted)] tabular-nums">{format(item.message.createdAt, "dd.MM.yyyy HH:mm")}</span>
+                  </Link>
+                </li>
+              );
+            })}
+            {inboxItems.length === 0 && <li className="px-5 py-10 text-center text-sm text-[var(--color-text-muted)]">Keine Nachrichten.</li>}
           </ul>
         ) : (
           <ul>
             {sentItems.map((m) => (
-              <li key={m.id} className="border-b border-black/5 last:border-0">
-                <Link href={`/messages/${m.id}`} className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-black/[0.02]">
-                  <div>
-                    <p>
+              <li key={m.id} className="border-t border-[var(--pros-border-default)] first:border-t-0">
+                <Link href={`/messages/${m.id}`} className={`${rowLinkCls} hover:bg-[var(--pros-sage-pale)]/60`}>
+                  <div className="min-w-0">
+                    <p className="text-sm text-[var(--color-text)]">
                       {m.subject}
-                      {m.isBroadcast && <span className="ml-2 rounded-full bg-black/10 px-2 py-0.5 text-[10px]">Rundschreiben</span>}
+                      {m.isBroadcast && <ProsStatusPill tone="stable" className="ml-2 align-middle">Rundschreiben</ProsStatusPill>}
                     </p>
-                    <p className="text-xs text-black/50">
+                    <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
                       An {m.isBroadcast ? `${m.recipients.length} Mitarbeiter` : "1 Empfänger"}
                       {m.case && ` · Fall: ${m.case.client.lastName}, ${m.case.client.firstName}`}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-black/40">{format(m.createdAt, "dd.MM.yyyy HH:mm")}</span>
+                  <span className="shrink-0 text-xs text-[var(--color-text-muted)] tabular-nums">{format(m.createdAt, "dd.MM.yyyy HH:mm")}</span>
                 </Link>
               </li>
             ))}
-            {sentItems.length === 0 && <li className="px-4 py-8 text-center text-black/40">Keine gesendeten Nachrichten.</li>}
+            {sentItems.length === 0 && <li className="px-5 py-10 text-center text-sm text-[var(--color-text-muted)]">Keine gesendeten Nachrichten.</li>}
           </ul>
         )}
-      </div>
+      </ProsCard>
     </div>
   );
 }

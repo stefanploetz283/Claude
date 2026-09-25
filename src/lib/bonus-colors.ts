@@ -1,8 +1,7 @@
-// Platzhalter-Farben für das Bonus-Cockpit - noch nicht final als Marken-/Logofarbe bestätigt
-// (siehe Feature-Vorgabe). An einer Stelle gesammelt, damit ein späterer Austausch einfach bleibt.
-export const BONUS_PRIMARY = "#0F6E56";
-export const BONUS_LIGHT = "#E1F5EE";
-export const BONUS_DARK_TEXT = "#085041";
+// Farben des Bonus-Bereichs. BONUS_PRIMARY war ein Platzhalter (rein dekorativ, keine fachliche Bedeutung) und
+// folgt jetzt dem PROS-Fortschrittston; die frühere mintgrüne Flächen-/Textfarbe ist entfallen. Die Gutschein-
+// Anbieterfarben sind dagegen die Markenidentität der jeweiligen Händler und bleiben bewusst unverändert.
+export const BONUS_PRIMARY = "var(--pros-progress-fill)";
 
 export const GUTSCHEIN_STYLES = {
   EDEKA: { label: "Edeka", sparte: "Lebensmittel", bg: "#FFCB05", text: "#3D2B00", subtitle: "#6B4F00" },

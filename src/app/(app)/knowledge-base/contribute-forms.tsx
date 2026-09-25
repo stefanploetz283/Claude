@@ -2,8 +2,11 @@
 
 import { useActionState, useRef, useState } from "react";
 import { createKnowledgeFile, createKnowledgeLink } from "./actions";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, errorTextCls, tabBarCls, tabBaseCls, tabActiveCls, tabIdleCls } from "@/app/(app)/cases/case-ui";
 
-const inputCls = "rounded-md border border-black/15 px-3 py-1.5 text-sm";
+const fieldCls = `w-full ${inputCls}`;
+// Datei-Auswahl im Eingabefeld-Look: der native "Durchsuchen"-Button bekommt die Salbei-Sekundärfläche.
+const fileCls = `w-full ${inputCls} file:mr-3 file:rounded-[var(--pros-r-sm)] file:border-0 file:bg-[var(--pros-sage-soft)] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--color-primary)]`;
 
 export function ContributeForms() {
   const [tab, setTab] = useState<"file" | "link">("file");
@@ -13,17 +16,23 @@ export function ContributeForms() {
   const linkFormRef = useRef<HTMLFormElement>(null);
 
   return (
-    <div className="rounded-lg border border-black/10 bg-white p-4">
-      <div className="mb-3 flex gap-1 text-sm">
+    <div className={cardCls}>
+      <div role="tablist" aria-label="Inhaltstyp" className={`mb-4 ${tabBarCls}`}>
         <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "file"}
           onClick={() => setTab("file")}
-          className={`rounded-md px-3 py-1 ${tab === "file" ? "bg-[var(--color-primary)] text-white" : "border border-black/15"}`}
+          className={`${tabBaseCls} ${tab === "file" ? tabActiveCls : tabIdleCls}`}
         >
           Dokument/Bild
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "link"}
           onClick={() => setTab("link")}
-          className={`rounded-md px-3 py-1 ${tab === "link" ? "bg-[var(--color-primary)] text-white" : "border border-black/15"}`}
+          className={`${tabBaseCls} ${tab === "link" ? tabActiveCls : tabIdleCls}`}
         >
           Link
         </button>
@@ -36,27 +45,33 @@ export function ContributeForms() {
             await fileAction(fd);
             fileFormRef.current?.reset();
           }}
-          className="flex flex-wrap items-end gap-3"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"
         >
           <Field label="Titel">
-            <input name="title" required className={inputCls} />
+            <input name="title" required className={fieldCls} />
           </Field>
           <Field label="Datei (PDF, Word, Bild)">
-            <input name="file" type="file" required className="text-sm" />
+            <input name="file" type="file" required className={fileCls} />
           </Field>
           <Field label="Ordner (optional)">
-            <input name="folder" placeholder="z.B. Erziehungsbeistandschaft" className={inputCls} />
+            <input name="folder" placeholder="z.B. Erziehungsbeistandschaft" className={fieldCls} />
           </Field>
           <Field label="Schlagworte (Komma-getrennt)">
-            <input name="tags" className={inputCls} />
+            <input name="tags" className={fieldCls} />
           </Field>
-          <Field label="Beschreibung (optional)" grow>
-            <input name="description" className={inputCls} />
+          <Field label="Beschreibung (optional)" wide>
+            <input name="description" className={fieldCls} />
           </Field>
-          <button type="submit" disabled={filePending} className="rounded-md bg-[var(--color-primary)] px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">
-            {filePending ? "Wird hochgeladen…" : "Hinzufügen"}
-          </button>
-          {fileState?.error && <p className="w-full text-sm text-red-600">{fileState.error}</p>}
+          <div className="flex flex-wrap items-center gap-3 sm:col-span-2 xl:col-span-3">
+            <button type="submit" disabled={filePending} className={buttonPrimaryCls}>
+              {filePending ? "Wird hochgeladen…" : "Hinzufügen"}
+            </button>
+            {fileState?.error && (
+              <p role="alert" className={errorTextCls}>
+                {fileState.error}
+              </p>
+            )}
+          </div>
         </form>
       ) : (
         <form
@@ -65,37 +80,43 @@ export function ContributeForms() {
             await linkAction(fd);
             linkFormRef.current?.reset();
           }}
-          className="flex flex-wrap items-end gap-3"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"
         >
           <Field label="Titel">
-            <input name="title" required className={inputCls} />
+            <input name="title" required className={fieldCls} />
           </Field>
           <Field label="Link (URL)">
-            <input name="url" type="url" required placeholder="https://…" className={inputCls} />
+            <input name="url" type="url" required placeholder="https://…" className={fieldCls} />
           </Field>
           <Field label="Ordner (optional)">
-            <input name="folder" className={inputCls} />
+            <input name="folder" className={fieldCls} />
           </Field>
           <Field label="Schlagworte (Komma-getrennt)">
-            <input name="tags" className={inputCls} />
+            <input name="tags" className={fieldCls} />
           </Field>
-          <Field label="Beschreibung (optional)" grow>
-            <input name="description" className={inputCls} />
+          <Field label="Beschreibung (optional)" wide>
+            <input name="description" className={fieldCls} />
           </Field>
-          <button type="submit" disabled={linkPending} className="rounded-md bg-[var(--color-primary)] px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">
-            {linkPending ? "Wird gespeichert…" : "Hinzufügen"}
-          </button>
-          {linkState?.error && <p className="w-full text-sm text-red-600">{linkState.error}</p>}
+          <div className="flex flex-wrap items-center gap-3 sm:col-span-2 xl:col-span-3">
+            <button type="submit" disabled={linkPending} className={buttonPrimaryCls}>
+              {linkPending ? "Wird gespeichert…" : "Hinzufügen"}
+            </button>
+            {linkState?.error && (
+              <p role="alert" className={errorTextCls}>
+                {linkState.error}
+              </p>
+            )}
+          </div>
         </form>
       )}
     </div>
   );
 }
 
-function Field({ label, children, grow }: { label: string; children: React.ReactNode; grow?: boolean }) {
+function Field({ label, children, wide }: { label: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <label className={`flex flex-col gap-1 ${grow ? "min-w-[14rem] flex-1" : ""}`}>
-      <span className="text-xs font-medium text-black/60">{label}</span>
+    <label className={`flex flex-col gap-1.5 ${wide ? "sm:col-span-2 xl:col-span-2" : ""}`}>
+      <span className={labelCls}>{label}</span>
       {children}
     </label>
   );

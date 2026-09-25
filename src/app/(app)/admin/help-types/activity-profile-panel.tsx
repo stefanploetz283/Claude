@@ -8,11 +8,10 @@ import {
   deleteActivityProfileRow,
   type DefaultsActionState,
 } from "./actions";
+import { IconChevronDown } from "@/components/pros/pros-icons";
+import { filterFieldCls, labelCls, buttonSmOutlineCls, buttonSmPrimaryCls, errorTextCls, linkActionCls, linkDangerCls } from "@/app/(app)/cases/case-ui";
 
 type Profile = { id: string; activityLabel: string; hoursPerWeek: string | null };
-
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
 
 export function ActivityProfilePanel({
   helpTypeId,
@@ -30,20 +29,21 @@ export function ActivityProfilePanel({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mt-2">
-      <button onClick={() => setOpen((o) => !o)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
+    <div className="w-full">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={`inline-flex items-center gap-1 ${linkActionCls}`}>
+        <IconChevronDown size={14} className={`transition-transform duration-[170ms] motion-reduce:transition-none ${open ? "rotate-180" : ""}`} />
         {open ? "Wochenprofil ausblenden" : "Wochenprofil bearbeiten"}
       </button>
       {open && (
-        <div className="mt-3 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+        <div className="mt-3 min-w-[18rem] rounded-[var(--pros-r-sm)] border border-[var(--pros-border-default)] bg-[var(--pros-sage-pale)]/60 p-4">
           <DefaultsForm
             helpTypeId={helpTypeId}
             defaultDurationWeeks={defaultDurationWeeks}
             defaultTotalHoursMin={defaultTotalHoursMin}
             defaultTotalHoursMax={defaultTotalHoursMax}
           />
-          <div className="mt-4">
-            <p className="mb-2 text-xs font-semibold tracking-wide text-[var(--color-text-muted)] uppercase">Wochenprofil-Komponenten</p>
+          <div className="mt-4 border-t border-[var(--pros-border-default)] pt-4">
+            <p className="mb-2 text-xs font-semibold text-[var(--color-text)]">Wochenprofil-Komponenten</p>
             <div className="flex flex-col gap-2">
               {profiles.map((p) => (
                 <ProfileRow key={p.id} profile={p} />
@@ -74,26 +74,26 @@ function DefaultsForm({
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="helpTypeId" value={helpTypeId} />
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Laufzeit (Wochen)</span>
-        <input name="defaultDurationWeeks" type="number" min="1" step="0.1" defaultValue={defaultDurationWeeks ?? ""} className={`w-28 ${inputCls}`} />
+      <label className="flex flex-col gap-1.5">
+        <span className={labelCls}>Laufzeit (Wochen)</span>
+        <input name="defaultDurationWeeks" type="number" min="1" step="0.1" defaultValue={defaultDurationWeeks ?? ""} className={`w-28 ${filterFieldCls}`} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Gesamtstunden von</span>
-        <input name="defaultTotalHoursMin" type="number" min="0" step="0.5" defaultValue={defaultTotalHoursMin ?? ""} className={`w-28 ${inputCls}`} />
+      <label className="flex flex-col gap-1.5">
+        <span className={labelCls}>Gesamtstunden von</span>
+        <input name="defaultTotalHoursMin" type="number" min="0" step="0.5" defaultValue={defaultTotalHoursMin ?? ""} className={`w-28 ${filterFieldCls}`} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">bis</span>
-        <input name="defaultTotalHoursMax" type="number" min="0" step="0.5" defaultValue={defaultTotalHoursMax ?? ""} className={`w-28 ${inputCls}`} />
+      <label className="flex flex-col gap-1.5">
+        <span className={labelCls}>bis</span>
+        <input name="defaultTotalHoursMax" type="number" min="0" step="0.5" defaultValue={defaultTotalHoursMax ?? ""} className={`w-28 ${filterFieldCls}`} />
       </label>
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
-      >
+      <button type="submit" disabled={pending} className={`${buttonSmOutlineCls} py-2.5!`}>
         {pending ? "Speichern…" : "Speichern"}
       </button>
-      {state?.error && <p className="w-full text-sm text-[var(--color-coral)]">{state.error}</p>}
+      {state?.error && (
+        <p role="alert" className={`w-full ${errorTextCls}`}>
+          {state.error}
+        </p>
+      )}
     </form>
   );
 }
@@ -104,8 +104,8 @@ function ProfileRow({ profile }: { profile: Profile }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="flex items-center gap-2">
-      <input value={label} onChange={(e) => setLabel(e.target.value)} className={`flex-1 ${inputCls}`} />
+    <div className="flex flex-wrap items-center gap-2">
+      <input value={label} onChange={(e) => setLabel(e.target.value)} aria-label="Bezeichnung der Komponente" className={`min-w-[10rem] flex-1 ${filterFieldCls}`} />
       <input
         value={hours}
         onChange={(e) => setHours(e.target.value)}
@@ -113,20 +113,13 @@ function ProfileRow({ profile }: { profile: Profile }) {
         min="0"
         step="0.01"
         placeholder="Std./Woche"
-        className={`w-32 ${inputCls}`}
+        aria-label="Stunden pro Woche"
+        className={`w-32 ${filterFieldCls}`}
       />
-      <button
-        disabled={pending}
-        onClick={() => startTransition(() => updateActivityProfileRow(profile.id, label, hours))}
-        className="text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
-      >
+      <button disabled={pending} onClick={() => startTransition(() => updateActivityProfileRow(profile.id, label, hours))} className={linkActionCls}>
         Speichern
       </button>
-      <button
-        disabled={pending}
-        onClick={() => startTransition(() => deleteActivityProfileRow(profile.id))}
-        className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
-      >
+      <button disabled={pending} onClick={() => startTransition(() => deleteActivityProfileRow(profile.id))} className={linkDangerCls}>
         Löschen
       </button>
     </div>
@@ -139,12 +132,13 @@ function AddRowForm({ helpTypeId }: { helpTypeId: string }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="mt-3 flex items-center gap-2 border-t border-[var(--color-border)] pt-3">
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--pros-border-default)] pt-3">
       <input
         value={label}
         onChange={(e) => setLabel(e.target.value)}
         placeholder="Neue Komponente, z.B. Einzelzeit Kind"
-        className={`flex-1 ${inputCls}`}
+        aria-label="Neue Komponente"
+        className={`min-w-[10rem] flex-1 ${filterFieldCls}`}
       />
       <input
         value={hours}
@@ -153,7 +147,8 @@ function AddRowForm({ helpTypeId }: { helpTypeId: string }) {
         min="0"
         step="0.01"
         placeholder="Std./Woche (optional)"
-        className={`w-32 ${inputCls}`}
+        aria-label="Stunden pro Woche (optional)"
+        className={`w-44 ${filterFieldCls}`}
       />
       <button
         disabled={pending || !label.trim()}
@@ -164,7 +159,7 @@ function AddRowForm({ helpTypeId }: { helpTypeId: string }) {
             setHours("");
           })
         }
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className={`${buttonSmPrimaryCls} py-2.5!`}
       >
         Hinzufügen
       </button>

@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useActionState } from "react";
 import { approveAbschlussbericht, requestAbschlussberichtCorrection } from "./actions";
+import { IconChevronDown } from "@/components/pros/pros-icons";
+import { buttonPrimaryCls, buttonDangerOutlineCls, buttonDangerSolidCls, inputCls, errorTextCls, linkActionCls } from "@/app/(app)/cases/case-ui";
 
 export function AbschlussberichtReviewCard({
   caseId,
@@ -24,7 +26,7 @@ export function AbschlussberichtReviewCard({
   const [state, formAction, correctionPending] = useActionState(requestAbschlussberichtCorrection, undefined);
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+    <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-[var(--color-text)]">{clientName} · Abschlussbericht</h3>
@@ -34,26 +36,26 @@ export function AbschlussberichtReviewCard({
         </div>
       </div>
 
-      <div className={`mt-3 overflow-y-auto rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-4 text-sm whitespace-pre-wrap text-[var(--color-text)] ${expanded ? "max-h-[32rem]" : "max-h-40"}`}>
+      <div
+        className={`mt-3 overflow-y-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] p-4 text-sm leading-relaxed whitespace-pre-wrap text-[var(--color-text)] ${expanded ? "max-h-[32rem]" : "max-h-40"}`}
+      >
         {text}
       </div>
-      <button onClick={() => setExpanded((v) => !v)} className="mt-1.5 text-xs font-medium text-[var(--color-primary)] hover:underline">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((v) => !v)}
+        className={`mt-2 inline-flex items-center gap-1 ${linkActionCls}`}
+      >
+        <IconChevronDown size={14} className={`transition-transform duration-[170ms] motion-reduce:transition-none ${expanded ? "rotate-180" : ""}`} />
         {expanded ? "Einklappen" : "Vollständig anzeigen"}
       </button>
 
       <div className="mt-4 flex flex-wrap items-center gap-2.5">
-        <button
-          disabled={pending}
-          onClick={() => startTransition(() => approveAbschlussbericht(caseId))}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button disabled={pending} onClick={() => startTransition(() => approveAbschlussbericht(caseId))} className={buttonPrimaryCls}>
           Freigeben
         </button>
-        <button
-          disabled={pending}
-          onClick={() => setShowCorrection((v) => !v)}
-          className="rounded-[var(--radius-control)] border border-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-[var(--color-coral)] transition hover:bg-[var(--color-coral)]/10 disabled:opacity-50"
-        >
+        <button disabled={pending} onClick={() => setShowCorrection((v) => !v)} aria-expanded={showCorrection} className={buttonDangerOutlineCls}>
           Korrektur anfordern
         </button>
       </div>
@@ -65,17 +67,18 @@ export function AbschlussberichtReviewCard({
             name="comment"
             required
             rows={3}
+            aria-label="Korrekturhinweis"
             placeholder="Was muss an dem Bericht korrigiert werden?"
-            className="w-full rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]"
+            className={`w-full ${inputCls}`}
           />
-          <button
-            type="submit"
-            disabled={correctionPending}
-            className="self-start rounded-[var(--radius-control)] bg-[var(--color-coral)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          >
+          <button type="submit" disabled={correctionPending} className={`self-start ${buttonDangerSolidCls}`}>
             {correctionPending ? "Wird gesendet…" : "Korrektur senden"}
           </button>
-          {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
+          {state?.error && (
+            <p role="alert" className={errorTextCls}>
+              {state.error}
+            </p>
+          )}
         </form>
       )}
     </div>

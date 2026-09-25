@@ -40,7 +40,12 @@ export function IdleTimer({ idleTimeoutMinutes }: { idleTimeoutMinutes: number }
   if (!showWarning) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-4 z-50 mx-auto w-fit rounded-lg bg-[var(--color-warn)] px-4 py-3 text-sm text-white shadow-lg">
+    // Petrol auf Gold (5,6:1) statt Weiß auf Gold (2,1:1) - siehe Kontrastmatrix in design/PROS-DESIGN-SYSTEM.md 4.1.
+    // z-[60]: über dem Diktat-FAB (z-50), unter Modals (z-[70]). role="alert" kündigt die Warnung Screenreadern an.
+    <div
+      role="alert"
+      className="pros-modal-panel fixed inset-x-4 bottom-4 z-[60] mx-auto w-fit max-w-[32rem] rounded-[var(--pros-r-md)] bg-[var(--color-gold)] px-5 py-3.5 text-sm font-semibold text-[var(--color-primary)] shadow-[var(--pros-shadow-popover)]"
+    >
       Sie werden aufgrund von Inaktivität in Kürze abgemeldet. Bewegen Sie die Maus, um angemeldet zu bleiben.
     </div>
   );

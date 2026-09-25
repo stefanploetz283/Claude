@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser, caseVisibilityWhere } from "@/lib/rbac";
 import { ComposeForm } from "../compose-form";
+import { pageTitleCls } from "@/app/(app)/cases/case-ui";
 
 export default async function NewMessagePage() {
   const user = await requireUser();
@@ -13,7 +14,7 @@ export default async function NewMessagePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Neue Nachricht</h1>
+        <h1 className={pageTitleCls}>Neue Nachricht</h1>
       </div>
       <ComposeForm
         employees={employees.map((e) => ({ id: e.id, name: e.name }))}

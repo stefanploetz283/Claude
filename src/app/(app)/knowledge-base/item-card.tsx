@@ -2,6 +2,9 @@
 
 import { useTransition } from "react";
 import { deleteKnowledgeItem } from "./actions";
+import { ProsCard } from "@/components/pros/pros-card";
+import { IconFileText, IconImage, IconLink } from "@/components/pros/pros-icons";
+import { groupPillCls, linkDangerCls } from "@/app/(app)/cases/case-ui";
 
 export type ItemCardData = {
   id: string;
@@ -16,47 +19,65 @@ export type ItemCardData = {
   canDelete: boolean;
 };
 
-const TYPE_ICONS: Record<string, string> = { DOCUMENT: "📄", IMAGE: "🖼️", LINK: "🔗" };
+const TYPE_LABEL: Record<ItemCardData["type"], string> = { DOCUMENT: "Dokument", IMAGE: "Bild", LINK: "Link" };
+
+function TypeIcon({ type }: { type: ItemCardData["type"] }) {
+  if (type === "IMAGE") return <IconImage />;
+  if (type === "LINK") return <IconLink />;
+  return <IconFileText />;
+}
 
 export function ItemCard({ item }: { item: ItemCardData }) {
   const [pending, startTransition] = useTransition();
   const href = item.type === "LINK" ? item.url! : `/api/knowledge-base/${item.id}/download`;
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-black/10 bg-white p-4">
-      <div className="flex items-start justify-between gap-2">
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-[var(--color-primary)] hover:underline"
-        >
-          {TYPE_ICONS[item.type]} {item.title}
-        </a>
+    <ProsCard className="flex flex-col gap-3 p-4">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--pros-sage-pale)] text-[var(--color-primary)]">
+          <TypeIcon type={item.type} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-sm leading-snug font-semibold break-words text-[var(--color-primary)] hover:underline"
+          >
+            <span className="sr-only">{TYPE_LABEL[item.type]}: </span>
+            {item.title}
+          </a>
+          <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
+            {item.createdByName} · {item.createdAt}
+          </p>
+        </div>
         {item.canDelete && (
           <button
             disabled={pending}
+            aria-label={`„${item.title}“ löschen`}
             onClick={() => {
               if (confirm(`"${item.title}" wirklich löschen?`)) startTransition(() => deleteKnowledgeItem(item.id));
             }}
-            className="text-xs text-[var(--color-danger)] hover:underline disabled:opacity-50"
+            className={`shrink-0 ${linkDangerCls}`}
           >
             Löschen
           </button>
         )}
       </div>
-      {item.description && <p className="text-sm text-black/60">{item.description}</p>}
-      <div className="flex flex-wrap items-center gap-1 text-xs text-black/50">
-        {item.folder && <span className="rounded bg-black/5 px-2 py-0.5">{item.folder}</span>}
-        {item.tags.map((t) => (
-          <span key={t} className="rounded-full bg-[var(--color-bg)] px-2 py-0.5">
-            #{t}
-          </span>
-        ))}
-      </div>
-      <p className="text-[11px] text-black/40">
-        {item.createdByName} · {item.createdAt}
-      </p>
-    </div>
+      {item.description && <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">{item.description}</p>}
+      {(item.folder || item.tags.length > 0) && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {item.folder && <span className={groupPillCls}>{item.folder}</span>}
+          {item.tags.map((t) => (
+            <span
+              key={t}
+              className="rounded-full border border-[var(--pros-border-default)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]"
+            >
+              #{t}
+            </span>
+          ))}
+        </div>
+      )}
+    </ProsCard>
   );
 }

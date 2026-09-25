@@ -4,8 +4,10 @@ import { getSettings } from "@/lib/settings";
 import { FachlicheKonzeptionForm } from "./fachliche-konzeption-form";
 import { GlossarPanel } from "./glossar-panel";
 import { ReferenzberichtePanel } from "./referenzberichte-panel";
+import { ProsSectionCard } from "@/components/pros/pros-card";
+import { pageTitleCls, pageSubtitleCls } from "@/app/(app)/cases/case-ui";
 
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
+const sectionIntroCls = "mb-4 max-w-[75ch] text-sm leading-relaxed text-[var(--color-text-muted)]";
 
 export default async function AbschlussberichtVerwaltungPage() {
   await requireAdmin();
@@ -21,31 +23,28 @@ export default async function AbschlussberichtVerwaltungPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Abschlussbericht - Verwaltung</h1>
-        <p className="mt-1 text-sm text-black/60">
+        <h1 className={pageTitleCls}>Abschlussbericht - Verwaltung</h1>
+        <p className={`${pageSubtitleCls} max-w-[75ch]`}>
           Fachliche Konzeption, Begriffsglossar und Referenzberichte-Bibliothek für das KI-gestützte Abschlussberichtswesen. Das
           versionierte Berichtsmanual wird je Hilfeart im Angebotskatalog gepflegt.
         </p>
       </div>
 
-      <div className={cardCls}>
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Fachliche Konzeption</h2>
-        <p className="mb-3 text-sm text-[var(--color-text-muted)]">Fließt bei jeder Berichtsgenerierung als fachlicher Rahmen ein.</p>
+      <ProsSectionCard title="Fachliche Konzeption">
+        <p className={sectionIntroCls}>Fließt bei jeder Berichtsgenerierung als fachlicher Rahmen ein.</p>
         <FachlicheKonzeptionForm text={konzeption.text} />
-      </div>
+      </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Begriffsglossar</h2>
-        <p className="mb-3 text-sm text-[var(--color-text-muted)]">
+      <ProsSectionCard title="Begriffsglossar">
+        <p className={sectionIntroCls}>
           Zentrale Fachbegriffe (PROS-Fachkonzept) - werden bei der Generierung verbindlich in dieser Bedeutung verwendet, nicht
           allgemeinsprachlich.
         </p>
         <GlossarPanel begriffe={glossar} />
-      </div>
+      </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Referenzberichte-Bibliothek</h2>
-        <p className="mb-3 text-sm text-[var(--color-text-muted)]">
+      <ProsSectionCard title="Referenzberichte-Bibliothek">
+        <p className={sectionIntroCls}>
           Nur freigegebene Berichte fließen in die Generierung ein - ausschließlich für Sprache/Stil/Tonalität, niemals für Inhalte.
         </p>
         <ReferenzberichtePanel
@@ -60,7 +59,7 @@ export default async function AbschlussberichtVerwaltungPage() {
           freigegebeneAnzahl={freigegebeneAnzahl}
           maxAnzahl={settings.berichtReferenzberichteMaxAnzahl}
         />
-      </div>
+      </ProsSectionCard>
     </div>
   );
 }

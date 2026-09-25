@@ -3,6 +3,7 @@ import { getSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "./settings-form";
 import { BetriebsferienPanel } from "./betriebsferien-panel";
+import { pageTitleCls, pageSubtitleCls } from "@/app/(app)/cases/case-ui";
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
@@ -12,8 +13,8 @@ export default async function AdminSettingsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Einstellungen</h1>
-        <p className="mt-1 text-sm text-black/60">Praxisdaten, Design und Systemverhalten.</p>
+        <h1 className={pageTitleCls}>Einstellungen</h1>
+        <p className={pageSubtitleCls}>Praxisdaten, Design und Systemverhalten.</p>
       </div>
       <SettingsForm settings={settings} />
       <BetriebsferienPanel

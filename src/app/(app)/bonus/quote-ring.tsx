@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BONUS_PRIMARY, BONUS_DARK_TEXT } from "@/lib/bonus-colors";
+import { BONUS_PRIMARY } from "@/lib/bonus-colors";
 
 const SIZE = 176;
 const STROKE = 14;
@@ -14,10 +14,10 @@ const RING_DURATION_MS = 1100;
 // um den Kreis verteilt, mit leicht unterschiedlicher Wurfweite für einen natürlicheren Eindruck.
 const CONFETTI_DOTS = [
   { angle: 20, distance: 32, color: BONUS_PRIMARY },
-  { angle: 95, distance: 40, color: "#D2AD69" },
-  { angle: 160, distance: 30, color: "#9FA47E" },
+  { angle: 95, distance: 40, color: "var(--color-gold)" },
+  { angle: 160, distance: 30, color: "var(--color-sage)" },
   { angle: 230, distance: 42, color: BONUS_PRIMARY },
-  { angle: 305, distance: 34, color: "#D2AD69" },
+  { angle: 305, distance: 34, color: "var(--color-gold)" },
 ];
 
 function useCountUp(target: number, durationMs: number) {
@@ -79,12 +79,13 @@ export function QuoteRing({ quote, weekLabel, quarterKey }: { quote: number; wee
     <div className="flex flex-col items-center gap-2">
       <div className="relative" style={{ width: SIZE, height: SIZE }}>
         <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-          <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="var(--color-border)" strokeWidth={STROKE} />
+          <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="var(--pros-progress-track)" strokeWidth={STROKE} />
           <circle
             cx={SIZE / 2}
             cy={SIZE / 2}
             r={RADIUS}
             fill="none"
+            className="bonus-ring-arc"
             stroke={BONUS_PRIMARY}
             strokeWidth={STROKE}
             strokeLinecap="round"
@@ -93,11 +94,13 @@ export function QuoteRing({ quote, weekLabel, quarterKey }: { quote: number; wee
             transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
             style={{ transition: `stroke-dashoffset ${RING_DURATION_MS}ms cubic-bezier(.22,.9,.3,1)` }}
           />
-          <line x1={tickInner.x} y1={tickInner.y} x2={tickOuter.x} y2={tickOuter.y} stroke="var(--color-coral)" strokeWidth={2.5} strokeLinecap="round" />
+          {/* Zielmarke: Goldstrich mit Warmweiß-Unterlage, damit er auf dem Petrolbogen wie auf der Bahn lesbar bleibt. */}
+          <line x1={tickInner.x} y1={tickInner.y} x2={tickOuter.x} y2={tickOuter.y} stroke="var(--color-surface)" strokeWidth={5.5} strokeLinecap="round" />
+          <line x1={tickInner.x} y1={tickInner.y} x2={tickOuter.x} y2={tickOuter.y} stroke="var(--color-gold)" strokeWidth={2.5} strokeLinecap="round" />
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tabular-nums" style={{ color: BONUS_DARK_TEXT }}>
+          <span className="text-3xl font-bold text-[var(--color-primary)] tabular-nums">
             {countUp.toFixed(1)}%
           </span>
           <span className="text-[11px] font-medium text-[var(--color-text-muted)]">Quote bisher</span>
@@ -105,7 +108,7 @@ export function QuoteRing({ quote, weekLabel, quarterKey }: { quote: number; wee
 
         {showBadge && (
           <div
-            className="absolute -top-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-[var(--shadow-soft)]"
+            className="bonus-badge absolute -top-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full text-white shadow-[var(--pros-shadow)]"
             style={{ background: BONUS_PRIMARY, animation: "bonus-badge-in 0.4s ease-out" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -119,7 +122,7 @@ export function QuoteRing({ quote, weekLabel, quarterKey }: { quote: number; wee
                 return (
                   <span
                     key={i}
-                    className="absolute h-1.5 w-1.5 rounded-full"
+                    className="bonus-confetti-dot absolute h-1.5 w-1.5 rounded-full"
                     style={{
                       background: d.color,
                       // @ts-expect-error CSS custom properties
@@ -145,6 +148,10 @@ export function QuoteRing({ quote, weekLabel, quarterKey }: { quote: number; wee
         @keyframes bonus-confetti {
           from { opacity: 1; transform: translate(0, 0) scale(1); }
           to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .bonus-ring-arc { transition: none !important; }
+          .bonus-badge, .bonus-confetti-dot { animation: none !important; }
         }
       `}</style>
     </div>

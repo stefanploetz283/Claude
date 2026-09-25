@@ -3,65 +3,67 @@
 import { useActionState } from "react";
 import { updateSettings } from "./actions";
 import type { Settings } from "@prisma/client";
+import { ProsSectionCard } from "@/components/pros/pros-card";
+import { IconCheck } from "@/components/pros/pros-icons";
+import { inputCls, labelCls, buttonPrimaryCls, errorTextCls, noticeSuccessCls } from "@/app/(app)/cases/case-ui";
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-const cardCls = "rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]";
-const labelCls = "text-xs font-medium text-[var(--color-text-muted)]";
+const fieldCls = `w-full ${inputCls}`;
+const helpCls = "text-xs text-[var(--color-text-muted)]";
+// Datei-Auswahl im Eingabefeld-Look: der native "Durchsuchen"-Button bekommt die Salbei-Sekundärfläche.
+const fileCls = `${fieldCls} file:mr-3 file:rounded-[var(--pros-r-sm)] file:border-0 file:bg-[var(--pros-sage-soft)] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[var(--color-primary)]`;
+const colorCls =
+  "h-10 w-16 cursor-pointer rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-1";
 
 export function SettingsForm({ settings }: { settings: Settings }) {
   const [state, formAction, pending] = useActionState(updateSettings, undefined);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Praxis &amp; Design</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Praxisname</span>
-            <input name="practiceName" defaultValue={settings.practiceName} required className={inputCls} />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Logo hochladen (ersetzt aktuelles Logo)</span>
-            <input name="logo" type="file" accept="image/*" className="text-sm" />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Hauptfarbe (Buttons/Akzente)</span>
-            <input name="colorPrimary" type="color" defaultValue={settings.colorPrimary} className="h-9 w-16 rounded-[var(--radius-control)] border border-[var(--color-border)]" />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Hintergrundfarbe (hell)</span>
-            <input name="colorAccentLight" type="color" defaultValue={settings.colorAccentLight} className="h-9 w-16 rounded-[var(--radius-control)] border border-[var(--color-border)]" />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Textfarbe (dunkel)</span>
-            <input name="colorTextDark" type="color" defaultValue={settings.colorTextDark} className="h-9 w-16 rounded-[var(--radius-control)] border border-[var(--color-border)]" />
-          </label>
-        </div>
-      </div>
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+        <ProsSectionCard title="Praxis & Design">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Praxisname</span>
+              <input name="practiceName" defaultValue={settings.practiceName} required className={fieldCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Logo hochladen (ersetzt aktuelles Logo)</span>
+              <input name="logo" type="file" accept="image/*" className={fileCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Hauptfarbe (Buttons/Akzente)</span>
+              <input name="colorPrimary" type="color" defaultValue={settings.colorPrimary} className={colorCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Hintergrundfarbe (hell)</span>
+              <input name="colorAccentLight" type="color" defaultValue={settings.colorAccentLight} className={colorCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Textfarbe (dunkel)</span>
+              <input name="colorTextDark" type="color" defaultValue={settings.colorTextDark} className={colorCls} />
+            </label>
+          </div>
+        </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Kontaktdaten (für Leistungsnachweis-Fußzeile)</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5 sm:col-span-2">
-            <span className={labelCls}>Adresse</span>
-            <input name="practiceAddress" defaultValue={settings.practiceAddress ?? ""} placeholder="Straße Hausnr. · PLZ Ort" className={inputCls} />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Telefon</span>
-            <input name="practicePhone" defaultValue={settings.practicePhone ?? ""} className={inputCls} />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>E-Mail</span>
-            <input name="practiceEmail" type="email" defaultValue={settings.practiceEmail ?? ""} className={inputCls} />
-          </label>
-        </div>
-      </div>
+        <ProsSectionCard title="Kontaktdaten (für Leistungsnachweis-Fußzeile)">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5 sm:col-span-2">
+              <span className={labelCls}>Adresse</span>
+              <input name="practiceAddress" defaultValue={settings.practiceAddress ?? ""} placeholder="Straße Hausnr. · PLZ Ort" className={fieldCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Telefon</span>
+              <input name="practicePhone" defaultValue={settings.practicePhone ?? ""} className={fieldCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>E-Mail</span>
+              <input name="practiceEmail" type="email" defaultValue={settings.practiceEmail ?? ""} className={fieldCls} />
+            </label>
+          </div>
+        </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Rechnungsstellung</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
+        <ProsSectionCard title="Rechnungsstellung">
+          <label className="flex max-w-sm flex-col gap-1.5">
             <span className={labelCls}>Stundensatz (€, für Rechnungen)</span>
             <input
               name="hourlyRate"
@@ -70,120 +72,121 @@ export function SettingsForm({ settings }: { settings: Settings }) {
               step="0.01"
               defaultValue={settings.hourlyRate?.toString() ?? ""}
               placeholder="z.B. 45.00"
-              className={inputCls}
+              className={fieldCls}
             />
           </label>
-        </div>
-      </div>
+        </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-1 text-sm font-semibold text-[var(--color-text)]">Betriebswirtschaftliches Cockpit</h2>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Kalkulationswerte (Ziel-Quote, Ziel-Faktor, Personal-/Betriebskosten-Plan, ...) werden versioniert direkt im{" "}
-          <a href="/finanzen/cockpit" className="font-medium text-[var(--color-primary)] hover:underline">
-            Cockpit
-          </a>{" "}
-          gepflegt, nicht hier – so bleibt bei einer neuen Entgeltkalkulation die bisherige Version als Historie erhalten.
-        </p>
-      </div>
+        <ProsSectionCard title="Betriebswirtschaftliches Cockpit">
+          <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+            Kalkulationswerte (Ziel-Quote, Ziel-Faktor, Personal-/Betriebskosten-Plan, ...) werden versioniert direkt im{" "}
+            <a href="/finanzen/cockpit" className="font-semibold text-[var(--color-primary)] hover:underline">
+              Cockpit
+            </a>{" "}
+            gepflegt, nicht hier – so bleibt bei einer neuen Entgeltkalkulation die bisherige Version als Historie erhalten.
+          </p>
+        </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Kapazitätsplanung</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Abrechenbarer Anteil der Vertragsstunden</span>
+        <ProsSectionCard title="Kapazitätsplanung" className="xl:col-span-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Abrechenbarer Anteil der Vertragsstunden</span>
+              <input
+                name="billableCapacityFactor"
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                defaultValue={settings.billableCapacityFactor.toString()}
+                className={fieldCls}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Standard-Auslaufphase (Wochen)</span>
+              <input name="defaultPhaseOutWeeks" type="number" min="0" step="1" defaultValue={settings.defaultPhaseOutWeeks} className={fieldCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Richtwert parallele Fälle bei Vollzeit</span>
+              <input
+                name="targetParallelCasesAtFullTime"
+                type="number"
+                min="0"
+                step="1"
+                defaultValue={settings.targetParallelCasesAtFullTime}
+                className={fieldCls}
+              />
+            </label>
+          </div>
+        </ProsSectionCard>
+
+        <ProsSectionCard title="Stundenmodell-Rechner">
+          <label className="flex max-w-xs flex-col gap-1.5">
+            <span className={labelCls}>Aktuelle Fonds-Basis (%)</span>
             <input
-              name="billableCapacityFactor"
+              name="aktuelleFondsBasis"
               type="number"
               min="0"
-              max="1"
+              max="100"
               step="0.01"
-              defaultValue={settings.billableCapacityFactor.toString()}
-              className={inputCls}
+              defaultValue={settings.aktuelleFondsBasis.toString()}
+              className={fieldCls}
             />
+            <span className={helpCls}>Neue Mitarbeiter übernehmen diesen Wert bei Einstellung als Bestandsschutz-Snapshot.</span>
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Standard-Auslaufphase (Wochen)</span>
-            <input name="defaultPhaseOutWeeks" type="number" min="0" step="1" defaultValue={settings.defaultPhaseOutWeeks} className={inputCls} />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Richtwert parallele Fälle bei Vollzeit</span>
+        </ProsSectionCard>
+
+        <ProsSectionCard title="Fahrten-/Fallrechner">
+          <label className="flex max-w-xs flex-col gap-1.5">
+            <span className={labelCls}>Ø Geschwindigkeit für Fahrzeitschätzung (km/h)</span>
             <input
-              name="targetParallelCasesAtFullTime"
+              name="fahrtenrechnerDurchschnittskmh"
               type="number"
-              min="0"
+              min="1"
               step="1"
-              defaultValue={settings.targetParallelCasesAtFullTime}
-              className={inputCls}
+              defaultValue={settings.fahrtenrechnerDurchschnittskmh.toString()}
+              className={fieldCls}
             />
+            <span className={helpCls}>Umrechnung geschätzte Fahrstrecke → Fahrzeit im Fahrten-/Fallrechner (Admin/Verwaltung).</span>
           </label>
-        </div>
-      </div>
+        </ProsSectionCard>
 
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Stundenmodell-Rechner</h2>
-        <label className="flex max-w-xs flex-col gap-1.5">
-          <span className={labelCls}>Aktuelle Fonds-Basis (%)</span>
-          <input
-            name="aktuelleFondsBasis"
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            defaultValue={settings.aktuelleFondsBasis.toString()}
-            className={inputCls}
-          />
-          <span className="text-xs text-[var(--color-text-muted)]">
-            Neue Mitarbeiter übernehmen diesen Wert bei Einstellung als Bestandsschutz-Snapshot.
-          </span>
-        </label>
-      </div>
-
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Fahrten-/Fallrechner</h2>
-        <label className="flex max-w-xs flex-col gap-1.5">
-          <span className={labelCls}>Ø Geschwindigkeit für Fahrzeitschätzung (km/h)</span>
-          <input
-            name="fahrtenrechnerDurchschnittskmh"
-            type="number"
-            min="1"
-            step="1"
-            defaultValue={settings.fahrtenrechnerDurchschnittskmh.toString()}
-            className={inputCls}
-          />
-          <span className="text-xs text-[var(--color-text-muted)]">
-            Umrechnung geschätzte Fahrstrecke → Fahrzeit im Fahrten-/Fallrechner (Admin/Verwaltung).
-          </span>
-        </label>
-      </div>
-
-      <div className={cardCls}>
-        <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Verhalten</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Kontingent-Warnschwelle (%)</span>
-            <input name="contingentWarningThreshold" type="number" min="1" max="100" defaultValue={settings.contingentWarningThreshold} className={inputCls} />
+        <ProsSectionCard title="Verhalten" className="xl:col-span-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Kontingent-Warnschwelle (%)</span>
+              <input name="contingentWarningThreshold" type="number" min="1" max="100" defaultValue={settings.contingentWarningThreshold} className={fieldCls} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelCls}>Auto-Abmeldung nach Inaktivität (Minuten)</span>
+              <input name="sessionIdleTimeoutMinutes" type="number" min="1" defaultValue={settings.sessionIdleTimeoutMinutes} className={fieldCls} />
+            </label>
+          </div>
+          <label className="mt-4 flex items-center gap-2.5 text-sm text-[var(--color-text)]">
+            <input
+              type="checkbox"
+              name="employeesCanContributeKnowledge"
+              defaultChecked={settings.employeesCanContributeKnowledge}
+              className="h-4 w-4 shrink-0 accent-[var(--color-primary)]"
+            />
+            Mitarbeiter dürfen eigene Inhalte in der Fachbox beitragen (nicht nur lesen)
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelCls}>Auto-Abmeldung nach Inaktivität (Minuten)</span>
-            <input name="sessionIdleTimeoutMinutes" type="number" min="1" defaultValue={settings.sessionIdleTimeoutMinutes} className={inputCls} />
-          </label>
-        </div>
-        <label className="mt-3 flex items-center gap-2 text-sm text-[var(--color-text)]">
-          <input type="checkbox" name="employeesCanContributeKnowledge" defaultChecked={settings.employeesCanContributeKnowledge} />
-          Mitarbeiter dürfen eigene Inhalte in der Fachbox beitragen (nicht nur lesen)
-        </label>
+        </ProsSectionCard>
       </div>
 
-      {state?.error && <p className="text-sm text-[var(--color-coral)]">{state.error}</p>}
-      {state?.success && <p className="text-sm text-[var(--color-green-medium)]">{state.success}</p>}
+      {state?.error && (
+        <p role="alert" className={errorTextCls}>
+          {state.error}
+        </p>
+      )}
+      {state?.success && (
+        <p role="status" className={noticeSuccessCls}>
+          <IconCheck size={16} />
+          {state.success}
+        </p>
+      )}
 
       <div>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending} className={buttonPrimaryCls}>
           {pending ? "Speichern…" : "Speichern"}
         </button>
       </div>

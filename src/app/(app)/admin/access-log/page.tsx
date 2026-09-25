@@ -2,6 +2,9 @@ import { format } from "date-fns";
 import { requireAdmin } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import type { AccessAction, Prisma } from "@prisma/client";
+import { ProsCard } from "@/components/pros/pros-card";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { labelCls, filterFieldCls, buttonSecondaryCls, pageTitleCls, pageSubtitleCls, tableWrapCls, theadCls, trCls } from "@/app/(app)/cases/case-ui";
 
 const ACTION_LABELS: Record<AccessAction, string> = {
   VIEW: "Angesehen",
@@ -12,6 +15,19 @@ const ACTION_LABELS: Record<AccessAction, string> = {
   EXPORT: "Exportiert",
   LOGIN: "Login",
   LOGIN_FAILED: "Login fehlgeschlagen",
+};
+
+// Rein visuelle Zuordnung zur PROS-Statussprache: Auffälliges (fehlgeschlagener Login, Löschen) und
+// Archiviertes heben sich ab, alle übrigen Aktionen bleiben neutral.
+const ACTION_TONE: Record<AccessAction, "stable" | "attention" | "critical" | "archived"> = {
+  VIEW: "stable",
+  CREATE: "stable",
+  UPDATE: "stable",
+  ARCHIVE: "archived",
+  DELETE: "attention",
+  EXPORT: "stable",
+  LOGIN: "stable",
+  LOGIN_FAILED: "critical",
 };
 
 export default async function AccessLogPage({
@@ -42,73 +58,77 @@ export default async function AccessLogPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Zugriffsprotokoll</h1>
-        <p className="mt-1 text-sm text-black/60">Wer hat wann welchen Fall/Datensatz eingesehen oder bearbeitet (letzte 300 Einträge).</p>
+        <h1 className={pageTitleCls}>Zugriffsprotokoll</h1>
+        <p className={pageSubtitleCls}>Wer hat wann welchen Fall/Datensatz eingesehen oder bearbeitet (letzte 300 Einträge).</p>
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-3 rounded-lg border border-black/10 bg-white p-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-black/60">Mitarbeiter</span>
-          <select name="userId" defaultValue={params.userId ?? ""} className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
-            <option value="">Alle</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-black/60">Aktion</span>
-          <select name="action" defaultValue={params.action ?? ""} className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
-            <option value="">Alle</option>
-            {Object.entries(ACTION_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-black/60">Datentyp</span>
-          <select name="entityType" defaultValue={params.entityType ?? ""} className="rounded-md border border-black/15 px-3 py-1.5 text-sm">
-            <option value="">Alle</option>
-            {entityTypes.map((e) => (
-              <option key={e.entityType} value={e.entityType}>
-                {e.entityType}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" className="rounded-md border border-black/15 px-4 py-1.5 text-sm hover:bg-black/5">
-          Filtern
-        </button>
-      </form>
+      <ProsCard className="p-4">
+        <form method="get" className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Mitarbeiter</span>
+            <select name="userId" defaultValue={params.userId ?? ""} className={filterFieldCls}>
+              <option value="">Alle</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Aktion</span>
+            <select name="action" defaultValue={params.action ?? ""} className={filterFieldCls}>
+              <option value="">Alle</option>
+              {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className={labelCls}>Datentyp</span>
+            <select name="entityType" defaultValue={params.entityType ?? ""} className={filterFieldCls}>
+              <option value="">Alle</option>
+              {entityTypes.map((e) => (
+                <option key={e.entityType} value={e.entityType}>
+                  {e.entityType}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className={buttonSecondaryCls}>
+            Filtern
+          </button>
+        </form>
+      </ProsCard>
 
-      <div className="overflow-x-auto rounded-lg border border-black/10 bg-white">
+      <div className={tableWrapCls}>
         <table className="w-full text-left text-sm">
-          <thead className="bg-black/5 text-xs uppercase text-black/50">
+          <thead className={theadCls}>
             <tr>
-              <th className="px-4 py-2">Zeitpunkt</th>
-              <th className="px-4 py-2">Mitarbeiter</th>
-              <th className="px-4 py-2">Aktion</th>
-              <th className="px-4 py-2">Datentyp</th>
-              <th className="px-4 py-2">Details</th>
+              <th scope="col" className="px-4 py-2.5">Zeitpunkt</th>
+              <th scope="col" className="px-4 py-2.5">Mitarbeiter</th>
+              <th scope="col" className="px-4 py-2.5">Aktion</th>
+              <th scope="col" className="px-4 py-2.5">Datentyp</th>
+              <th scope="col" className="px-4 py-2.5">Details</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-t border-black/5">
-                <td className="px-4 py-2 whitespace-nowrap">{format(log.timestamp, "dd.MM.yyyy HH:mm:ss")}</td>
-                <td className="px-4 py-2">{log.user?.name ?? "Unbekannt"}</td>
-                <td className="px-4 py-2">{ACTION_LABELS[log.action]}</td>
-                <td className="px-4 py-2">{log.entityType}</td>
-                <td className="px-4 py-2 text-black/60">{log.details ?? "–"}</td>
+              <tr key={log.id} className={trCls}>
+                <td className="px-4 py-2.5 whitespace-nowrap text-[var(--color-text)] tabular-nums">{format(log.timestamp, "dd.MM.yyyy HH:mm:ss")}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text)]">{log.user?.name ?? "Unbekannt"}</td>
+                <td className="px-4 py-2.5">
+                  <ProsStatusPill tone={ACTION_TONE[log.action]}>{ACTION_LABELS[log.action]}</ProsStatusPill>
+                </td>
+                <td className="px-4 py-2.5 text-[var(--color-text)]">{log.entityType}</td>
+                <td className="px-4 py-2.5 text-[var(--color-text-muted)]">{log.details ?? "–"}</td>
               </tr>
             ))}
             {logs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-black/40">
+                <td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
                   Keine Einträge.
                 </td>
               </tr>

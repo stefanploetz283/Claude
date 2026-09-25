@@ -2,19 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { addGlossarBegriff, updateGlossarBegriff, deleteGlossarBegriff } from "./actions";
+import { ConfirmDeleteModal } from "./confirm-delete-modal";
+import { inputCls, labelCls, buttonSmOutlineCls, buttonSmPrimaryCls, errorTextCls, linkDangerCls } from "@/app/(app)/cases/case-ui";
 
 type Begriff = { id: string; begriff: string; definition: string };
 
-const inputCls =
-  "rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-
 export function GlossarPanel({ begriffe }: { begriffe: Begriff[] }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col">
       {begriffe.map((b) => (
         <GlossarRow key={b.id} begriff={b} />
       ))}
-      {begriffe.length === 0 && <p className="text-sm text-[var(--color-text-muted)]">Noch keine Begriffe.</p>}
+      {begriffe.length === 0 && <p className="pb-4 text-sm text-[var(--color-text-muted)]">Noch keine Begriffe.</p>}
       <AddGlossarRow />
     </div>
   );
@@ -25,42 +24,53 @@ function GlossarRow({ begriff }: { begriff: Begriff }) {
   const [d, setD] = useState(begriff.definition);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-      <div className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-muted)]">Begriff</span>
-          <input value={b} onChange={(e) => setB(e.target.value)} className={`w-48 ${inputCls}`} />
+    <div className="border-t border-[var(--pros-border-default)] py-4 first:border-t-0 first:pt-0">
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1.5">
+          <span className={labelCls}>Begriff</span>
+          <input value={b} onChange={(e) => setB(e.target.value)} className={`w-full sm:w-48 ${inputCls}`} />
         </label>
-        <label className="flex min-w-[16rem] flex-1 flex-col gap-1">
-          <span className="text-xs font-medium text-[var(--color-text-muted)]">Definition</span>
-          <textarea value={d} onChange={(e) => setD(e.target.value)} rows={2} className={inputCls} />
+        <label className="flex min-w-[16rem] flex-1 flex-col gap-1.5">
+          <span className={labelCls}>Definition</span>
+          <textarea value={d} onChange={(e) => setD(e.target.value)} rows={2} className={`w-full ${inputCls}`} />
         </label>
-        <button
-          disabled={pending}
-          onClick={() =>
-            startTransition(async () => {
-              const result = await updateGlossarBegriff(begriff.id, b, d);
-              setError(result?.error ?? null);
-            })
-          }
-          className="rounded-[var(--radius-control)] border border-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white disabled:opacity-50"
-        >
-          Speichern
-        </button>
-        <button
-          disabled={pending}
-          onClick={() => {
-            if (!confirm(`Begriff „${begriff.begriff}" wirklich löschen?`)) return;
+        <div className="flex items-center gap-3 pb-2.5">
+          <button
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                const result = await updateGlossarBegriff(begriff.id, b, d);
+                setError(result?.error ?? null);
+              })
+            }
+            className={buttonSmOutlineCls}
+          >
+            Speichern
+          </button>
+          <button disabled={pending} onClick={() => setConfirmDelete(true)} className={linkDangerCls}>
+            Löschen
+          </button>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className={`mt-2 ${errorTextCls}`}>
+          {error}
+        </p>
+      )}
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Begriff löschen"
+          message={`Begriff „${begriff.begriff}“ wirklich löschen?`}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => {
+            setConfirmDelete(false);
             startTransition(() => deleteGlossarBegriff(begriff.id));
           }}
-          className="text-xs font-medium text-[var(--color-coral)] hover:underline disabled:opacity-50"
-        >
-          Löschen
-        </button>
-      </div>
-      {error && <p className="mt-2 text-xs text-[var(--color-coral)]">{error}</p>}
+        />
+      )}
     </div>
   );
 }
@@ -72,14 +82,14 @@ function AddGlossarRow() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-wrap items-end gap-2 border-t border-[var(--color-border)] pt-3">
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Neuer Begriff</span>
-        <input value={b} onChange={(e) => setB(e.target.value)} placeholder="z.B. Kongruenz" className={`w-48 ${inputCls}`} />
+    <div className="flex flex-wrap items-end gap-3 border-t border-[var(--pros-border-default)] pt-4">
+      <label className="flex flex-col gap-1.5">
+        <span className={labelCls}>Neuer Begriff</span>
+        <input value={b} onChange={(e) => setB(e.target.value)} placeholder="z.B. Kongruenz" className={`w-full sm:w-48 ${inputCls}`} />
       </label>
-      <label className="flex min-w-[16rem] flex-1 flex-col gap-1">
-        <span className="text-xs font-medium text-[var(--color-text-muted)]">Definition</span>
-        <textarea value={d} onChange={(e) => setD(e.target.value)} rows={2} className={inputCls} />
+      <label className="flex min-w-[16rem] flex-1 flex-col gap-1.5">
+        <span className={labelCls}>Definition</span>
+        <textarea value={d} onChange={(e) => setD(e.target.value)} rows={2} className={`w-full ${inputCls}`} />
       </label>
       <button
         disabled={pending || !b.trim() || !d.trim()}
@@ -95,11 +105,15 @@ function AddGlossarRow() {
             setD("");
           })
         }
-        className="rounded-[var(--radius-control)] bg-[var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+        className={`${buttonSmPrimaryCls} mb-2.5`}
       >
         Hinzufügen
       </button>
-      {error && <p className="w-full text-xs text-[var(--color-coral)]">{error}</p>}
+      {error && (
+        <p role="alert" className={`w-full ${errorTextCls}`}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

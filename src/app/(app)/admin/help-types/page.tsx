@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { NewHelpTypeForm, ArchiveHelpTypeButton } from "./help-type-controls";
 import { ActivityProfilePanel } from "./activity-profile-panel";
 import { BerichtsManualPanel } from "./berichtsmanual-panel";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { pageTitleCls, pageSubtitleCls, tableWrapCls, theadCls, trCls } from "@/app/(app)/cases/case-ui";
 
 export default async function HelpTypesPage() {
   await requireAdmin();
@@ -17,52 +19,54 @@ export default async function HelpTypesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Angebotskatalog</h1>
-        <p className="mt-1 text-sm text-black/60">Hilfearten, die bei der Fallanlage zur Auswahl stehen.</p>
+        <h1 className={pageTitleCls}>Angebotskatalog</h1>
+        <p className={pageSubtitleCls}>Hilfearten, die bei der Fallanlage zur Auswahl stehen.</p>
       </div>
 
       <NewHelpTypeForm />
 
-      <div className="overflow-hidden rounded-lg border border-black/10 bg-white">
+      <div className={tableWrapCls}>
         <table className="w-full text-left text-sm">
-          <thead className="bg-black/5 text-xs uppercase text-black/50">
+          <thead className={theadCls}>
             <tr>
-              <th className="px-4 py-2">Bezeichnung</th>
-              <th className="px-4 py-2">Beschreibung</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Aktionen</th>
+              <th scope="col" className="px-4 py-2.5">Bezeichnung</th>
+              <th scope="col" className="px-4 py-2.5">Beschreibung</th>
+              <th scope="col" className="px-4 py-2.5">Status</th>
+              <th scope="col" className="px-4 py-2.5">Aktionen</th>
             </tr>
           </thead>
           <tbody>
             {helpTypes.map((h) => (
-              <tr key={h.id} className="border-t border-black/5">
-                <td className="px-4 py-2 align-top font-medium">{h.name}</td>
-                <td className="px-4 py-2 align-top text-black/60">{h.description ?? "–"}</td>
-                <td className="px-4 py-2 align-top">
-                  <span className={h.archived ? "text-black/40" : "text-green-700"}>{h.archived ? "Archiviert" : "Aktiv"}</span>
+              <tr key={h.id} className={trCls}>
+                <td className="px-4 py-3 align-top font-semibold text-[var(--color-text)]">{h.name}</td>
+                <td className="px-4 py-3 align-top text-[var(--color-text-muted)]">{h.description ?? "–"}</td>
+                <td className="px-4 py-3 align-top">
+                  <ProsStatusPill tone={h.archived ? "archived" : "active"}>{h.archived ? "Archiviert" : "Aktiv"}</ProsStatusPill>
                 </td>
-                <td className="px-4 py-2 align-top">
-                  <ArchiveHelpTypeButton id={h.id} archived={h.archived} />
-                  <ActivityProfilePanel
-                    helpTypeId={h.id}
-                    defaultDurationWeeks={h.defaultDurationWeeks}
-                    defaultTotalHoursMin={h.defaultTotalHoursMin?.toString() ?? null}
-                    defaultTotalHoursMax={h.defaultTotalHoursMax?.toString() ?? null}
-                    profiles={h.activityProfiles.map((p) => ({
-                      id: p.id,
-                      activityLabel: p.activityLabel,
-                      hoursPerWeek: p.hoursPerWeek?.toString() ?? null,
-                    }))}
-                  />
-                  <BerichtsManualPanel
-                    helpTypeId={h.id}
-                    versionen={h.berichtsManualVersionen.map((v) => ({
-                      id: v.id,
-                      text: v.text,
-                      createdAt: v.createdAt.toISOString(),
-                      erstelltVonName: v.erstelltVon.name,
-                    }))}
-                  />
+                <td className="px-4 py-3 align-top">
+                  <div className="flex flex-col items-start gap-2.5">
+                    <ArchiveHelpTypeButton id={h.id} archived={h.archived} />
+                    <ActivityProfilePanel
+                      helpTypeId={h.id}
+                      defaultDurationWeeks={h.defaultDurationWeeks}
+                      defaultTotalHoursMin={h.defaultTotalHoursMin?.toString() ?? null}
+                      defaultTotalHoursMax={h.defaultTotalHoursMax?.toString() ?? null}
+                      profiles={h.activityProfiles.map((p) => ({
+                        id: p.id,
+                        activityLabel: p.activityLabel,
+                        hoursPerWeek: p.hoursPerWeek?.toString() ?? null,
+                      }))}
+                    />
+                    <BerichtsManualPanel
+                      helpTypeId={h.id}
+                      versionen={h.berichtsManualVersionen.map((v) => ({
+                        id: v.id,
+                        text: v.text,
+                        createdAt: v.createdAt.toISOString(),
+                        erstelltVonName: v.erstelltVon.name,
+                      }))}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

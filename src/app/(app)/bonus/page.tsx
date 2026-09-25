@@ -7,7 +7,8 @@ import { computeQuarterBonus, buildUpcomingWeeks, getCurrentQuarter, EURO_PRO_PU
 import { QuoteRing } from "./quote-ring";
 import { CapacityCalendar } from "./capacity-calendar";
 import { GutscheinPicker } from "./gutschein-picker";
-import { BONUS_PRIMARY, BONUS_LIGHT, BONUS_DARK_TEXT } from "@/lib/bonus-colors";
+import { ProsCard } from "@/components/pros/pros-card";
+import { pageTitleCls } from "@/app/(app)/cases/case-ui";
 import type { GutscheinAnbieterKey } from "@/lib/bonus-colors";
 
 function formatEuro(amount: number): string {
@@ -32,13 +33,13 @@ export default async function BonusPage() {
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Bonus</h1>
+          <h1 className={pageTitleCls}>Bonus</h1>
         </div>
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+        <ProsCard className="p-5">
           <p className="text-sm text-[var(--color-text-muted)]">
             Für dich sind noch keine Vertragsstunden hinterlegt. Bitte den Admin bitten, das unter Mitarbeiter einzutragen.
           </p>
-        </div>
+        </ProsCard>
       </div>
     );
   }
@@ -61,68 +62,60 @@ export default async function BonusPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2.5">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={BONUS_PRIMARY} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-          <polyline points="17 6 23 6 23 12" />
-        </svg>
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">
-          {getHeadline(result.currentWeekIndex, prognoseQuote)}
-        </h1>
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--pros-sage-soft)] text-[var(--color-primary)]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </span>
+        <h1 className={pageTitleCls}>{getHeadline(result.currentWeekIndex, prognoseQuote)}</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="flex flex-col items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-soft)]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <ProsCard className="flex flex-col items-center justify-center p-6">
           <QuoteRing quote={prognoseQuote ?? 0} weekLabel={weekLabel} quarterKey={quarterKey} />
-        </div>
+        </ProsCard>
 
-        <div
-          className="flex flex-col justify-center gap-1.5 rounded-[var(--radius-card)] p-6 shadow-[var(--shadow-soft)] lg:col-span-2"
-          style={{ background: BONUS_LIGHT }}
-        >
-          <span className="text-xs font-semibold tracking-wide uppercase" style={{ color: BONUS_DARK_TEXT }}>
-            Prognose bei diesem Tempo
-          </span>
+        {/* Primäre Kennzahl im Salbei-Verlauf - dieselbe Fläche wie die primäre ProsKpiCard. */}
+        <div className="flex flex-col justify-center gap-1.5 rounded-[var(--pros-r-md)] border border-[var(--pros-sage-soft)] bg-gradient-to-br from-[var(--pros-sage-soft)] to-[#CFDCC8] p-6 shadow-[var(--pros-shadow)] lg:col-span-2">
+          <span className="text-sm font-semibold text-[var(--color-primary)]">Prognose bei diesem Tempo</span>
           {result.prognose.available && prognoseQuote != null ? (
             <>
-              <span className="text-4xl font-bold" style={{ color: BONUS_DARK_TEXT }}>
-                {formatEuro(result.prognose.bonus ?? 0)}
-              </span>
-              <span className="text-sm" style={{ color: BONUS_DARK_TEXT }}>
+              <span className="text-4xl font-bold tabular-nums text-[var(--color-primary)]">{formatEuro(result.prognose.bonus ?? 0)}</span>
+              <span className="text-sm text-[var(--color-text)]">
                 wenn&apos;s so weiterläuft, bis Quartalsende ({prognoseQuote.toFixed(1)}% Quote)
               </span>
             </>
           ) : (
-            <span className="text-lg font-medium" style={{ color: BONUS_DARK_TEXT }}>
-              Noch zu wenig Daten für eine Prognose – ab Woche 2 verfügbar.
-            </span>
+            <span className="text-lg font-medium text-[var(--color-primary)]">Noch zu wenig Daten für eine Prognose – ab Woche 2 verfügbar.</span>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-          <div className="text-[28px] leading-none font-bold text-[var(--color-text)]">{punkteUeberZiel.toFixed(2)}</div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <ProsCard className="p-5">
+          <div className="text-[28px] leading-none font-bold tabular-nums text-[var(--color-text)]">{punkteUeberZiel.toFixed(2)}</div>
           <div className="mt-1.5 text-sm font-semibold text-[var(--color-text)]">Punkte über Ziel</div>
-        </div>
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
-          <div className="text-[28px] leading-none font-bold text-[var(--color-text)]">{EURO_PRO_PUNKT.toFixed(0)} €</div>
+        </ProsCard>
+        <ProsCard className="p-5">
+          <div className="text-[28px] leading-none font-bold tabular-nums text-[var(--color-text)]">{EURO_PRO_PUNKT.toFixed(0)} €</div>
           <div className="mt-1.5 text-sm font-semibold text-[var(--color-text)]">Pro Punkt</div>
-        </div>
+        </ProsCard>
       </div>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <ProsCard className="p-[18px]">
         <CapacityCalendar weeks={upcomingWeeks} />
-      </div>
+      </ProsCard>
 
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-soft)]">
+      <ProsCard className="p-[18px]">
         <GutscheinPicker
           year={now.getFullYear()}
           month={month}
           monthLabel={format(now, "MMMM yyyy", { locale: de })}
           selected={(gutschein?.anbieter as GutscheinAnbieterKey) ?? null}
         />
-      </div>
+      </ProsCard>
     </div>
   );
 }
