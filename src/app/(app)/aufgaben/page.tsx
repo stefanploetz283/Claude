@@ -38,7 +38,7 @@ export default async function AufgabenPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-primary)]">Aufgaben</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{offen.length} offen{offen.length === 1 ? "" : "e"} Aufgaben.</p>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">{offen.length} offene {offen.length === 1 ? "Aufgabe" : "Aufgaben"}.</p>
       </div>
 
       <AufgabeForm caseOptions={caseOptions} />

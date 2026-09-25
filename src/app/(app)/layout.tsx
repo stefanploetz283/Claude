@@ -37,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         userName={user.name ?? user.email ?? "?"}
         avatarUrl={avatarSrc}
       />
-      <AppBody>{children}</AppBody>
+      <AppBody reserveFabSpace={user.role === "EMPLOYEE" || user.role === "ADMIN"}>{children}</AppBody>
       <IdleTimer idleTimeoutMinutes={settings.sessionIdleTimeoutMinutes} />
       {(user.role === "EMPLOYEE" || user.role === "ADMIN") && <GlobalDictateWidget />}
     </div>

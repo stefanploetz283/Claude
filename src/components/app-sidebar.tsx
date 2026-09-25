@@ -539,7 +539,10 @@ export function AppSidebar({
         </div>
       </div>
       {mobileOpen && (
-        <div style={sidebarBackground} className="flex max-h-[calc(100dvh-60px)] flex-col gap-5 overflow-y-auto px-4 pb-5 lg:hidden">
+        <div
+          style={sidebarBackground}
+          className={`flex max-h-[calc(100dvh-60px)] flex-col gap-5 overflow-y-auto px-4 lg:hidden ${isVerwaltung ? "pb-5" : "pb-[150px]"}`}
+        >
           <label className="flex h-12 shrink-0 items-center gap-2.5 rounded-[14px] border border-white/12 bg-[var(--color-sage)]/45 px-3.5 text-white">
             <IconSearch />
             <input placeholder="Suchen..." disabled aria-hidden="true" tabIndex={-1} className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder:text-white outline-none" />

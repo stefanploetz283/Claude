@@ -145,7 +145,7 @@ export default async function KapazitaetPage() {
       >
         <div className="rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]">
           <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Neue Anfrage auf Warteliste setzen</h2>
-          <WaitlistForm helpTypes={helpTypes} />
+          <WaitlistForm helpTypes={helpTypeOrder} />
         </div>
       </KapazitaetBoard>
     </div>

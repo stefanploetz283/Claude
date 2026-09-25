@@ -116,7 +116,8 @@ export function CsvImport() {
         <div className="flex flex-col gap-2">
           <p className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary-soft)] px-3.5 py-3 text-sm text-[var(--color-primary)]">
             {importState.summary.neu} neue Buchung(en) importiert, davon {importState.summary.automatischZugeordnet} automatisch zugeordnet,{" "}
-            {importState.summary.zuKlaeren} auf der „Bitte zuordnen&quot;-Liste
+            {importState.summary.zuKlaeren}{" "}
+            auf der „Bitte zuordnen&quot;-Liste
             {importState.summary.ignoriert > 0 && `, ${importState.summary.ignoriert} ignoriert (Gehalt/private Entnahme)`}.
             {importState.summary.duplikate > 0 && ` ${importState.summary.duplikate} Duplikate übersprungen.`}
             {importState.summary.uebersprungenUnlesbar > 0 && ` ${importState.summary.uebersprungenUnlesbar} Zeile(n) unlesbar übersprungen.`}

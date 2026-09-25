@@ -134,7 +134,8 @@ export function ExcelImport({ jahr }: { jahr: number }) {
                 Vorhandene importierte Positionen für {previewState.jahr} ersetzen
                 {previewState.vorhandeneImportPositionen > 0 && (
                   <span className="text-[var(--color-text-muted)]">
-                    ({previewState.vorhandeneImportPositionen} vorhanden – nicht mehr enthaltene werden gelöscht, deren Ausgaben wandern in „nicht eingeplant&quot;)
+                    ({previewState.vorhandeneImportPositionen}{" "}
+                    vorhanden – nicht mehr enthaltene werden gelöscht, deren Ausgaben wandern in „nicht eingeplant&quot;)
                   </span>
                 )}
               </label>

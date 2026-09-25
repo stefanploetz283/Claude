@@ -301,7 +301,8 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
       {bitteZuordnenStau && (
         <p className={`flex items-center gap-2 ${noticeWarnCls} text-[var(--pros-status-attention-text)]`}>
           <IconWarnTriangle />
-          {zuKlaerenCount} unkategorisierte Finom-Buchungen warten auf der „Bitte zuordnen&quot;-Liste.
+          {zuKlaerenCount}{" "}
+          unkategorisierte Finom-Buchungen warten auf der „Bitte zuordnen&quot;-Liste.
         </p>
       )}
       {ueberfaelligeRechnungVorhanden && (

@@ -74,6 +74,7 @@ export function BuchungsFormular({
         <>
           <label className="flex flex-col gap-1">
             <span className={labelCls}>Mitarbeiterin</span>
+            {!canBookForOthers && <input type="hidden" name="employeeId" value={currentUserId} />}
             <select name="employeeId" required disabled={!canBookForOthers} defaultValue={canBookForOthers ? "" : currentUserId} className={fieldCls}>
               {!canBookForOthers && <option value={currentUserId}>Ich</option>}
               {canBookForOthers && <option value="">Bitte wählen…</option>}
