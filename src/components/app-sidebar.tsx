@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { updateOwnAvatar, type AvatarActionState } from "../app/(app)/dashboard/actions";
 
-type ChildItem = { href: string; label: string };
+// adminOnly spiegelt den serverseitigen Route-Guard (requireAdmin) - solche Unterpunkte werden der Rolle
+// VERWALTUNG nicht angezeigt, weil ihre Zielroute sie serverseitig wieder auf /heute umleiten würde.
+// Die Guards selbst (src/lib/rbac.ts + jeweilige page.tsx) bleiben die maßgebliche Quelle.
+type ChildItem = { href: string; label: string; adminOnly?: boolean };
 type NavEntry = { href: string; label: string; icon: React.ReactNode; children?: ChildItem[] };
 
 const ROLE_LABELS = { ADMIN: "Administrator", EMPLOYEE: "Fachkraft", VERWALTUNG: "Verwaltung" } as const;
@@ -203,17 +206,36 @@ export function AppSidebar({
         ]
       : undefined,
   };
+  const forRole = (children: ChildItem[]) => (isVerwaltung ? children.filter((c) => !c.adminOnly) : children);
   const finanzenEntry: NavEntry = {
-    href: "/finanzen",
+    href: "/finanzen", // leitet serverseitig auf /finanzen/rechnungen (Admin + Verwaltung) weiter
     label: "Finanzen",
     icon: <IconFinanzen />,
-    children: [
+    children: forRole([
       { href: "/finanzen/rechnungen", label: "Rechnungen" },
-      { href: "/finanzen/sammel-export", label: "Sammel-Export" },
-      { href: "/finanzen/statistik", label: "Statistik" },
-      { href: "/finanzen/cockpit", label: "Cockpit" },
+      { href: "/finanzen/sammel-export", label: "Sammel-Export", adminOnly: true },
+      { href: "/finanzen/statistik", label: "Statistik", adminOnly: true },
+      { href: "/finanzen/cockpit", label: "Cockpit", adminOnly: true },
       { href: "/finanzen/budgetrechner", label: "Budgetrechner" },
-    ],
+    ]),
+  };
+  // Freigaben und Abschlussbericht (fallgebunden) sind bewusst nicht für Verwaltung - sonst wäre "keine
+  // Fälle sehen" nur eine halbe Regel. Der Hauptpunkt verlinkt auf den ersten für die Rolle erlaubten
+  // Unterpunkt (Admin: Team-Gesamtansicht, Verwaltung: Fahrten-/Fallrechner).
+  const verwaltungChildren = forRole([
+    { href: "/admin/team-uebersicht", label: "Team-Gesamtansicht", adminOnly: true },
+    { href: "/admin/fahrtenrechner", label: "Fahrten-/Fallrechner" },
+    { href: "/admin/approvals", label: "Freigaben", adminOnly: true },
+    { href: "/admin/help-types", label: "Angebotskatalog", adminOnly: true },
+    { href: "/admin/abschlussbericht", label: "Abschlussbericht", adminOnly: true },
+    { href: "/admin/access-log", label: "Zugriffsprotokoll", adminOnly: true },
+    { href: "/admin/settings", label: "Einstellungen", adminOnly: true },
+  ]);
+  const verwaltungEntry: NavEntry = {
+    href: verwaltungChildren[0].href,
+    label: "Verwaltung",
+    icon: <IconVerwaltung />,
+    children: verwaltungChildren,
   };
   const kalenderEntryVoll: NavEntry = {
     href: "/calendar",
@@ -234,20 +256,7 @@ export function AppSidebar({
         { href: "/knowledge-base", label: "Fachbox", icon: <IconFachbox /> },
         mitarbeiterEntry,
         finanzenEntry,
-        {
-          href: "/admin/team-uebersicht",
-          label: "Verwaltung",
-          icon: <IconVerwaltung />,
-          // Freigaben (Falldokumentation) und Abschlussbericht (fallgebunden) bewusst nicht für
-          // Verwaltung - sonst wäre "keine Fälle sehen" nur eine halbe Regel.
-          children: [
-            { href: "/admin/team-uebersicht", label: "Team-Gesamtansicht" },
-            { href: "/admin/fahrtenrechner", label: "Fahrten-/Fallrechner" },
-            { href: "/admin/help-types", label: "Angebotskatalog" },
-            { href: "/admin/access-log", label: "Zugriffsprotokoll" },
-            { href: "/admin/settings", label: "Einstellungen" },
-          ],
-        },
+        verwaltungEntry,
       ]
     : [
         { href: "/heute", label: "Heute", icon: <IconHeute /> },
@@ -270,20 +279,7 @@ export function AppSidebar({
           ? ([
               mitarbeiterEntry,
               finanzenEntry,
-              {
-                href: "/admin/team-uebersicht",
-                label: "Verwaltung",
-                icon: <IconVerwaltung />,
-                children: [
-                  { href: "/admin/team-uebersicht", label: "Team-Gesamtansicht" },
-                  { href: "/admin/fahrtenrechner", label: "Fahrten-/Fallrechner" },
-                  { href: "/admin/approvals", label: "Freigaben" },
-                  { href: "/admin/help-types", label: "Angebotskatalog" },
-                  { href: "/admin/abschlussbericht", label: "Abschlussbericht" },
-                  { href: "/admin/access-log", label: "Zugriffsprotokoll" },
-                  { href: "/admin/settings", label: "Einstellungen" },
-                ],
-              },
+              verwaltungEntry,
             ] satisfies NavEntry[])
           : []),
       ];
