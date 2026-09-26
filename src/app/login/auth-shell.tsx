@@ -41,15 +41,11 @@ export function AuthShell({
           </g>
         </svg>
 
-        {/* Icon-Mark statt vollem Lockup - das Mark trägt dunkle Flächen, das volle Lockup bleibt hellen Flächen
-            vorbehalten (siehe mobile Ansicht rechts). */}
-        <div className="relative flex items-center gap-5">
+        {/* Offizielles Negativ-Logo (public/brand) direkt auf der Petrol-Fläche; die viewBox der SVG ist auf
+            die sichtbare Fläche getrimmt, das Logo sitzt dadurch ohne Margin-Korrektur bündig zum Slogan. */}
+        <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark-color.svg" alt="" className="h-20 w-20 shrink-0" />
-          <div className="leading-tight text-white">
-            <div className="text-4xl font-bold tracking-tight">PROS.</div>
-            <div className="mt-1 text-sm font-semibold tracking-[0.2em] text-[var(--color-gold)] uppercase">Jugendhilfe</div>
-          </div>
+          <img src="/brand/pros-logo-negative.svg" alt="PROS Jugendhilfe" className="h-auto w-[229px]" />
         </div>
 
         <p className="font-script relative -rotate-[4deg] text-[40px] leading-[0.95] text-white xl:text-[46px]">
@@ -66,7 +62,11 @@ export function AuthShell({
         <div className="w-full max-w-[440px]">
           <div className="mb-7 flex flex-col items-center lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={settings.logoUrl ? "/api/settings/logo" : "/logo-lockup.png"} alt={settings.practiceName} className="h-16 w-auto object-contain" />
+            <img
+              src={settings.logoUrl ? "/api/settings/logo" : "/brand/pros-logo-primary.svg"}
+              alt={settings.practiceName}
+              className="h-16 w-auto object-contain"
+            />
           </div>
           <div className="rounded-[var(--pros-r-lg)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-8 shadow-[var(--pros-shadow)] sm:p-10">{children}</div>
         </div>

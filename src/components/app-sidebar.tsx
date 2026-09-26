@@ -299,13 +299,14 @@ export function AppSidebar({
         </div>
       ) : (
         <>
-          {/* Icon-Rail (lg, 86px): nur die O-Marke, funktioniert bereits farblich auf Petrol.
-              Volle Breite (xl) + Mobil-Topbar: offizielle Negativ-Variante des vollen Wortmarks -
-              direkt auf der Petrol-Fläche, kein Warmweiß-Container, Seitenverhältnis erhalten. */}
+          {/* Icon-Rail (lg, 86px): offizielles Signet (public/brand/pros-logo-mark.svg). Volle Breite (xl) + Mobil-Topbar:
+              offizielle Negativ-Variante (pros-logo-negative.svg) direkt auf der Petrol-Fläche, kein Warmweiß-Container.
+              Die viewBoxen der SVGs sind auf die sichtbare Fläche getrimmt (keine Margin-Korrektur nötig).
+              Immer nur eines der beiden Bilder sichtbar (display:none nimmt es aus dem Screenreader-Baum). */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark-color.svg" alt="" className="h-10 w-10 shrink-0 xl:hidden" />
+          <img src="/brand/pros-logo-mark.svg" alt={practiceName} className="my-[3.5px] h-[33px] w-auto shrink-0 xl:hidden" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-lockup-negative.png" alt={practiceName} className="hidden h-auto w-[150px] object-contain xl:block" />
+          <img src="/brand/pros-logo-negative.svg" alt={practiceName} className="hidden h-auto w-[149px] xl:block" />
         </>
       )}
     </Link>
@@ -512,7 +513,7 @@ export function AppSidebar({
             <img src={logoUrl} alt={practiceName} className="h-9 w-auto max-w-[130px] object-contain" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src="/logo-lockup-negative.png" alt={practiceName} className="h-9 w-auto object-contain" />
+            <img src="/brand/pros-logo-negative.svg" alt={practiceName} className="h-9 w-auto" />
           )}
         </Link>
         <div className="flex shrink-0 items-center gap-2">
