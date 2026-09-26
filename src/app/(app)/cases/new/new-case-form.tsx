@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createCase } from "../actions";
 import { toDateInputValue } from "@/lib/date";
+import { cardCls, inputCls as baseInputCls } from "@/app/(app)/cases/case-ui";
 
 type Client = { id: string; firstName: string; lastName: string; birthDate: string | null };
 type Employee = { id: string; name: string };
@@ -14,9 +15,7 @@ type HelpType = {
   defaultTotalHoursMax: number | null;
 };
 
-const inputCls =
-  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
+const inputCls = `w-full ${baseInputCls}`;
 
 function addWeeks(dateStr: string, weeks: number): string {
   const d = new Date(dateStr);

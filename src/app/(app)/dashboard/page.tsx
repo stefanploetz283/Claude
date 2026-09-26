@@ -5,7 +5,8 @@ import { getRemainingHoursBulk } from "@/lib/case-helpers";
 import { getSettings } from "@/lib/settings";
 import type { CaseStatus, Prisma } from "@prisma/client";
 import { CaseCard } from "./case-card";
-import { filterFieldCls, buttonSecondaryCls } from "../cases/case-ui";
+import { filterFieldCls, buttonSecondaryCls, buttonPrimaryCls } from "../cases/case-ui";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 /**
  * "Fälle" - die vollständige, persönliche Fallliste (eigene zugewiesene/vertretene Fälle, alle Rollen
@@ -119,9 +120,10 @@ export default async function DashboardPage({
         </Link>
         <Link
           href="/cases/new"
-          className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
+          className={`${buttonPrimaryCls} inline-flex items-center gap-2`}
         >
-          + Neue Hilfe anlegen
+          <IconPlus size={16} />
+          Neue Hilfe anlegen
         </Link>
       </form>
 

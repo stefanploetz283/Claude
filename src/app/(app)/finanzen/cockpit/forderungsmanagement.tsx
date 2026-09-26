@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { markInvoiceAsBezahlt } from "./steuer-actions";
-import { cardCls, buttonOutlineCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, buttonOutlineCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 
 export type OffeneRechnung = {
@@ -30,7 +30,7 @@ export function Forderungsmanagement({ rechnungen }: { rechnungen: OffeneRechnun
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+            <thead className={theadQuietCls}>
               <tr>
                 <th className="py-2 pr-3">Rechnung</th>
                 <th className="py-2 pr-3">Klient</th>

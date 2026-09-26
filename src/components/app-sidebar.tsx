@@ -23,6 +23,12 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+// aria-current: "page" auf dem Link der aktuellen Seite, "true" auf einem Hauptpunkt, dessen Unterpunkt aktiv ist.
+function currentAttr(pathname: string, href: string, children?: { href: string }[]): "page" | "true" | undefined {
+  if (isActive(pathname, href)) return "page";
+  return children?.some((c) => isActive(pathname, c.href)) ? "true" : undefined;
+}
+
 // ---------- Icons (ein Satz, konsistente Strichstärke) ----------
 function IconHeute() {
   return (
@@ -329,7 +335,7 @@ export function AppSidebar({
   );
 
   const navList = (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
+    <nav aria-label="Hauptnavigation" className="flex flex-1 flex-col gap-1 overflow-y-auto">
       {entries.map((entry) => {
         const active = isActive(pathname, entry.href) || entry.children?.some((c) => isActive(pathname, c.href));
         const showChildrenFiltered = active && entry.children && entry.children.length > 0;
@@ -337,6 +343,7 @@ export function AppSidebar({
           <div key={entry.href}>
             <Link
               href={entry.href}
+              aria-current={currentAttr(pathname, entry.href, entry.children)}
               onClick={() => setMobileOpen(false)}
               title={entry.label}
               className={`flex min-h-12 items-center gap-3.5 rounded-[13px] px-3.5 text-[14px] font-medium transition-[background-color,transform] duration-[170ms] ease-[var(--pros-ease)] xl:justify-start justify-center xl:px-3.5 ${
@@ -359,6 +366,7 @@ export function AppSidebar({
                     <Link
                       key={child.href}
                       href={child.href}
+                      aria-current={childActive ? "page" : undefined}
                       onClick={() => setMobileOpen(false)}
                       className={`rounded-[8px] px-3 py-2 text-[13px] transition-colors duration-[170ms] ease-[var(--pros-ease)] ${
                         childActive ? "bg-white/12 font-semibold text-white" : "text-[#EDE7DA]/85 hover:bg-white/8"
@@ -425,6 +433,7 @@ export function AppSidebar({
       {!isVerwaltung && (
         <Link
           href="/bonus"
+          aria-current={isActive(pathname, "/bonus") ? "page" : undefined}
           onClick={() => setMobileOpen(false)}
           title="Meine Bonusübersicht"
           className={`-mt-1 hidden items-center gap-2 rounded-[9px] px-2.5 py-1.5 text-[12.5px] font-medium transition-colors xl:flex ${
@@ -543,13 +552,14 @@ export function AppSidebar({
             <IconSearch />
             <input placeholder="Suchen..." disabled aria-hidden="true" tabIndex={-1} className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder:text-white outline-none" />
           </label>
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
+          <nav aria-label="Hauptnavigation" className="flex flex-1 flex-col gap-1 overflow-y-auto">
             {entries.map((entry) => {
               const active = isActive(pathname, entry.href) || entry.children?.some((c) => isActive(pathname, c.href));
               return (
                 <div key={entry.href}>
                   <Link
                     href={entry.href}
+                    aria-current={currentAttr(pathname, entry.href, entry.children)}
                     onClick={() => setMobileOpen(false)}
                     className={`flex min-h-12 items-center gap-3.5 rounded-[13px] px-3.5 text-[14px] font-medium transition-colors ${
                       active ? "bg-[var(--color-bg)] font-semibold text-[var(--color-primary)]" : "text-white/94 hover:bg-white/9"
@@ -564,6 +574,7 @@ export function AppSidebar({
                         <Link
                           key={child.href}
                           href={child.href}
+                          aria-current={isActive(pathname, child.href) ? "page" : undefined}
                           onClick={() => setMobileOpen(false)}
                           className={`rounded-[8px] px-3 py-2 text-[13px] transition-colors ${
                             isActive(pathname, child.href) ? "bg-white/12 font-semibold text-white" : "text-[#EDE7DA]/85 hover:bg-white/8"
@@ -599,7 +610,7 @@ export function AppSidebar({
               </div>
             </div>
             {!isVerwaltung && (
-              <Link href="/bonus" onClick={() => setMobileOpen(false)} className="-mt-1 flex items-center gap-2 rounded-[9px] px-2.5 py-1.5 text-[12.5px] font-medium text-[#EDE7DA]/85 hover:bg-white/8">
+              <Link href="/bonus" aria-current={isActive(pathname, "/bonus") ? "page" : undefined} onClick={() => setMobileOpen(false)} className="-mt-1 flex items-center gap-2 rounded-[9px] px-2.5 py-1.5 text-[12.5px] font-medium text-[#EDE7DA]/85 hover:bg-white/8">
                 <IconBonus />
                 Meine Bonusübersicht
               </Link>

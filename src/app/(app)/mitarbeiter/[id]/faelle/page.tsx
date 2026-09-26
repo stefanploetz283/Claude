@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/rbac";
 import { MitarbeiterHeader } from "../mitarbeiter-header";
+import { theadCls } from "@/app/(app)/cases/case-ui";
 
 const STATUS_LABELS: Record<string, string> = { ACTIVE: "Aktiv", PAUSED: "Pausiert", COMPLETED: "Abgeschlossen" };
 
@@ -26,7 +27,7 @@ export default async function MitarbeiterFaellePage({ params }: { params: Promis
 
       <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+          <thead className={theadCls}>
             <tr>
               <th className="px-4 py-2.5">Klient</th>
               <th className="px-4 py-2.5">Hilfeart</th>

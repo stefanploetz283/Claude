@@ -75,11 +75,11 @@ export function EntryRow({
 
   return (
     <tr className="border-t border-[var(--pros-border-default)] transition-colors hover:bg-[var(--pros-sage-pale)]/40">
-      <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text)]">{format(new Date(entry.date), "dd.MM.yyyy")}</td>
-      <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text)]">
+      <td className="px-3 py-3 whitespace-nowrap text-[var(--color-text)] xl:px-5">{format(new Date(entry.date), "dd.MM.yyyy")}</td>
+      <td className="px-3 py-3 text-[var(--color-text)] xl:px-5 xl:whitespace-nowrap">
         {entry.startTime}–{entry.endTime} ({(entry.durationMinutes / 60).toFixed(2)} Std.)
       </td>
-      <td className="px-5 py-3 text-[var(--color-text)]">
+      <td className="px-3 py-3 text-[var(--color-text)] xl:px-5">
         {entry.description}
         {entry.activityLabel && (
           <span className="ml-2 rounded-full bg-[var(--color-primary-soft)] px-2 py-0.5 text-xs font-medium text-[var(--color-primary)]">
@@ -87,10 +87,12 @@ export function EntryRow({
           </span>
         )}
       </td>
-      <td className="px-5 py-3 whitespace-nowrap text-[var(--color-text-muted)]">{entry.employeeName}</td>
+      <td className="px-3 py-3 text-[var(--color-text-muted)] xl:px-5 xl:whitespace-nowrap">{entry.employeeName}</td>
       {canEdit && (
-        <td className="px-5 py-3 whitespace-nowrap text-right">
-          <button onClick={() => setEditing(true)} className="mr-3 text-xs font-medium text-[var(--color-primary)] hover:underline">
+        <td className="px-3 py-3 text-right xl:px-5 xl:whitespace-nowrap">
+          {/* Bis xl untereinander: so bleiben Bearbeiten/Löschen ohne Horizontal-Scroll erreichbar. */}
+          <div className="flex flex-col items-end gap-1 xl:flex-row xl:justify-end xl:gap-3">
+          <button onClick={() => setEditing(true)} className="text-xs font-medium text-[var(--color-primary)] hover:underline">
             Bearbeiten
           </button>
           <button
@@ -104,6 +106,7 @@ export function EntryRow({
           >
             Löschen
           </button>
+          </div>
         </td>
       )}
     </tr>

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { createAusgabe, updateAusgabe, deleteAusgabe, toggleReKoRelevant, type AusgabeActionState } from "./ausgabe-actions";
-import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 
 export type KategorieOption = { id: string; name: string; jahr: number };
 export type AusgabeRow = {
@@ -80,7 +80,7 @@ export function AusgabeErfassung({ kategorien, ausgaben }: { kategorien: Kategor
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <thead className={theadQuietCls}>
                 <tr>
                   <th className="py-2 pr-3">Datum</th>
                   <th className="py-2 pr-3">Beschreibung</th>

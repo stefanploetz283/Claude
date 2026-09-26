@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { deleteInterimEntry, updateInterimEntry, clearUeberschneidungMarkierung, type Ueberschneidung } from "../actions";
 import { buttonPrimaryCls, buttonDangerSolidCls } from "../interim-ui";
 import { IconWarnTriangle, IconLock } from "../interim-icons";
+import { theadCls } from "@/app/(app)/cases/case-ui";
 
 export type InterimEntryRow = {
   id: string;
@@ -28,7 +29,7 @@ export function InterimEntriesList({ caseId, entries }: { caseId: string; entrie
     <div>
       {deleteError && <p className="border-b border-[var(--pros-border-default)] px-5 py-2.5 text-xs text-[var(--pros-status-critical-text)]">{deleteError}</p>}
       <table className="w-full text-left text-sm">
-        <thead className="bg-[var(--pros-sage-pale)] text-[11px] font-semibold tracking-wide text-[var(--color-primary)] uppercase">
+        <thead className={theadCls}>
           <tr>
             <th className="px-5 py-3">Datum</th>
             <th className="px-5 py-3">Zeit</th>

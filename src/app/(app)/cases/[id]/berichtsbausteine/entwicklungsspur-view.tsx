@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { BERICHTS_KAPITEL_ORDER, BERICHTS_KAPITEL_INFO, DUENN_BESETZT_SCHWELLE } from "@/lib/berichtsbausteine/manual";
 import type { BerichtsKapitel } from "@prisma/client";
+import { cardCls } from "@/app/(app)/cases/case-ui";
+import { IconCornerDownRight } from "@/components/pros/pros-icons";
 
 export type BausteinAnsicht = {
   id: string;
@@ -16,7 +18,6 @@ export type BausteinAnsicht = {
   bezugDatum: string | null; // ISO, falls verknüpft
 };
 
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 export function EntwicklungsspurView({ bausteine }: { bausteine: BausteinAnsicht[] }) {
   const [ansicht, setAnsicht] = useState<"chronologisch" | "kapitel">("chronologisch");
@@ -64,7 +65,7 @@ function ChronologischeAnsicht({ bausteine }: { bausteine: BausteinAnsicht[] }) 
           </div>
           <p className="mt-2 text-sm whitespace-pre-wrap text-[var(--color-text)]">{b.originaltext}</p>
           {b.bezugDatum && (
-            <p className="mt-2 text-xs text-[var(--color-text-muted)]">↳ verknüpft mit {format(new Date(b.bezugDatum), "dd.MM.yyyy", { locale: de })}</p>
+            <p className="mt-2 text-xs text-[var(--color-text-muted)]"><IconCornerDownRight size={14} className="mr-1 inline-block align-[-2px]" />verknüpft mit {format(new Date(b.bezugDatum), "dd.MM.yyyy", { locale: de })}</p>
           )}
         </div>
       ))}
@@ -146,7 +147,7 @@ function BausteinKarte({ baustein }: { baustein: BausteinAnsicht }) {
       </div>
       <p className="mt-1.5 line-clamp-4 text-[13px] text-[var(--color-text)]">{baustein.originaltext}</p>
       {baustein.bezugDatum && (
-        <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">↳ verknüpft mit {format(new Date(baustein.bezugDatum), "dd.MM.yyyy", { locale: de })}</p>
+        <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]"><IconCornerDownRight size={14} className="mr-1 inline-block align-[-2px]" />verknüpft mit {format(new Date(baustein.bezugDatum), "dd.MM.yyyy", { locale: de })}</p>
       )}
     </div>
   );

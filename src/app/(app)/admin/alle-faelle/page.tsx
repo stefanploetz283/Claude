@@ -5,8 +5,9 @@ import { getRemainingHoursBulk } from "@/lib/case-helpers";
 import { getSettings } from "@/lib/settings";
 import type { CaseStatus, Prisma } from "@prisma/client";
 import { ProsStatusPill } from "@/components/pros/pros-status-pill";
-import { filterFieldCls, buttonSecondaryCls } from "../../cases/case-ui";
+import { filterFieldCls, buttonSecondaryCls, buttonPrimaryCls, theadCls } from "../../cases/case-ui";
 import { IconWarnTriangle } from "../../cases/case-icons";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 const STATUS_TONE: Record<CaseStatus, "active" | "attention" | "stable"> = {
   ACTIVE: "active",
@@ -87,9 +88,10 @@ export default async function AlleFaellePage({
           </Link>
           <Link
             href="/cases/new"
-            className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97]"
+            className={`${buttonPrimaryCls} inline-flex items-center gap-2`}
           >
-            + Neue Hilfe anlegen
+            <IconPlus size={16} />
+            Neue Hilfe anlegen
           </Link>
         </div>
       </div>
@@ -151,7 +153,7 @@ export default async function AlleFaellePage({
       <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
           {/* Weiß auf Salbei unterschreitet WCAG AA (~2.8:1) - dunkler Text (~4.6:1) besteht. */}
-          <thead className="bg-[var(--color-sage)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text)]">
+          <thead className={theadCls}>
             <tr>
               <th className="px-5 py-3">Klient</th>
               <th className="px-5 py-3">Hilfeart</th>

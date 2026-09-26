@@ -9,6 +9,7 @@ import { TerminDiktatWidget } from "./termin-diktat-widget";
 import { SerieFormular } from "./serie-formular";
 import { ProsModal } from "@/components/pros/pros-modal";
 import { buttonPrimaryCls, buttonSecondaryCls, buttonSageOutlineCls } from "../cases/case-ui";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 export type KalenderBlock = {
   key: string;
@@ -105,8 +106,9 @@ export function Tageskalender({
         <button onClick={() => setModal({ type: "serie" })} className={buttonSecondaryCls}>
           Serie anlegen
         </button>
-        <button onClick={() => setModal({ type: "adhoc" })} className={buttonPrimaryCls}>
-          + Termin (frei wählen)
+        <button onClick={() => setModal({ type: "adhoc" })} className={`${buttonPrimaryCls} inline-flex items-center gap-2`}>
+          <IconPlus size={16} />
+          Termin (frei wählen)
         </button>
       </div>
 
@@ -127,7 +129,7 @@ export function Tageskalender({
             {mitarbeiterinnen.map((m) => {
               const eigeneBloecke = bloecke.filter((b) => b.employeeId === m.id);
               return (
-                <div key={m.id} className="w-52 shrink-0 border-r border-[var(--pros-border-default)] last:border-r-0">
+                <div key={m.id} className="min-w-52 flex-1 border-r border-[var(--pros-border-default)] last:border-r-0">
                   <div className="flex h-8 items-center gap-1.5 border-b border-[var(--pros-border-default)] px-2">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: m.color }} />
                     <span className="truncate text-xs font-semibold text-[var(--color-text)]">{m.name}</span>

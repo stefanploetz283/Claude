@@ -112,7 +112,7 @@ CSS-Variable — hiermit zentralisiert:
 --pros-meta-4: #738182;   /* Case-Meta */
 
 /* Error / Critical — einziger Rotwert aus der Referenz (kpi-note.alert) */
---pros-critical-text: #CC3320;   /* abgedunkelt von #E04C39, Accessibility-Pass s.u. */
+--pros-critical-text: #C22F1D;   /* abgedunkelt von #E04C39, Accessibility-Pass s.u. */
 --pros-critical-bg:   #FBE3DE;   /* ⚠ extrapoliert, s. Abschnitt "Nicht eindeutig spezifiziert" */
 ```
 
@@ -124,11 +124,14 @@ Text. Korrigiert auf `#CC3320` — gleicher Hue/Sättigung (≈7°, ≈73%), nur
 (`--pros-canvas`), 5,05:1 (`--pros-card`), 5,16:1 (Weiß) — alle ≥ AA. Als Nebeneffekt verbessert
 sich auch die umgekehrte Paarung (weißer Text auf `--pros-critical-text`-Fläche, z. B.
 Gefahrenzone-Buttons) von zuvor ~4,0:1 auf denselben Wert wie oben.
-**Bekannte, noch offene Lücke:** Critical-Text auf `--pros-critical-bg` (`#FBE3DE`, die Status-Pill-
-Fläche) erreicht auch nach dieser Korrektur nur ~4,22:1 (zuvor ~3,26:1) — verbessert, aber weiterhin
-unter AA. Da `--pros-critical-bg` nicht zu den vier oben geprüften Arbeitsflächen zählt und dieser
-Pass ausdrücklich nur `--pros-critical-text` ändern sollte, wurde das hier bewusst nicht mitgelöst;
-braucht einen eigenen Blick auf `--pros-critical-bg`.
+**Zweite Korrektur (Abschlussblock 1B, Status-Pille):** Critical-Text auf `--pros-critical-bg`
+(`#FBE3DE`, die Status-Pill-Fläche) erreichte mit `#CC3320` nur 4,22:1. `ProsStatusPill tone="critical"`
+wird real verwendet (Cockpit-Ampel, Forderungen, Freigabestatus "Korrektur angefordert"), daher wurde
+`--pros-critical-text` ein zweites Mal minimal abgedunkelt: **`#C22F1D`** (gleicher Hue, Lightness
+≈ 45 %). Neue Werte: 4,61:1 auf `--pros-critical-bg`, 4,59:1 auf `--color-coral-soft`, 5,1:1 auf
+`--pros-cream` (dunkelste Arbeitsfläche), weiter ≥ 5:1 auf Canvas/Card/Weiß. Keine neue Farbe, keine
+Änderung der Fläche. Die Werte in den Abschnitten oben (4,66 / 4,99 / 5,05 / 5,16:1) gelten für den
+Zwischenstand `#CC3320` und sind durch die zweite Abdunklung nur besser geworden.
 
 ### 3.3 Shadow-Tokens
 
@@ -231,6 +234,16 @@ Drei Schriftfamilien, funktional strikt getrennt:
 
 **Regel:** Caveat ist ausschließlich für die zwei emotionalen Markenelemente (Begrüßung,
 Signatur) reserviert. Jede weitere Verwendung ist ein Verstoß gegen die Designsprache.
+
+### Seitentitel (App-H1-Standard)
+
+Jede Arbeitsseite der App trägt genau einen `<h1>` in **Manrope 24px (`text-2xl`) / 600 /
+`tracking-tight` / `--color-primary`** (Konstante `pageTitleCls` in `cases/case-ui.ts`), optional mit
+einem Untertitel darunter (`pageSubtitleCls`: 14px, `--color-text-muted`). Ausnahmen sind bewusst und
+abschließend: der Hero-Name auf `/heute` (DM Serif Display, Abschnitt 5 „Display") sowie die
+Auth-Seiten `/login` und `/login/verify` (DM Serif Display 38 / 32px, Marken-Typografie außerhalb
+des App-Shells). Abschnitts-Überschriften in Karten sind `h2` (`ProsSectionCard`, 19px) bzw. `text-sm
+font-semibold` in Formularkarten - niemals ein zweiter `h1`.
 
 ## 6. Spacing System
 
@@ -348,7 +361,7 @@ vier weitere Zustände ergänzt (⚠ extrapoliert, an bestehende Tonalität ange
 | Active | `#E2EBD9` | `#2D5C3C` | direkt |
 | Stable | `#E6EFEF` | `#285F63` | direkt |
 | Attention | `#FFF0C9` | `#B86F00` | direkt |
-| Critical | `--pros-critical-bg` `#FBE3DE` | `--pros-critical-text` `#CC3320` | Text direkt (`.kpi-note.alert`), Fläche ⚠ extrapoliert; Text abgedunkelt von `#E04C39` im Accessibility-Pass, s. Abschnitt 3.2 |
+| Critical | `--pros-critical-bg` `#FBE3DE` | `--pros-critical-text` `#C22F1D` | Text direkt (`.kpi-note.alert`), Fläche ⚠ extrapoliert; Text abgedunkelt von `#E04C39` im Accessibility-Pass, s. Abschnitt 3.2 |
 | Info | `#E6EFEF` (wie Stable, petrol-neutral) | `#285F63` | ⚠ extrapoliert, teilt sich Ton mit Stable |
 | Paused | `--pros-sage-pale` `#EEF2EA` | `--pros-muted` `#6F7E7B` | ⚠ extrapoliert |
 | Archived | `#E2E0D8` | `#756F60` | ⚠ extrapoliert, bewusst entsättigt; in der Interim-Umsetzung gegenüber der ersten Fassung (`#EDEDE8`/`#8A8A82`) abgedunkelt, weil der Kontrast auf den warmweißen Cards (`--color-surface: #fefcf6`) sonst zu gering war |
@@ -393,7 +406,10 @@ Standard-Browser-Optik, kein Bootstrap.
 | DatePicker | Kalenderfläche in Warmweiß, aktiver Tag in Petrol-Fill, Hover Salbei-pale |
 | File Upload | Dropzone in `--pros-sage-pale`, gestrichelter `--border-default`-Rand |
 
-**Focus Ring (verbindlich, alle Formularelemente):**
+**Focus Ring (verbindlich, alle Formularelemente):** genau *ein* Fokusindikator - der goldene Ring
+unten (global in `globals.css`, mit transparenter Ausgangsfarbe, damit Transitions ihn einblenden statt
+in der Textfarbe aufblitzen zu lassen). Lokale `focus:ring-*`-Klassen sind nicht zulässig; die
+Rahmenfarbe eines Feldes darf im Fokus zu `--color-primary` wechseln, das ist kein zweiter Ring.
 ```css
 outline: 3px solid rgba(227,167,44,.55);
 outline-offset: 2px;
@@ -414,6 +430,24 @@ Fachbereiche (z. B. Finanzen, Zeit-Kapazität), die echte Tabellen brauchen.
 - Klare Typohierarchie: Body für Primärwert, Small/Meta für Sekundärinfo
 - Status-Pills statt Text für Zustände
 - Ruhige Filterleiste oberhalb der Tabelle, gleiche Card-Sprache wie restliche Panels
+
+### 15.1 Tabellenkopf-Standard (verbindlich)
+
+| Tabellentyp | Konstante (`cases/case-ui.ts`) | Aussehen |
+|---|---|---|
+| **Primäre Datentabelle** - eigener Rahmen (`tableWrapCls`: `--r-md`, `--border-strong`, `--shadow-default`, `overflow-x-auto`) | `theadCls` | Fläche `--color-primary-soft`, Text `--color-primary` (≈ 9:1), 11px / 700 / `tracking-wide` / GROSSBUCHSTABEN; Zeilen mit `--border-default`-Divider und `--pros-sage-pale`/40 als Hover (`trCls`) |
+| **Sekundäre Tabelle** - in einer Karte neben anderem Inhalt (Ausgabenlisten, Import-Vorschauen, verschachtelte Listen) | `theadQuietCls` | keine Fläche, 12px / 600 / GROSSBUCHSTABEN, `--color-text-muted`; der Kartenrahmen liefert die Struktur |
+
+Regeln: `<th scope="col">`, sortierbare Spalten zusätzlich `aria-sort`; Zahlen/Zeiten `tabular-nums`;
+Zeilenaktionen als Textlinks (`linkActionCls` / `linkDangerCls`), Status als `ProsStatusPill`. Neue
+Tabellen wählen einen der beiden Typen - keine eigenen Kopf-Varianten.
+
+### 15.2 Status-Chips
+
+Zustände (Freigabe, Aktiv/Archiviert, Ampel, Zugriffsaktion) werden mit `ProsStatusPill` dargestellt.
+Nicht migriert werden **kategoriale** Kennzeichnungen (Rollen-, Kapitel-, Tag-Chips), **Händler-/
+Markenfarben** (Gutschein-Anbieter) und **Zähler-Badges**. `critical` bleibt echten Fehler-/
+Korrekturzuständen vorbehalten und ist keine allgemeine Akzentfarbe.
 
 ## 16. Modal / Drawer / Popover
 

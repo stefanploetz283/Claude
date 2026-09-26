@@ -2,8 +2,9 @@
 
 import { useActionState } from "react";
 import { previewExcelImport, confirmExcelImport, type ExcelPreviewState, type ExcelImportState } from "./excel-import-actions";
-import { cardCls, inputCls, buttonPrimaryCls, noticeWarnCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, inputCls, buttonPrimaryCls, noticeWarnCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
+import { IconCheck } from "@/components/pros/pros-icons";
 
 function eur(n: number) {
   return n.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
@@ -79,18 +80,24 @@ export function ExcelImport({ jahr }: { jahr: number }) {
                 const abw = block.abweichung;
                 const abwOk = abw == null || Math.abs(abw) <= 0.02;
                 return (
-                  <div key={block.blockName} className="overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
+                  <div key={block.blockName} className="relative overflow-x-auto rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)]">
                     <div className="flex flex-wrap items-baseline justify-between gap-2 bg-[var(--color-bg)] px-3 py-2">
                       <span className="text-sm font-semibold text-[var(--color-text)]">{block.blockName}</span>
                       <span className={`text-xs tabular-nums ${abwOk ? "text-[var(--color-text-muted)]" : "font-semibold text-[var(--pros-status-critical-text)]"}`}>
                         Summe Einzelposten {eur(block.summeEinzelposten)}
                         {block.zwischensumme != null && <> · Zwischensumme lt. Excel {eur(block.zwischensumme)}</>}
                         {abw != null && Math.abs(abw) > 0.005 && <> · Abweichung {eur(abw)}</>}
-                        {abwOk && block.zwischensumme != null && " ✓"}
+                        {abwOk && block.zwischensumme != null && (
+                          <>
+                            {" "}
+                            <IconCheck size={14} className="inline-block align-[-2px]" />
+                            <span className="sr-only">stimmt überein</span>
+                          </>
+                        )}
                       </span>
                     </div>
                     <table className="w-full text-left text-sm">
-                      <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                      <thead className={theadQuietCls}>
                         <tr>
                           <th className="px-2.5 py-2">Import</th>
                           <th className="px-2.5 py-2">Zeile</th>

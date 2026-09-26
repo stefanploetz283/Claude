@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { deleteEmployeeDocument } from "./actions";
+import { theadCls } from "@/app/(app)/cases/case-ui";
 
 export type EmployeeDocumentRow = {
   id: string;
@@ -17,7 +18,7 @@ export function DocumentList({ employeeId, documents }: { employeeId: string; do
 
   return (
     <table className="w-full text-left text-sm">
-      <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+      <thead className={theadCls}>
         <tr>
           <th className="px-4 py-2">Datei</th>
           <th className="px-4 py-2">Kategorie</th>

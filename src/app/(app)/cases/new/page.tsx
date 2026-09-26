@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { NewCaseForm } from "./new-case-form";
+import { pageTitleCls } from "@/app/(app)/cases/case-ui";
 
 export default async function NewCasePage() {
   const user = await requireUser();
@@ -16,7 +17,7 @@ export default async function NewCasePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Neue Hilfe anlegen</h1>
+        <h1 className={pageTitleCls}>Neue Hilfe anlegen</h1>
         <p className="mt-1 text-sm text-[var(--color-text-muted)]">Klienten- und Falldaten erfassen.</p>
       </div>
 

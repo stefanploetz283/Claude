@@ -5,6 +5,7 @@ import { requireUser, canAccessCase } from "@/lib/rbac";
 import { CaseTabs } from "../case-tabs";
 import { UploadForm } from "./upload-form";
 import { DocumentList, type DocumentRow } from "./document-list";
+import { pageTitleCls } from "@/app/(app)/cases/case-ui";
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -38,7 +39,7 @@ export default async function DocumentsPage({ params }: { params: Promise<{ id: 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">
+        <h1 className={pageTitleCls}>
           {caseRecord.client.lastName}, {caseRecord.client.firstName}
         </h1>
         <p className="mt-1 text-sm text-[var(--color-text-muted)]">{caseRecord.helpType.name}</p>

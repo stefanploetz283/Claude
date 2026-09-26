@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createBerichtsbaustein, suggestBerichtsbausteinKategorie } from "./actions";
 import { BERICHTS_KAPITEL_ORDER, BERICHTS_KAPITEL_INFO } from "@/lib/berichtsbausteine/manual";
 import type { BerichtsKapitel } from "@prisma/client";
+import { cardCls, inputCls as baseInputCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 type BausteinOption = { id: string; kurzbezeichnung: string };
 
@@ -38,9 +40,7 @@ const RECOVERABLE_RECOGNITION_ERRORS = new Set(["no-speech", "aborted"]);
 
 type Stage = "eingabe" | "verarbeitung" | "pruefung" | "gespeichert";
 
-const inputCls =
-  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
+const inputCls = `w-full ${baseInputCls}`;
 
 export function BerichtsbausteinCapture({
   caseId,
@@ -195,9 +195,10 @@ export function BerichtsbausteinCapture({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition hover:bg-[var(--color-primary-hover)]"
+        className={`${buttonPrimaryCls} inline-flex items-center gap-2`}
       >
-        + Baustein erfassen
+        <IconPlus size={16} />
+        Baustein erfassen
       </button>
     );
   }

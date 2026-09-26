@@ -7,6 +7,7 @@ import { TERMINART_LABEL, terminHeading } from "@/lib/termine/labels";
 import { CaseTabs } from "../case-tabs";
 import { AusfallButton } from "../../../calendar/ausfall-button";
 import { CaseAppointmentForm } from "./case-appointment-form";
+import { pageTitleCls } from "@/app/(app)/cases/case-ui";
 
 export default async function CaseAppointmentsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +26,7 @@ export default async function CaseAppointmentsPage({ params }: { params: Promise
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">
+        <h1 className={pageTitleCls}>
           {caseRecord.client.lastName}, {caseRecord.client.firstName}
         </h1>
         <p className="mt-1 text-sm text-[var(--color-text-muted)]">{caseRecord.helpType.name}</p>

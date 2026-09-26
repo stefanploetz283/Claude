@@ -3,10 +3,10 @@
 import { useActionState, useState, useTransition } from "react";
 import { createRaum, updateRaum, toggleRaumAktiv, type RaumActionState } from "./raum-actions";
 import { STANDORT_LABEL } from "@/lib/termine/labels";
+import { theadCls, cardCls } from "@/app/(app)/cases/case-ui";
 
 const inputCls =
   "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 type Raum = { id: string; name: string; standort: string | null; aktiv: boolean };
 
@@ -44,7 +44,7 @@ export function RaumVerwaltung({ raeume }: { raeume: Raum[] }) {
 
       <div className="overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+          <thead className={theadCls}>
             <tr>
               <th className="px-4 py-2.5">Name</th>
               <th className="px-4 py-2.5">Standort</th>

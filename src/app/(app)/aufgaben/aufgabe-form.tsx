@@ -3,6 +3,7 @@
 import { useActionState, useRef } from "react";
 import { createAufgabe, type ActionState } from "./actions";
 import { inputCls, labelCls, buttonPrimaryCls, cardCls } from "../cases/case-ui";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 export function AufgabeForm({ caseOptions }: { caseOptions: { id: string; label: string }[] | null }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(createAufgabe, undefined);
@@ -38,8 +39,13 @@ export function AufgabeForm({ caseOptions }: { caseOptions: { id: string; label:
           </select>
         </label>
       )}
-      <button type="submit" disabled={pending} className={buttonPrimaryCls}>
-        {pending ? "Wird angelegt…" : "+ Aufgabe anlegen"}
+      <button type="submit" disabled={pending} className={`${buttonPrimaryCls} inline-flex items-center gap-2`}>
+        {pending ? "Wird angelegt…" : (
+          <>
+            <IconPlus size={16} />
+            Aufgabe anlegen
+          </>
+        )}
       </button>
       {state?.error && <p className="w-full text-sm font-medium text-[var(--pros-status-critical-text)]">{state.error}</p>}
     </form>

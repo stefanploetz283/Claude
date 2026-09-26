@@ -65,7 +65,9 @@
      normalen Text (~3,6–4,0:1). Gleicher Hue/Saturation (≈7°, ≈73%), nur die HSL-Lightness von
      55,1% auf 46,2% reduziert - erreicht jetzt mind. 4,66:1 auf der dunkelsten dieser vier Flächen
      (--pros-cream) und 4,99–5,16:1 auf den übrigen drei. */
-  --pros-status-critical-text: #cc3320;
+  /* Zweite, kleine Abdunklung (#cc3320 -> #c22f1d, Lightness ~45 %) für die Status-Pille: 4,61:1 auf
+     --pros-status-critical-bg (vorher 4,22:1), 4,59:1 auf --color-coral-soft, 5,1:1 auf --pros-cream. */
+  --pros-status-critical-text: #c22f1d;
   /* Etwas dunkler als ursprünglich dokumentiert (Design-System nennt #EDEDE8) - auf den
      warmweißen Cards (--color-surface: #fefcf6) war der Kontrast sonst zu gering, die Pille kaum
      als Fläche erkennbar. */
@@ -104,6 +106,12 @@ body {
    AGENTS.md-Designrichtlinie "Marke lebt über präzise Details, nicht über Ausdruck". */
 .font-script {
   font-family: var(--font-caveat), cursive;
+}
+
+/* Ausgangsfarbe des Fokusrings: transparent, damit Tailwind-Transitions (transition, transition-colors) den Ring
+   beim Fokussieren sanft von transparent nach Gold einblenden, statt kurz in der Textfarbe aufzublitzen. */
+:where(a, button, input, textarea, select, [tabindex]) {
+  outline-color: transparent;
 }
 
 /* Verbindlicher, App-weiter Fokusring - design/PROS-DESIGN-SYSTEM.md Abschnitt 14/21. */

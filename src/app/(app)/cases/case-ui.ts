@@ -90,3 +90,16 @@ export const trCls = "border-t border-[var(--pros-border-default)] transition-co
 // Fälle, Finanzen.
 export const pageTitleCls = "text-2xl font-semibold tracking-tight text-[var(--color-primary)]";
 export const pageSubtitleCls = "mt-1 text-sm text-[var(--color-text-muted)]";
+
+// Zurückhaltender Kopf für sekundäre Tabellen innerhalb einer Karte (Ausgabenlisten, Import-Vorschauen):
+// keine Fläche, nur ruhige Typografie - der Kartenrahmen liefert die Struktur. Primäre Datentabellen
+// (eigener Tabellenrahmen, tableWrapCls) nutzen theadCls.
+export const theadQuietCls = "text-xs font-semibold text-[var(--color-text-muted)] uppercase";
+
+// Freigabestatus (Leistungsdokumentation / Abschlussbericht-Entwurf) -> ProsStatusPill-Ton.
+export const APPROVAL_TONE = {
+  IN_BEARBEITUNG: "stable",
+  WARTET_AUF_FREIGABE: "attention",
+  FREIGEGEBEN: "active",
+  KORREKTUR_ANGEFORDERT: "critical",
+} as const;

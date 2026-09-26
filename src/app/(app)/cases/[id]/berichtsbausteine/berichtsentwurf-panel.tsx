@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cardCls, inputCls as baseInputCls, APPROVAL_TONE } from "@/app/(app)/cases/case-ui";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 import {
   runVollstaendigkeitspruefung,
   generateAbschlussbericht,
@@ -22,16 +24,7 @@ const STATUS_LABELS: Record<Entwurf["status"], string> = {
   FREIGEGEBEN: "Freigegeben",
   KORREKTUR_ANGEFORDERT: "Korrektur angefordert",
 };
-const STATUS_CLS: Record<Entwurf["status"], string> = {
-  IN_BEARBEITUNG: "bg-[var(--pros-border-strong)] text-[var(--color-text)]",
-  WARTET_AUF_FREIGABE: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
-  FREIGEGEBEN: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-  KORREKTUR_ANGEFORDERT: "bg-[var(--color-coral-soft)] text-[var(--pros-status-critical-text)]",
-};
-
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
-const inputCls =
-  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
+const inputCls = `w-full ${baseInputCls}`;
 
 export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entwurf: Entwurf | null }) {
   const [pruefung, setPruefung] = useState<VollstaendigkeitspruefungResult | null>(null);
@@ -97,7 +90,7 @@ export function BerichtsentwurfPanel({ caseId, entwurf }: { caseId: string; entw
 
       {entwurf && (
         <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-          <span className={`rounded-full px-2.5 py-0.5 font-semibold ${STATUS_CLS[entwurf.status]}`}>{STATUS_LABELS[entwurf.status]}</span>
+          <ProsStatusPill tone={APPROVAL_TONE[entwurf.status]}>{STATUS_LABELS[entwurf.status]}</ProsStatusPill>
           <span>Generiert am {entwurf.generiertAmLabel}</span>
         </div>
       )}

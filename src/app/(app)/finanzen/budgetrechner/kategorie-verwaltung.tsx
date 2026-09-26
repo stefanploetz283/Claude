@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { createKategorie, updateKategorie, deleteKategorie, type KategorieActionState } from "./kategorie-actions";
-import { cardCls, inputCls, labelCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, inputCls, labelCls, buttonPrimaryCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 
 export type KategorieRow = {
   id: string;
@@ -31,7 +31,7 @@ export function KategorieVerwaltung({ jahr, kategorien }: { jahr: number; katego
 
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+          <thead className={theadQuietCls}>
             <tr>
               <th className="py-2 pr-3">Position</th>
               <th className="py-2 pr-3 text-right">Jahresbudget</th>

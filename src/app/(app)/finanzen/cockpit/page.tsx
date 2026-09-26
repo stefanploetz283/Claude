@@ -33,16 +33,21 @@ import { FinomZuordnungen } from "./finom-zuordnungen";
 import { SteuereinstellungenForm, type VorsorgeEintragRow } from "./steuereinstellungen-form";
 import { PrivaterAbzugAssistent, type PrivaterAbzugKonfigurationRow, type PrivaterAbzugEintragRow } from "./privater-abzug-assistent";
 import { Forderungsmanagement, type OffeneRechnung } from "./forderungsmanagement";
-import { cardCls, inputCls, buttonSecondaryCls, noticeWarnCls, noticeCriticalCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, inputCls, buttonSecondaryCls, noticeWarnCls, noticeCriticalCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { IconArrowUp, IconArrowDown, IconArrowRight } from "@/components/pros/pros-icons";
 
 const MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
 const AMPEL_TONE: Record<AmpelStatus, "active" | "attention" | "critical"> = { gruen: "active", gelb: "attention", rot: "critical" };
 const AMPEL_LABEL: Record<AmpelStatus, string> = { gruen: "Im Ziel", gelb: "Warnung", rot: "Kritisch" };
 
-const TREND_ICON: Record<Trend, string> = { hoch: "↑", stabil: "→", runter: "↓" };
+const TREND_ICON: Record<Trend, React.ReactNode> = {
+  hoch: <IconArrowUp size={18} />,
+  stabil: <IconArrowRight size={18} />,
+  runter: <IconArrowDown size={18} />,
+};
 
 function eur(value: number): string {
   return value.toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
@@ -54,7 +59,12 @@ function AmpelKachel({ label, wert, ampel, trend }: { label: string; wert: strin
       <p className="mb-1 text-xs font-medium text-[var(--color-text-muted)]">{label}</p>
       <div className="flex items-center gap-2">
         <p className="text-2xl font-bold tabular-nums text-[var(--color-text)]">{wert}</p>
-        {trend && <span className="text-lg text-[var(--color-text-muted)]" title={`Trend: ${trend}`}>{TREND_ICON[trend]}</span>}
+        {trend && (
+          <span className="text-[var(--color-text-muted)]" title={`Trend: ${trend}`}>
+            {TREND_ICON[trend]}
+            <span className="sr-only">Trend: {trend}</span>
+          </span>
+        )}
       </div>
       {ampel && <ProsStatusPill tone={AMPEL_TONE[ampel]} className="mt-2">{AMPEL_LABEL[ampel]}</ProsStatusPill>}
     </div>
@@ -389,7 +399,7 @@ export default async function BetriebscockpitPage({ searchParams }: { searchPara
           <h3 className="mb-3 text-sm font-semibold text-[var(--color-text)]">Kosten-Soll-Ist ({year}, größte Abweichung zuerst)</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <thead className={theadQuietCls}>
                 <tr>
                   <th className="py-2 pr-3">Kategorie</th>
                   <th className="py-2 pr-3 text-right">Geplant/Jahr</th>

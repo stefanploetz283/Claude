@@ -3,10 +3,9 @@
 import { useActionState, useState } from "react";
 import { createManualEntry } from "./actions";
 import { toDateInputValue } from "@/lib/date";
+import { inputCls } from "@/app/(app)/cases/case-ui";
 
 type CaseOption = { id: string; label: string };
-const inputCls =
-  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-soft)]";
 
 export function ManualEntryForm({ cases }: { cases: CaseOption[] }) {
   const [state, formAction, pending] = useActionState(createManualEntry, undefined);

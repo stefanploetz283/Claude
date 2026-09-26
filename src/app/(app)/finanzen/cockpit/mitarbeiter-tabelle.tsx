@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { IconArrowUp, IconArrowDown } from "@/components/pros/pros-icons";
 
 export type MitarbeiterZeile = {
   employeeId: string;
@@ -48,10 +49,10 @@ export function MitarbeiterTabelle({ zeilen }: { zeilen: MitarbeiterZeile[] }) {
         <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
           <tr>
             {COLUMNS.map((col) => (
-              <th key={col.key} className={`px-5 py-3 ${col.align === "right" ? "text-right" : ""}`}>
+              <th key={col.key} scope="col" aria-sort={sortKey === col.key ? (sortDesc ? "descending" : "ascending") : undefined} className={`px-5 py-3 ${col.align === "right" ? "text-right" : ""}`}>
                 <button onClick={() => toggleSort(col.key)} className="inline-flex items-center gap-1 hover:underline">
                   {col.label}
-                  {sortKey === col.key && <span>{sortDesc ? "↓" : "↑"}</span>}
+                  {sortKey === col.key && (sortDesc ? <IconArrowDown size={14} /> : <IconArrowUp size={14} />)}
                 </button>
               </th>
             ))}

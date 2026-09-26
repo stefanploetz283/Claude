@@ -9,7 +9,7 @@ import { QuoteTrendSparkline } from "./quote-trend-sparkline";
 import { PayoutButton } from "./payout-button";
 import { BeschafftToggle } from "./beschafft-toggle";
 import { MitarbeiterHeader } from "../mitarbeiter-header";
-import { cardCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, theadCls } from "@/app/(app)/cases/case-ui";
 
 const TREND_QUARTERS = 6;
 
@@ -98,7 +98,7 @@ export default async function BonusHistoriePage({ params }: { params: Promise<{ 
         <p className="mb-3 text-sm text-[var(--color-text-muted)]">Unabhängig vom Bonus – ein Eintrag je Monat.</p>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[var(--color-primary-soft)] text-xs uppercase text-[var(--color-primary)]">
+            <thead className={theadCls}>
               <tr>
                 <th className="px-4 py-2.5">Monat</th>
                 <th className="px-4 py-2.5">Anbieter</th>

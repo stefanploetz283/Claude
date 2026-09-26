@@ -3,9 +3,9 @@
 import { useActionState } from "react";
 import { buchenAdHoc, type BuchungActionState } from "../../../calendar/buchung-actions";
 import { TERMINART_OPTIONS } from "@/lib/termine/labels";
+import { inputCls, buttonPrimaryCls } from "@/app/(app)/cases/case-ui";
+import { IconPlus } from "@/components/pros/pros-icons";
 
-const inputCls =
-  "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]";
 
 /** Schnelle Fall-Termin-Buchung direkt aus der Fallakte - immer Kategorie FALL_TERMIN, freie Ad-hoc-Zeit
  * (kein Slot-Bezug). Für Raum-Zuweisung/Slot-Buchung siehe der volle Terminkalender. */
@@ -50,9 +50,14 @@ export function CaseAppointmentForm({ caseId, employeeId, defaultDate }: { caseI
       <button
         type="submit"
         disabled={pending}
-        className="rounded-[var(--pros-r-sm)] bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white shadow-[var(--pros-shadow)] transition-[transform,background-color] duration-[170ms] ease-[var(--pros-ease)] hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100"
+        className={`${buttonPrimaryCls} inline-flex items-center gap-2`}
       >
-        {pending ? "Speichern…" : "+ Termin anlegen"}
+        {pending ? "Speichern…" : (
+          <>
+            <IconPlus size={16} />
+            Termin anlegen
+          </>
+        )}
       </button>
       {state?.error && <p className="w-full text-sm text-[var(--pros-status-critical-text)]">{state.error}</p>}
       {state?.konflikte && state.konflikte.length > 0 && (

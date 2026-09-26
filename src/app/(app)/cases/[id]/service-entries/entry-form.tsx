@@ -4,9 +4,9 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createServiceEntry } from "./actions";
 import { toDateInputValue } from "@/lib/date";
+import { inputCls as baseInputCls } from "@/app/(app)/cases/case-ui";
 
-const inputCls =
-  "w-full rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]";
+const inputCls = `w-full ${baseInputCls}`;
 
 export function NewEntryForm({
   caseId,

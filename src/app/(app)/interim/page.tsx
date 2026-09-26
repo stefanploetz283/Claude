@@ -9,6 +9,7 @@ import { MonatAbschliessenControl, MonatWiederOeffnenButton } from "./monat-absc
 import { ProsStatusPill } from "@/components/pros/pros-status-pill";
 import { cardCls, cardInteractiveCls, buttonSecondaryCls, buttonGoldCls, buttonSageOutlineCls } from "./interim-ui";
 import { IconSearchCheck } from "./interim-icons";
+import { IconPlus } from "@/components/pros/pros-icons";
 
 const ANGEBOTSART_LABELS: Record<string, string> = {
   ERZIEHUNGSBEISTANDSCHAFT: "Erziehungsbeistandschaft",
@@ -77,8 +78,9 @@ export default async function InterimPage() {
             <IconSearchCheck />
             Zeitüberschneidungen prüfen
           </Link>
-          <Link href="/interim/new" className={buttonGoldCls}>
-            + Neuen Fall anlegen
+          <Link href="/interim/new" className={`${buttonGoldCls} inline-flex items-center gap-2`}>
+            <IconPlus size={16} />
+            Neuen Fall anlegen
           </Link>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { requireAdminOrVerwaltung } from "@/lib/rbac";
 import { computeBudgetDashboard, computeNichtEingeplant, getBudgetJahre } from "@/lib/budgetrechner/calc";
 import { AMPEL_STYLE, QUELLE_AUSGABE_LABEL, eur, prozentText } from "@/lib/budgetrechner/labels";
 import { BudgetrechnerNav } from "./budgetrechner-nav";
-import { cardCls, filterFieldCls, buttonSecondaryCls, noticeWarnCls } from "@/app/(app)/cases/case-ui";
+import { cardCls, filterFieldCls, buttonSecondaryCls, noticeWarnCls, theadQuietCls } from "@/app/(app)/cases/case-ui";
 import { IconWarnTriangle } from "@/app/(app)/cases/case-icons";
 
 export default async function BudgetrechnerDashboard({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
@@ -131,7 +131,7 @@ export default async function BudgetrechnerDashboard({ searchParams }: { searchP
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <thead className={theadQuietCls}>
                 <tr>
                   <th className="py-2 pr-3">Datum</th>
                   <th className="py-2 pr-3">Beschreibung</th>

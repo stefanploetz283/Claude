@@ -3,10 +3,10 @@
 import { useActionState, useState, useTransition } from "react";
 import { createVorlage, updateVorlage, toggleVorlageAktiv, generiereSlotsJetzt, type VorlageActionState } from "./wochenvorlagen-actions";
 import { WOCHENTAG_LABEL } from "@/lib/termine/labels";
+import { cardCls } from "@/app/(app)/cases/case-ui";
 
 const inputCls =
   "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]";
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 
 type Mitarbeiterin = { id: string; name: string };
 type Raum = { id: string; name: string };

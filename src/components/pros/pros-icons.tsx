@@ -99,3 +99,40 @@ export function IconWifiOff(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconArrowUp(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="5 12 12 5 19 12" />
+    </Svg>
+  );
+}
+
+export function IconArrowDown(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="19 12 12 19 5 12" />
+    </Svg>
+  );
+}
+
+export function IconArrowRight(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </Svg>
+  );
+}
+
+// "verknüpft mit ..." - Bezug zu einem früheren Eintrag (ersetzt das Zeichen ↳).
+export function IconCornerDownRight(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <polyline points="15 10 20 15 15 20" />
+      <path d="M4 4v7a4 4 0 0 0 4 4h12" />
+    </Svg>
+  );
+}

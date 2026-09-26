@@ -11,18 +11,14 @@ import { NewEntryForm } from "./entry-form";
 import { EntryRow } from "./entry-row";
 import { ProcessNoteForm } from "./process-note-form";
 import { ApprovalForm } from "./approval-form";
+import { ProsStatusPill } from "@/components/pros/pros-status-pill";
+import { cardCls, theadCls, APPROVAL_TONE } from "@/app/(app)/cases/case-ui";
 
 const APPROVAL_STATUS_LABELS: Record<string, string> = {
   IN_BEARBEITUNG: "In Bearbeitung",
   WARTET_AUF_FREIGABE: "Wartet auf Freigabe",
   FREIGEGEBEN: "Freigegeben",
   KORREKTUR_ANGEFORDERT: "Korrektur angefordert",
-};
-const APPROVAL_STATUS_COLORS: Record<string, string> = {
-  IN_BEARBEITUNG: "bg-[var(--pros-border-strong)] text-[var(--color-text-muted)]",
-  WARTET_AUF_FREIGABE: "bg-[var(--color-warn-soft)] text-[var(--color-warn-text)]",
-  FREIGEGEBEN: "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",
-  KORREKTUR_ANGEFORDERT: "bg-[var(--pros-status-critical-bg)] text-[var(--pros-status-critical-text)]",
 };
 
 export default async function ServiceEntriesPage({
@@ -94,13 +90,13 @@ export default async function ServiceEntriesPage({
 
           <div className="mt-4 overflow-x-auto rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] shadow-[var(--pros-shadow)]">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--color-primary-soft)] text-[11px] font-bold tracking-wide text-[var(--color-primary)] uppercase">
+              <thead className={theadCls}>
                 <tr>
-                  <th className="px-5 py-3">Datum</th>
-                  <th className="px-5 py-3">Zeit</th>
-                  <th className="px-5 py-3">Inhalt</th>
-                  <th className="px-5 py-3">Mitarbeiter</th>
-                  <th className="px-5 py-3"></th>
+                  <th scope="col" className="px-3 py-3 xl:px-5">Datum</th>
+                  <th scope="col" className="px-3 py-3 xl:px-5">Zeit</th>
+                  <th scope="col" className="px-3 py-3 xl:px-5">Inhalt</th>
+                  <th scope="col" className="px-3 py-3 xl:px-5">Mitarbeiter</th>
+                  <th scope="col" className="relative px-3 py-3 xl:px-5"><span className="sr-only">Aktionen</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -197,11 +193,9 @@ export default async function ServiceEntriesPage({
           <div className={cardCls}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-[var(--color-text)]">Freigabe der Leistungsdokumentation</h2>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${APPROVAL_STATUS_COLORS[approval?.status ?? "IN_BEARBEITUNG"]}`}
-              >
+              <ProsStatusPill tone={APPROVAL_TONE[(approval?.status ?? "IN_BEARBEITUNG") as keyof typeof APPROVAL_TONE]}>
                 {APPROVAL_STATUS_LABELS[approval?.status ?? "IN_BEARBEITUNG"]}
-              </span>
+              </ProsStatusPill>
             </div>
             <div className="mb-3 flex items-center justify-between text-sm">
               <Link
@@ -270,7 +264,6 @@ export default async function ServiceEntriesPage({
   );
 }
 
-const cardCls = "rounded-[var(--pros-r-md)] border border-[var(--pros-border-strong)] bg-[var(--color-surface)] p-5 shadow-[var(--pros-shadow)]";
 const fieldCls =
   "rounded-[var(--pros-r-sm)] border border-[var(--pros-border-strong)] bg-[var(--color-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]";
 
